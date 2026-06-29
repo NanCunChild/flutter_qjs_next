@@ -4,19 +4,17 @@ version: 0.0.1
 homepage: https://github.com/kodjodevf
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ^3.10.0
   flutter: ">=3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  ffi: ^2.1.2
-
+  ffi: ^2.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -30,11 +28,11 @@ flutter:
   plugin:
     implements: flutter_qjs
     platforms:
-    # This plugin project was generated without specifying any
-    # platforms with the `--platform` argument. If you see the `fake_platform` map below, remove it and
-    # then add platforms following the instruction here:
-    # https://flutter.dev/docs/development/packages-and-plugins/developing-packages#plugin-platforms
-    # -------------------
+      # This plugin project was generated without specifying any
+      # platforms with the `--platform` argument. If you see the `fake_platform` map below, remove it and
+      # then add platforms following the instruction here:
+      # https://flutter.dev/docs/development/packages-and-plugins/developing-packages#plugin-platforms
+      # -------------------
       windows:
         pluginClass: FlutterQjsPlugin
       linux:
