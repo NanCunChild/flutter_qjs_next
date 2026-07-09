@@ -109,6 +109,12 @@ extern "C"
   DLLEXPORT int32_t jsDefinePropertyValue(JSContext *ctx, JSValueConst *this_obj,
                                           JSAtom prop, JSValue *val, int32_t flags);
 
+  DLLEXPORT JSValue *jsGetPropertyUint32(JSContext *ctx, JSValueConst *this_obj,
+                                         uint32_t idx);
+
+  DLLEXPORT int32_t jsDefinePropertyValueUint32(JSContext *ctx, JSValueConst *this_obj,
+                                                uint32_t idx, JSValue *val, int32_t flags);
+
   DLLEXPORT void jsFreeAtom(JSContext *ctx, JSAtom v);
 
   DLLEXPORT JSAtom jsValueToAtom(JSContext *ctx, JSValueConst *val);

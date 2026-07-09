@@ -110,7 +110,8 @@ Pointer<JSValue> _dartToJs(Pointer<JSContext> ctx, dynamic val,
     final ret = jsNewArray(ctx);
     cache[val] = ret;
     for (int i = 0; i < val.length; ++i) {
-      _definePropertyValue(ctx, ret, i, val[i], cache: cache);
+      final jsItem = _dartToJs(ctx, val[i], cache: cache);
+      jsDefinePropertyValueUint32(ctx, ret, i, jsItem, JSProp.C_W_E);
     }
     return ret;
   }
@@ -209,10 +210,11 @@ dynamic _jsToDart(Pointer<JSContext> ctx, Pointer<JSValue> val,
       } else if (jsIsArray(ctx, val) != 0) {
         final jslength = _jsGetPropertyValue(ctx, val, 'length');
         final length = jsToInt64(ctx, jslength);
+        jsFreeValue(ctx, jslength);
         final ret = [];
         cache[valptr] = ret;
         for (var i = 0; i < length; ++i) {
-          final jsProp = _jsGetPropertyValue(ctx, val, i);
+          final jsProp = jsGetPropertyUint32(ctx, val, i);
           ret.add(_jsToDart(ctx, jsProp, cache: cache));
           jsFreeValue(ctx, jsProp);
         }

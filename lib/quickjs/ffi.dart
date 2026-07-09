@@ -845,6 +845,41 @@ final void Function(
             )>>('jsFreeAtom')
     .asFunction();
 
+/// JSValue *jsGetPropertyUint32(JSContext *ctx, JSValueConst *this_obj, uint32_t idx)
+final Pointer<JSValue> Function(
+  Pointer<JSContext> ctx,
+  Pointer<JSValue> thisObj,
+  int idx,
+) jsGetPropertyUint32 = _qjsLib
+    .lookup<
+        NativeFunction<
+            Pointer<JSValue> Function(
+              Pointer<JSContext>,
+              Pointer<JSValue>,
+              Uint32,
+            )>>('jsGetPropertyUint32')
+    .asFunction();
+
+/// int jsDefinePropertyValueUint32(JSContext *ctx, JSValueConst *this_obj,
+///                                 uint32_t idx, JSValue *val, int flags)
+final int Function(
+  Pointer<JSContext> ctx,
+  Pointer<JSValue> thisObj,
+  int idx,
+  Pointer<JSValue> val,
+  int flag,
+) jsDefinePropertyValueUint32 = _qjsLib
+    .lookup<
+        NativeFunction<
+            Int32 Function(
+              Pointer<JSContext>,
+              Pointer<JSValue>,
+              Uint32,
+              Pointer<JSValue>,
+              Int32,
+            )>>('jsDefinePropertyValueUint32')
+    .asFunction();
+
 /// JSAtom jsValueToAtom(JSContext *ctx, JSValueConst *val)
 final int Function(
   Pointer<JSContext> ctx,

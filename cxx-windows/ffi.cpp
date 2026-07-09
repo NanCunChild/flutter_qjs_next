@@ -347,6 +347,18 @@ extern "C"
     return JS_DefinePropertyValue(ctx, *this_obj, prop, *val, flags);
   }
 
+  DLLEXPORT JSValue *jsGetPropertyUint32(JSContext *ctx, JSValueConst *this_obj,
+                                         uint32_t idx)
+  {
+    return new JSValue(JS_GetPropertyUint32(ctx, *this_obj, idx));
+  }
+
+  DLLEXPORT int32_t jsDefinePropertyValueUint32(JSContext *ctx, JSValueConst *this_obj,
+                                                uint32_t idx, JSValue *val, int32_t flags)
+  {
+    return JS_DefinePropertyValueUint32(ctx, *this_obj, idx, *val, flags);
+  }
+
   DLLEXPORT void jsFreeAtom(JSContext *ctx, JSAtom v)
   {
     JS_FreeAtom(ctx, v);

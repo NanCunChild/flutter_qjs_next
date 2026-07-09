@@ -201,6 +201,48 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     return JsEvalResult(result?.toString() ?? "null", result);
   }
 
+  /// Evaluate js script and decode the result via a single `JSON.stringify`
+  /// round-trip instead of recursive per-element FFI marshaling.
+  ///
+  /// This is dramatically faster for large arrays/objects, but the result must
+  /// be JSON-serializable: functions, Promises and cyclic references are not
+  /// supported (they decode to `null` / are dropped, as with `JSON.stringify`).
+  dynamic evaluateJson(
+    String command, {
+    String? name,
+    int? evalFlags,
+  }) {
+    _ensureEngine();
+    final ctx = _ctx!;
+    final jsval = jsEval(
+      ctx,
+      command,
+      name ?? '<eval>',
+      evalFlags ?? JSEvalFlag.GLOBAL,
+    );
+    if (jsIsException(jsval) != 0) {
+      jsFreeValue(ctx, jsval);
+      throw _parseJSException(ctx);
+    }
+    final fnStringify = jsEval(ctx, 'JSON.stringify', '<json>', JSEvalFlag.GLOBAL);
+    final thisObj = jsUNDEFINED();
+    final jsonVal = jsCall(ctx, fnStringify, thisObj, [jsval]);
+    jsFreeValue(ctx, thisObj);
+    jsFreeValue(ctx, fnStringify);
+    jsFreeValue(ctx, jsval);
+    if (jsIsException(jsonVal) != 0) {
+      jsFreeValue(ctx, jsonVal);
+      throw _parseJSException(ctx);
+    }
+    if (jsValueGetTag(jsonVal) != JSTag.STRING) {
+      jsFreeValue(ctx, jsonVal);
+      return null;
+    }
+    final jsonStr = jsToCString(ctx, jsonVal);
+    jsFreeValue(ctx, jsonVal);
+    return jsonDecode(jsonStr);
+  }
+
   JsEvalResult evaluateBytecode(Uint8List bytecode) {
     _ensureEngine();
     final ctx = _ctx!;
@@ -306,7 +348,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
 
   @override
   String jsonStringify(JsEvalResult jsValue) {
-    throw UnimplementedError();
+    return jsonEncode(jsValue.rawResult);
   }
 
   @override
