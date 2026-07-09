@@ -301,6 +301,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
         }
       }
     ]);
+    (setToGlobalObject as JSRef).free();
   }
 
   @override

@@ -428,7 +428,9 @@ extern "C"
       return NULL;
     }
 
-    return JS_WriteObject(ctx, lengthPtr, value, JS_WRITE_OBJ_BYTECODE);
+    uint8_t *out = JS_WriteObject(ctx, lengthPtr, value, JS_WRITE_OBJ_BYTECODE);
+    JS_FreeValue(ctx, value);
+    return out;
   }
 
   DLLEXPORT JSValue *EvaluateBytecode(JSContext *ctx, size_t length, uint8_t *buf) {

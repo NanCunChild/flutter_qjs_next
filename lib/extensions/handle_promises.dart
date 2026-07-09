@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_qjs/javascript_runtime.dart';
 import 'package:flutter_qjs/js_eval_result.dart';
+import 'package:flutter_qjs/quickjs/ffi.dart';
 
 const REGISTER_PROMISE_FUNCTION = 'FLUTTER_NATIVEJS_REGISTER_PROMISE';
 
@@ -74,6 +75,7 @@ extension HandlePromises on JavascriptRuntime {
     """);
 
     localContext['makeQuerablePromise'] = fnResult.rawResult;
+    if (fnResult.rawResult is JSRef) (fnResult.rawResult as JSRef).free();
   }
 
   bool isPendingPromise(int idx) {
