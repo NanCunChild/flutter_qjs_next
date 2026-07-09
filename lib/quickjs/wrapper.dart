@@ -53,6 +53,89 @@ Pointer<JSValue> _jsGetPropertyValue(
   return jsProp;
 }
 
+/// Fast path: copy a Dart [TypedData] view directly into a JS TypedArray via a
+/// single memcpy, bypassing per-element marshaling. Returns null for typed data
+/// kinds without a matching JS TypedArray (falls back to the generic path).
+Pointer<JSValue>? _typedDataToJs(Pointer<JSContext> ctx, TypedData val) {
+  final int type;
+  if (val is Int8List)
+    type = JSTypedArrayType.INT8;
+  else if (val is Uint8ClampedList)
+    type = JSTypedArrayType.UINT8C;
+  else if (val is Int16List)
+    type = JSTypedArrayType.INT16;
+  else if (val is Uint16List)
+    type = JSTypedArrayType.UINT16;
+  else if (val is Int32List)
+    type = JSTypedArrayType.INT32;
+  else if (val is Uint32List)
+    type = JSTypedArrayType.UINT32;
+  else if (val is Int64List)
+    type = JSTypedArrayType.BIG_INT64;
+  else if (val is Uint64List)
+    type = JSTypedArrayType.BIG_UINT64;
+  else if (val is Float32List)
+    type = JSTypedArrayType.FLOAT32;
+  else if (val is Float64List)
+    type = JSTypedArrayType.FLOAT64;
+  else
+    return null;
+  final byteLength = val.lengthInBytes;
+  final ptr = malloc<Uint8>(byteLength == 0 ? 1 : byteLength);
+  final bytes = val.buffer.asUint8List(val.offsetInBytes, byteLength);
+  ptr.asTypedList(byteLength).setAll(0, bytes);
+  final ret = jsNewTypedArray(ctx, ptr, byteLength, type);
+  malloc.free(ptr);
+  return ret;
+}
+
+/// Fast path: convert a JS TypedArray to the matching Dart typed list via a
+/// single memcpy. Returns null when [val] is not a typed array.
+TypedData? _jsTypedArrayToDart(Pointer<JSContext> ctx, Pointer<JSValue> val) {
+  final plength = malloc<IntPtr>();
+  final ptype = malloc<Int32>();
+  final data = jsGetTypedArrayData(ctx, val, plength, ptype);
+  if (data.address == 0) {
+    malloc.free(plength);
+    malloc.free(ptype);
+    return null;
+  }
+  final byteLength = plength.value;
+  final type = ptype.value;
+  malloc.free(plength);
+  malloc.free(ptype);
+  final bytes = data.asTypedList(byteLength);
+  // Copy into a Dart-owned buffer (data is owned by the JS engine).
+  final copy = Uint8List.fromList(bytes);
+  final bd = copy.buffer;
+  switch (type) {
+    case JSTypedArrayType.INT8:
+      return bd.asInt8List();
+    case JSTypedArrayType.UINT8:
+      return copy;
+    case JSTypedArrayType.UINT8C:
+      return Uint8ClampedList.fromList(copy);
+    case JSTypedArrayType.INT16:
+      return bd.asInt16List();
+    case JSTypedArrayType.UINT16:
+      return bd.asUint16List();
+    case JSTypedArrayType.INT32:
+      return bd.asInt32List();
+    case JSTypedArrayType.UINT32:
+      return bd.asUint32List();
+    case JSTypedArrayType.BIG_INT64:
+      return bd.asInt64List();
+    case JSTypedArrayType.BIG_UINT64:
+      return bd.asUint64List();
+    case JSTypedArrayType.FLOAT32:
+      return bd.asFloat32List();
+    case JSTypedArrayType.FLOAT64:
+      return bd.asFloat64List();
+    default:
+      return copy;
+  }
+}
+
 Pointer<JSValue> _dartToJs(Pointer<JSContext> ctx, dynamic val,
     {Map<dynamic, Pointer<JSValue>>? cache}) {
   if (val == null) return jsUNDEFINED();
@@ -102,6 +185,10 @@ Pointer<JSValue> _dartToJs(Pointer<JSContext> ctx, dynamic val,
     final ret = jsNewArrayBufferCopy(ctx, ptr, val.length);
     malloc.free(ptr);
     return ret;
+  }
+  if (val is TypedData) {
+    final ta = _typedDataToJs(ctx, val);
+    if (ta != null) return ta;
   }
   if (cache.containsKey(val)) {
     return jsDupValue(ctx, cache[val]!);
@@ -170,6 +257,8 @@ dynamic _jsToDart(Pointer<JSContext> ctx, Pointer<JSValue> val,
       if (buf.address != 0) {
         return Uint8List.fromList(buf.asTypedList(size));
       }
+      final typedArray = _jsTypedArrayToDart(ctx, val);
+      if (typedArray != null) return typedArray;
       final valptr = jsValueGetPtr(val);
       if (cache.containsKey(valptr)) {
         return cache[valptr];

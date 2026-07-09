@@ -91,6 +91,11 @@ extern "C"
 
   DLLEXPORT uint8_t *jsGetArrayBuffer(JSContext *ctx, size_t *psize, JSValueConst *obj);
 
+  DLLEXPORT JSValue *jsNewTypedArray(JSContext *ctx, const uint8_t *buf, size_t len, int32_t type);
+
+  DLLEXPORT uint8_t *jsGetTypedArrayData(JSContext *ctx, JSValueConst *val,
+                                         size_t *plength, int32_t *ptype);
+
   DLLEXPORT int32_t jsIsFunction(JSContext *ctx, JSValueConst *val);
 
   DLLEXPORT int32_t jsIsPromise(JSContext *ctx, JSValueConst *val);

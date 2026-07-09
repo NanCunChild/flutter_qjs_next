@@ -305,6 +305,91 @@ extern "C"
     return JS_GetArrayBuffer(ctx, psize, *obj);
   }
 
+  // Create a JS TypedArray of `type` (JSTypedArrayEnum) from a raw byte buffer.
+  DLLEXPORT JSValue *jsNewTypedArray(JSContext *ctx, const uint8_t *buf, size_t len, int32_t type)
+  {
+    JSValue arrayBuffer = JS_NewArrayBufferCopy(ctx, buf, len);
+    if (JS_IsException(arrayBuffer))
+      return new JSValue(arrayBuffer);
+    // The typed array constructor reads argv[0]=buffer, argv[1]=offset,
+    // argv[2]=length; pass undefined offset/length to view the whole buffer.
+    JSValueConst argv[3] = {arrayBuffer, JS_UNDEFINED, JS_UNDEFINED};
+    JSValue ta = JS_NewTypedArray(ctx, 3, argv, (JSTypedArrayEnum)type);
+    JS_FreeValue(ctx, arrayBuffer);
+    return new JSValue(ta);
+  }
+
+  // Detect the JSTypedArrayEnum of `val` via its constructor name.
+  // Returns the enum value (0..11) or -1 if `val` is not a typed array.
+  static int32_t js_typed_array_type(JSContext *ctx, JSValueConst val)
+  {
+    JSValue ctor = JS_GetPropertyStr(ctx, val, "constructor");
+    if (JS_IsException(ctor) || JS_IsUndefined(ctor))
+    {
+      JS_FreeValue(ctx, ctor);
+      return -1;
+    }
+    JSValue nameV = JS_GetPropertyStr(ctx, ctor, "name");
+    JS_FreeValue(ctx, ctor);
+    const char *name = JS_ToCString(ctx, nameV);
+    JS_FreeValue(ctx, nameV);
+    if (name == nullptr)
+      return -1;
+    int32_t type = -1;
+    if (strcmp(name, "Uint8ClampedArray") == 0)
+      type = JS_TYPED_ARRAY_UINT8C;
+    else if (strcmp(name, "Int8Array") == 0)
+      type = JS_TYPED_ARRAY_INT8;
+    else if (strcmp(name, "Uint8Array") == 0)
+      type = JS_TYPED_ARRAY_UINT8;
+    else if (strcmp(name, "Int16Array") == 0)
+      type = JS_TYPED_ARRAY_INT16;
+    else if (strcmp(name, "Uint16Array") == 0)
+      type = JS_TYPED_ARRAY_UINT16;
+    else if (strcmp(name, "Int32Array") == 0)
+      type = JS_TYPED_ARRAY_INT32;
+    else if (strcmp(name, "Uint32Array") == 0)
+      type = JS_TYPED_ARRAY_UINT32;
+    else if (strcmp(name, "BigInt64Array") == 0)
+      type = JS_TYPED_ARRAY_BIG_INT64;
+    else if (strcmp(name, "BigUint64Array") == 0)
+      type = JS_TYPED_ARRAY_BIG_UINT64;
+    else if (strcmp(name, "Float32Array") == 0)
+      type = JS_TYPED_ARRAY_FLOAT32;
+    else if (strcmp(name, "Float64Array") == 0)
+      type = JS_TYPED_ARRAY_FLOAT64;
+    JS_FreeCString(ctx, name);
+    return type;
+  }
+
+  // If `val` is a typed array, return a pointer to its element data, set
+  // `*plength` to the byte length and `*ptype` to the JSTypedArrayEnum.
+  // Returns NULL when `val` is not a (supported) typed array.
+  DLLEXPORT uint8_t *jsGetTypedArrayData(JSContext *ctx, JSValueConst *val,
+                                         size_t *plength, int32_t *ptype)
+  {
+    int32_t type = js_typed_array_type(ctx, *val);
+    if (type < 0)
+      return NULL;
+    size_t byte_offset = 0, byte_length = 0, bytes_per_element = 0;
+    JSValue buffer = JS_GetTypedArrayBuffer(ctx, *val, &byte_offset, &byte_length, &bytes_per_element);
+    if (JS_IsException(buffer))
+    {
+      JS_FreeValue(ctx, buffer);
+      return NULL;
+    }
+    size_t buf_size = 0;
+    uint8_t *ptr = JS_GetArrayBuffer(ctx, &buf_size, buffer);
+    // The typed array still holds a reference to the same underlying buffer,
+    // so `ptr` stays valid after freeing this duplicated handle.
+    JS_FreeValue(ctx, buffer);
+    if (ptr == nullptr)
+      return NULL;
+    *plength = byte_length;
+    *ptype = type;
+    return ptr + byte_offset;
+  }
+
   DLLEXPORT int32_t jsIsFunction(JSContext *ctx, JSValueConst *val)
   {
     return JS_IsFunction(ctx, *val);

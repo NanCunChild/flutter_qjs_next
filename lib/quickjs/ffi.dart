@@ -733,6 +733,56 @@ final Pointer<Uint8> Function(
             )>>('jsGetArrayBuffer')
     .asFunction();
 
+/// JSTypedArrayEnum values (order matches quickjs.h).
+class JSTypedArrayType {
+  static const UINT8C = 0;
+  static const INT8 = 1;
+  static const UINT8 = 2;
+  static const INT16 = 3;
+  static const UINT16 = 4;
+  static const INT32 = 5;
+  static const UINT32 = 6;
+  static const BIG_INT64 = 7;
+  static const BIG_UINT64 = 8;
+  static const FLOAT16 = 9;
+  static const FLOAT32 = 10;
+  static const FLOAT64 = 11;
+}
+
+/// JSValue *jsNewTypedArray(JSContext *ctx, const uint8_t *buf, size_t len, int32_t type)
+final Pointer<JSValue> Function(
+  Pointer<JSContext> ctx,
+  Pointer<Uint8> buf,
+  int len,
+  int type,
+) jsNewTypedArray = _qjsLib
+    .lookup<
+        NativeFunction<
+            Pointer<JSValue> Function(
+              Pointer<JSContext>,
+              Pointer<Uint8>,
+              IntPtr,
+              Int32,
+            )>>('jsNewTypedArray')
+    .asFunction();
+
+/// uint8_t *jsGetTypedArrayData(JSContext *ctx, JSValueConst *val, size_t *plength, int32_t *ptype)
+final Pointer<Uint8> Function(
+  Pointer<JSContext> ctx,
+  Pointer<JSValue> val,
+  Pointer<IntPtr> plength,
+  Pointer<Int32> ptype,
+) jsGetTypedArrayData = _qjsLib
+    .lookup<
+        NativeFunction<
+            Pointer<Uint8> Function(
+              Pointer<JSContext>,
+              Pointer<JSValue>,
+              Pointer<IntPtr>,
+              Pointer<Int32>,
+            )>>('jsGetTypedArrayData')
+    .asFunction();
+
 /// int32_t jsIsFunction(JSContext *ctx, JSValueConst *val)
 final int Function(
   Pointer<JSContext> ctx,
