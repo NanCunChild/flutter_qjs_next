@@ -108,7 +108,9 @@ void _runJsIsolate(Map spawnMessage) async {
   ReceivePort port = ReceivePort();
   sendPort.send(port.sendPort);
   final qjs = QuickJsRuntime2(
-    stackSize: spawnMessage[#stackSize],
+    stackSize: spawnMessage[#stackSize] ?? 1024 * 1024,
+    timeout: spawnMessage[#timeout],
+    memoryLimit: spawnMessage[#memoryLimit],
     hostPromiseRejectionHandler: (reason) {
       sendPort.send({
         #type: #hostPromiseRejection,
@@ -138,11 +140,33 @@ void _runJsIsolate(Map spawnMessage) async {
     try {
       switch (msg[#type]) {
         case #evaluate:
-          data = qjs.evaluate(
+          // Host function channel: bind provided Dart closures onto globalThis
+          // before evaluating. Each is an IsolateFunction routed back to the
+          // spawning isolate; returning a Future yields a JS Promise (via
+          // _dartToJs). Inject-once semantics: only the message that carries
+          // #functions binds them; persists across later evaluates on the same
+          // engine.
+          final encodedFns = msg[#functions];
+          if (encodedFns != null) {
+            final fns = _decodeData(encodedFns) as Map;
+            final setter = qjs.evaluate('(k,v)=>{globalThis[k]=v;}').rawResult;
+            try {
+              fns.forEach((k, v) => (setter as JSInvokable).invoke([k, v]));
+            } finally {
+              if (setter is JSRef) setter.free();
+            }
+          }
+          // QuickJsRuntime2.evaluate wraps the result in a JsEvalResult and
+          // reports errors via isError instead of throwing. Unwrap here so the
+          // error travels back through the #error channel and Promises resolve
+          // to their settled value.
+          final r = qjs.evaluate(
             msg[#command],
             name: msg[#name],
             evalFlags: msg[#flag],
           );
+          if (r.isError) throw r.rawResult;
+          data = await r.rawResult;
           break;
         case #close:
           data = false;
@@ -171,11 +195,24 @@ class IsolateQjs {
   /// Max stack size for quickjs.
   final int? stackSize;
 
+  /// Max stack size for quickjs.
+  final int? timeout;
+
+  /// Max memory for quickjs.
+  final int? memoryLimit;
+
   /// Asynchronously handler to manage js module.
   final _JsAsyncModuleHandler? moduleHandler;
 
   /// Handler function to manage js module.
   final _JsHostPromiseRejectionHandler? hostPromiseRejectionHandler;
+
+  /// Host functions to expose on `globalThis`, wrapped as cross-isolate
+  /// [IsolateFunction]s. Bound onto the worker's globalThis on the first
+  /// [evaluate] (inject-once); invoking from JS routes back to this isolate,
+  /// and a returned Future becomes a JS Promise.
+  final Map<String, IsolateFunction> _hostFunctions = {};
+  bool _hostFunctionsBound = false;
 
   /// Quickjs engine runing on isolate thread.
   ///
@@ -184,8 +221,30 @@ class IsolateQjs {
   IsolateQjs({
     this.moduleHandler,
     this.stackSize,
+    this.timeout,
+    this.memoryLimit,
     this.hostPromiseRejectionHandler,
   });
+
+  /// Register host functions callable from JS as `globalThis[name](...)`.
+  ///
+  /// Each value is a Dart closure (may return a Future → JS Promise). The
+  /// closure runs on **this** (spawning) isolate, not the worker — args are
+  /// marshalled in, the return value (or resolved Future) marshalled back; the
+  /// worker/JS never sees Dart closure internals. **Inject-once**: must be
+  /// called before the first [evaluate]; runtime mutation is rejected.
+  void setHostFunctions(Map<String, Function> functions) {
+    if (_hostFunctionsBound) {
+      throw StateError(
+          'host functions must be registered before evaluate (inject-once)');
+    }
+    functions.forEach((k, v) {
+      // Dispose any prior registration for this key so repeated/accumulating
+      // pre-evaluate calls don't leak IsolateFunction handlers.
+      _hostFunctions[k]?.destroy();
+      _hostFunctions[k] = IsolateFunction(v);
+    });
+  }
 
   _ensureEngine() {
     if (_sendPort != null) return;
@@ -195,6 +254,8 @@ class IsolateQjs {
       {
         #port: port.sendPort,
         #stackSize: stackSize,
+        #timeout: timeout,
+        #memoryLimit: memoryLimit,
       },
       errorsAreFatal: true,
     );
@@ -236,6 +297,13 @@ class IsolateQjs {
 
   /// Free Runtime and close isolate thread that can be recreate when evaluate again.
   close() {
+    // Host-function handlers are reclaimed by the existing IsolateFunction
+    // refcount path: when the worker frees its runtime on #close, the bound
+    // globalThis functions are GC'd, and their cross-isolate #free messages
+    // remove the handlers registered here. Manually destroying them up-front
+    // races those late messages ("handler released"), so we don't.
+    _hostFunctions.clear();
+    _hostFunctionsBound = false;
     final sendPort = _sendPort;
     _sendPort = null;
     if (sendPort == null) return;
@@ -263,13 +331,20 @@ class IsolateQjs {
     _ensureEngine();
     final evaluatePort = ReceivePort();
     final sendPort = await _sendPort!;
-    sendPort.send({
+    final msg = {
       #type: #evaluate,
       #command: command,
       #name: name,
       #flag: evalFlags,
       #port: evaluatePort.sendPort,
-    });
+    };
+    // Inject host functions once, on the first evaluate that follows
+    // setHostFunctions. Encoded as IsolateFunction refs (id + handle port).
+    if (_hostFunctions.isNotEmpty && !_hostFunctionsBound) {
+      msg[#functions] = _encodeData(_hostFunctions);
+      _hostFunctionsBound = true;
+    }
+    sendPort.send(msg);
     final result = await evaluatePort.first;
     evaluatePort.close();
     if (result is Map && result.containsKey(#error))

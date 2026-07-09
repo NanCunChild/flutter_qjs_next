@@ -165,9 +165,9 @@ class QuickJsRuntime2 extends JavascriptRuntime {
 
   /// Dispatch JavaScript Event loop.
   Future<void> dispatch() async {
-    //await for (final _ in port) {
-    _executePendingJob();
-    //}
+    await for (final _ in port) {
+      _executePendingJob();
+    }
   }
 
   @override
@@ -313,7 +313,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
 
   @override
   int executePendingJob() {
-    this.dispatch();
+    _executePendingJob();
     return 0;
   }
 
