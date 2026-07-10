@@ -7,8 +7,8 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:flutter_qjs_next/javascript_runtime.dart';
-import 'package:flutter_qjs_next/js_eval_result.dart';
+import 'package:flutter_qjs_es2023/javascript_runtime.dart';
+import 'package:flutter_qjs_es2023/js_eval_result.dart';
 
 import 'ffi.dart';
 

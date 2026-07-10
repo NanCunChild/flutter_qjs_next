@@ -1,4 +1,4 @@
-group = 'soko.ekibun.flutter_qjs_next'
+group = 'io.github.nancunchild.flutter_qjs_es2023'
 version = '1.0-SNAPSHOT'
 
 allprojects {
@@ -12,7 +12,7 @@ apply plugin: 'com.android.library'
 
 android {
     if (project.android.hasProperty("namespace")) {
-        namespace = 'soko.ekibun.flutter_qjs_next'
+        namespace = 'io.github.nancunchild.flutter_qjs_es2023'
     }
 
     compileSdk = 36

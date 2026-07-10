@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
-import 'package:flutter_qjs_next/flutter_qjs.dart';
+import 'package:flutter_qjs_es2023/flutter_qjs.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:flutter_qjs_next/javascript_runtime.dart';
-import 'package:flutter_qjs_next/js_eval_result.dart';
-import 'package:flutter_qjs_next/quickjs/ffi.dart';
+import 'package:flutter_qjs_es2023/javascript_runtime.dart';
+import 'package:flutter_qjs_es2023/js_eval_result.dart';
+import 'package:flutter_qjs_es2023/quickjs/ffi.dart';
 
 const REGISTER_PROMISE_FUNCTION = 'FLUTTER_NATIVEJS_REGISTER_PROMISE';
 

@@ -1,4 +1,4 @@
-package soko.ekibun.flutter_qjs_next;
+package io.github.nancunchild.flutter_qjs_es2023;
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -13,7 +13,7 @@ public class FlutterQjsPlugin implements FlutterPlugin, MethodCallHandler {
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "flutter_qjs_next");
+    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "flutter_qjs_es2023");
     channel.setMethodCallHandler(this);
   }
 
