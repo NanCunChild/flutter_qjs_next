@@ -67,6 +67,10 @@ extern "C"
 
   DLLEXPORT JSValue *jsNewArrayBufferCopy(JSContext *ctx, const uint8_t *buf, size_t len);
 
+  DLLEXPORT uint8_t *jsAllocBuffer(size_t len);
+
+  DLLEXPORT JSValue *jsNewArrayBufferOwned(JSContext *ctx, uint8_t *buf, size_t len);
+
   DLLEXPORT JSValue *jsNewArray(JSContext *ctx);
 
   DLLEXPORT JSValue *jsNewObject(JSContext *ctx);
@@ -92,6 +96,8 @@ extern "C"
   DLLEXPORT uint8_t *jsGetArrayBuffer(JSContext *ctx, size_t *psize, JSValueConst *obj);
 
   DLLEXPORT JSValue *jsNewTypedArray(JSContext *ctx, const uint8_t *buf, size_t len, int32_t type);
+
+  DLLEXPORT JSValue *jsNewTypedArrayOwned(JSContext *ctx, uint8_t *buf, size_t len, int32_t type);
 
   DLLEXPORT uint8_t *jsGetTypedArrayData(JSContext *ctx, JSValueConst *val,
                                          size_t *plength, int32_t *ptype);

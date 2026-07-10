@@ -1,4 +1,4 @@
-import 'package:flutter_qjs/javascript_runtime.dart';
+import 'package:flutter_qjs_next/javascript_runtime.dart';
 import './quickjs/quickjs_runtime2.dart';
 import './extensions/handle_promises.dart';
 

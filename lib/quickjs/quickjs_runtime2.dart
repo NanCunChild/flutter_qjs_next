@@ -7,8 +7,8 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:flutter_qjs/javascript_runtime.dart';
-import 'package:flutter_qjs/js_eval_result.dart';
+import 'package:flutter_qjs_next/javascript_runtime.dart';
+import 'package:flutter_qjs_next/js_eval_result.dart';
 
 import 'ffi.dart';
 
@@ -28,6 +28,7 @@ typedef _JsHostPromiseRejectionHandler = void Function(dynamic reason);
 class QuickJsRuntime2 extends JavascriptRuntime {
   Pointer<JSRuntime>? _rt;
   Pointer<JSContext>? _ctx;
+  Pointer<JSValue>? _jsonStringifyFn;
 
   /// Max stack size for quickjs.
   int stackSize;
@@ -59,73 +60,74 @@ class QuickJsRuntime2 extends JavascriptRuntime {
 
   _ensureEngine() {
     if (_rt != null) return;
-    final rt = jsNewRuntime((ctx, type, ptr) {
-      try {
-        switch (type) {
-          case JSChannelType.METHON:
-            final pdata = ptr.cast<Pointer<JSValue>>();
-            final argc = (pdata + 1).value.cast<Int32>().value;
-            final pargs = [];
-            for (var i = 0; i < argc; ++i) {
-              pargs.add(_jsToDart(
+    final rt = jsNewRuntime(
+      (ctx, type, ptr) {
+        try {
+          switch (type) {
+            case JSChannelType.METHON:
+              final pdata = ptr.cast<Pointer<JSValue>>();
+              final argc = (pdata + 1).value.cast<Int32>().value;
+              final pargs = [];
+              for (var i = 0; i < argc; ++i) {
+                pargs.add(
+                  _jsToDart(
+                    ctx,
+                    Pointer.fromAddress(
+                      (pdata + 2).value.address + sizeOfJSValue * i,
+                    ),
+                  ),
+                );
+              }
+              final JSInvokable func = _jsToDart(ctx, (pdata + 3).value);
+              return _dartToJs(
                 ctx,
-                Pointer.fromAddress(
-                  (pdata + 2).value.address + sizeOfJSValue * i,
-                ),
-              ));
-            }
-            final JSInvokable func = _jsToDart(
-              ctx,
-              (pdata + 3).value,
-            );
-            return _dartToJs(
-                ctx,
-                func.invoke(
-                  pargs,
-                  _jsToDart(ctx, (pdata + 0).value),
-                ));
-          case JSChannelType.MODULE:
-            if (moduleHandler == null) throw JSError('No ModuleHandler');
-            final ret = moduleHandler!(
-              ptr.cast<Utf8>().toDartString(),
-            ).toNativeUtf8();
-            Future.microtask(() {
-              malloc.free(ret);
-            });
-            return ret.cast();
-          case JSChannelType.PROMISE_TRACK:
-            final err = _parseJSException(ctx, ptr);
-            if (hostPromiseRejectionHandler != null) {
-              hostPromiseRejectionHandler!(err);
-            } else {
-              print('unhandled promise rejection: $err');
-            }
+                func.invoke(pargs, _jsToDart(ctx, (pdata + 0).value)),
+              );
+            case JSChannelType.MODULE:
+              if (moduleHandler == null) throw JSError('No ModuleHandler');
+              final ret = moduleHandler!(
+                ptr.cast<Utf8>().toDartString(),
+              ).toNativeUtf8();
+              Future.microtask(() {
+                malloc.free(ret);
+              });
+              return ret.cast();
+            case JSChannelType.PROMISE_TRACK:
+              final err = _parseJSException(ctx, ptr);
+              if (hostPromiseRejectionHandler != null) {
+                hostPromiseRejectionHandler!(err);
+              } else {
+                print('unhandled promise rejection: $err');
+              }
+              return nullptr;
+            case JSChannelType.FREE_OBJECT:
+              final rt = ctx.cast<JSRuntime>();
+              _DartObject.fromAddress(rt, ptr.address)?.free();
+              return nullptr;
+          }
+          throw JSError('call channel with wrong type');
+        } catch (e) {
+          if (type == JSChannelType.FREE_OBJECT) {
+            print('DartObject release error: $e');
             return nullptr;
-          case JSChannelType.FREE_OBJECT:
-            final rt = ctx.cast<JSRuntime>();
-            _DartObject.fromAddress(rt, ptr.address)?.free();
+          }
+          if (type == JSChannelType.MODULE) {
+            print('host Promise Rejection Handler error: $e');
             return nullptr;
+          }
+          final throwObj = _dartToJs(ctx, e);
+          final err = jsThrow(ctx, throwObj);
+          jsFreeValue(ctx, throwObj);
+          if (type == JSChannelType.MODULE) {
+            jsFreeValue(ctx, err);
+            return nullptr;
+          }
+          return err;
         }
-        throw JSError('call channel with wrong type');
-      } catch (e) {
-        if (type == JSChannelType.FREE_OBJECT) {
-          print('DartObject release error: $e');
-          return nullptr;
-        }
-        if (type == JSChannelType.MODULE) {
-          print('host Promise Rejection Handler error: $e');
-          return nullptr;
-        }
-        final throwObj = _dartToJs(ctx, e);
-        final err = jsThrow(ctx, throwObj);
-        jsFreeValue(ctx, throwObj);
-        if (type == JSChannelType.MODULE) {
-          jsFreeValue(ctx, err);
-          return nullptr;
-        }
-        return err;
-      }
-    }, timeout ?? 0, port);
+      },
+      timeout ?? 0,
+      port,
+    );
     final stackSize = this.stackSize;
     if (stackSize > 0) jsSetMaxStackSize(rt, stackSize);
     final memoryLimit = this.memoryLimit ?? 0;
@@ -138,11 +140,16 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   close() {
     final rt = _rt;
     final ctx = _ctx;
-    _rt = null;
-    _ctx = null;
-    if (ctx != null) jsFreeContext(ctx);
     if (rt == null) return;
     _executePendingJob();
+    if (ctx != null) {
+      final jsonStringifyFn = _jsonStringifyFn;
+      _jsonStringifyFn = null;
+      if (jsonStringifyFn != null) jsFreeValue(ctx, jsonStringifyFn);
+      jsFreeContext(ctx);
+    }
+    _rt = null;
+    _ctx = null;
     try {
       jsFreeRuntime(rt);
     } on String catch (e) {
@@ -207,28 +214,29 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   /// This is dramatically faster for large arrays/objects, but the result must
   /// be JSON-serializable: functions, Promises and cyclic references are not
   /// supported (they decode to `null` / are dropped, as with `JSON.stringify`).
-  dynamic evaluateJson(
-    String command, {
-    String? name,
-    int? evalFlags,
-  }) {
+  @override
+  dynamic evaluateJson(String command, {String? sourceUrl}) {
     _ensureEngine();
     final ctx = _ctx!;
     final jsval = jsEval(
       ctx,
       command,
-      name ?? '<eval>',
-      evalFlags ?? JSEvalFlag.GLOBAL,
+      sourceUrl ?? '<eval>',
+      JSEvalFlag.GLOBAL,
     );
     if (jsIsException(jsval) != 0) {
       jsFreeValue(ctx, jsval);
       throw _parseJSException(ctx);
     }
-    final fnStringify = jsEval(ctx, 'JSON.stringify', '<json>', JSEvalFlag.GLOBAL);
+    final fnStringify = _jsonStringifyFn ??= jsEval(
+      ctx,
+      'JSON.stringify',
+      '<json>',
+      JSEvalFlag.GLOBAL,
+    );
     final thisObj = jsUNDEFINED();
     final jsonVal = jsCall(ctx, fnStringify, thisObj, [jsval]);
     jsFreeValue(ctx, thisObj);
-    jsFreeValue(ctx, fnStringify);
     jsFreeValue(ctx, jsval);
     if (jsIsException(jsonVal) != 0) {
       jsFreeValue(ctx, jsonVal);
@@ -325,8 +333,9 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   @override
   void initChannelFunctions() {
     JavascriptRuntime.channelFunctionsRegistered[getEngineInstanceId()] = {};
-    final setToGlobalObject =
-        evaluate("(key, val) => { this[key] = val; }").rawResult;
+    final setToGlobalObject = evaluate(
+      "(key, val) => { this[key] = val; }",
+    ).rawResult;
     (setToGlobalObject as JSInvokable).invoke([
       'sendMessage',
       (String channelName, String message) {
@@ -341,7 +350,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
         if (JavascriptRuntime.debugEnabled) {
           print('CHANNEL: $channelName - Message: $message');
         }
-      }
+      },
     ]);
     (setToGlobalObject as JSRef).free();
   }

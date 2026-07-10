@@ -51,6 +51,11 @@ class FlutterJsPlatformEmpty extends JavascriptRuntime {
   }
 
   @override
+  dynamic evaluateJson(String code, {String? sourceUrl}) {
+    throw UnimplementedError();
+  }
+
+  @override
   bool setupBridge(String channelName, void Function(dynamic args) fn) {
     throw UnimplementedError();
   }
@@ -79,10 +84,10 @@ abstract class JavascriptRuntime {
   void dispose();
 
   static Map<String, Map<String, Function(dynamic arg)>>
-      _channelFunctionsRegistered = {};
+  _channelFunctionsRegistered = {};
 
   static Map<String, Map<String, Function(dynamic arg)>>
-      get channelFunctionsRegistered => _channelFunctionsRegistered;
+  get channelFunctionsRegistered => _channelFunctionsRegistered;
 
   JsEvalResult evaluate(String code, {String? sourceUrl});
 
@@ -99,6 +104,8 @@ abstract class JavascriptRuntime {
   }
 
   Future<JsEvalResult> evaluateAsync(String code, {String? sourceUrl});
+
+  dynamic evaluateJson(String code, {String? sourceUrl});
 
   JsEvalResult callFunction(Pointer fn, Pointer obj);
 
@@ -179,10 +186,12 @@ abstract class JavascriptRuntime {
   }) {
     if (uuid != null) {
       evaluate(
-          "DART_TO_QUICKJS_CHANNEL_sendMessage('$channelName', '${jsonEncode(args)}', '$uuid');");
+        "DART_TO_QUICKJS_CHANNEL_sendMessage('$channelName', '${jsonEncode(args)}', '$uuid');",
+      );
     } else {
       evaluate(
-          "DART_TO_QUICKJS_CHANNEL_sendMessage('$channelName', '${jsonEncode(args)}');");
+        "DART_TO_QUICKJS_CHANNEL_sendMessage('$channelName', '${jsonEncode(args)}');",
+      );
     }
   }
 

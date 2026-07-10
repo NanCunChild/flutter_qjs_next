@@ -8,6 +8,7 @@
 #include "ffi.h"
 #include <functional>
 #include <future>
+#include <stdlib.h>
 #include <string.h>
 
 extern "C"
@@ -234,6 +235,24 @@ extern "C"
     return new JSValue(JS_NewArrayBufferCopy(ctx, buf, len));
   }
 
+  DLLEXPORT uint8_t *jsAllocBuffer(size_t len)
+  {
+    return (uint8_t *)malloc(len == 0 ? 1 : len);
+  }
+
+  static void js_free_owned_buffer(JSRuntime *rt, void *opaque, void *ptr)
+  {
+    free(ptr);
+  }
+
+  DLLEXPORT JSValue *jsNewArrayBufferOwned(JSContext *ctx, uint8_t *buf, size_t len)
+  {
+    JSValue ret = JS_NewArrayBuffer(ctx, buf, len, js_free_owned_buffer, NULL, 0);
+    if (JS_IsException(ret))
+      free(buf);
+    return new JSValue(ret);
+  }
+
   DLLEXPORT JSValue *jsNewArray(JSContext *ctx)
   {
     return new JSValue(JS_NewArray(ctx));
@@ -313,6 +332,20 @@ extern "C"
       return new JSValue(arrayBuffer);
     // The typed array constructor reads argv[0]=buffer, argv[1]=offset,
     // argv[2]=length; pass undefined offset/length to view the whole buffer.
+    JSValueConst argv[3] = {arrayBuffer, JS_UNDEFINED, JS_UNDEFINED};
+    JSValue ta = JS_NewTypedArray(ctx, 3, argv, (JSTypedArrayEnum)type);
+    JS_FreeValue(ctx, arrayBuffer);
+    return new JSValue(ta);
+  }
+
+  DLLEXPORT JSValue *jsNewTypedArrayOwned(JSContext *ctx, uint8_t *buf, size_t len, int32_t type)
+  {
+    JSValue arrayBuffer = JS_NewArrayBuffer(ctx, buf, len, js_free_owned_buffer, NULL, 0);
+    if (JS_IsException(arrayBuffer))
+    {
+      free(buf);
+      return new JSValue(arrayBuffer);
+    }
     JSValueConst argv[3] = {arrayBuffer, JS_UNDEFINED, JS_UNDEFINED};
     JSValue ta = JS_NewTypedArray(ctx, 3, argv, (JSTypedArrayEnum)type);
     JS_FreeValue(ctx, arrayBuffer);

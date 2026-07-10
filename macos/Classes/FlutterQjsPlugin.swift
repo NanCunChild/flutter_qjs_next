@@ -3,7 +3,7 @@ import FlutterMacOS
 
 public class FlutterQjsPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "flutter_qjs", binaryMessenger: registrar.messenger)
+    let channel = FlutterMethodChannel(name: "flutter_qjs_next", binaryMessenger: registrar.messenger)
     let instance = FlutterQjsPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
