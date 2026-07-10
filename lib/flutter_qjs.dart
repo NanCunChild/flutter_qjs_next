@@ -4,6 +4,7 @@ import './extensions/handle_promises.dart';
 
 export './extensions/handle_promises.dart';
 export './quickjs/quickjs_runtime2.dart';
+export 'flutter_qjs_logger.dart';
 export 'javascript_runtime.dart';
 export 'js_eval_result.dart';
 

@@ -7,6 +7,7 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
+import 'package:flutter_qjs_es2023/flutter_qjs_logger.dart';
 import 'package:flutter_qjs_es2023/javascript_runtime.dart';
 import 'package:flutter_qjs_es2023/js_eval_result.dart';
 
@@ -97,7 +98,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
               if (hostPromiseRejectionHandler != null) {
                 hostPromiseRejectionHandler!(err);
               } else {
-                print('unhandled promise rejection: $err');
+                FlutterQjsLogger.warning('Unhandled promise rejection', err);
               }
               return nullptr;
             case JSChannelType.FREE_OBJECT:
@@ -108,11 +109,11 @@ class QuickJsRuntime2 extends JavascriptRuntime {
           throw JSError('call channel with wrong type');
         } catch (e) {
           if (type == JSChannelType.FREE_OBJECT) {
-            print('DartObject release error: $e');
+            FlutterQjsLogger.error('DartObject release error', e);
             return nullptr;
           }
           if (type == JSChannelType.MODULE) {
-            print('host Promise Rejection Handler error: $e');
+            FlutterQjsLogger.error('Host promise rejection handler error', e);
             return nullptr;
           }
           final throwObj = _dartToJs(ctx, e);
@@ -164,7 +165,12 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     while (true) {
       int err = jsExecutePendingJob(rt);
       if (err <= 0) {
-        if (err < 0) print(_parseJSException(ctx));
+        if (err < 0) {
+          FlutterQjsLogger.error(
+            'Pending JavaScript job failed',
+            _parseJSException(ctx),
+          );
+        }
         break;
       }
     }
@@ -310,7 +316,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
       port.close(); // stop dispatch loop
       close(); // close engine
     } on JSError catch (e) {
-      print(e); // catch reference leak exception
+      FlutterQjsLogger.error('QuickJS dispose failed', e);
     }
   }
 
@@ -345,10 +351,10 @@ class QuickJsRuntime2 extends JavascriptRuntime {
         if (channelFunctions.containsKey(channelName)) {
           return channelFunctions[channelName]!.call(jsonDecode(message));
         } else {
-          print('No channel $channelName registered');
+          FlutterQjsLogger.warning('No channel $channelName registered');
         }
         if (JavascriptRuntime.debugEnabled) {
-          print('CHANNEL: $channelName - Message: $message');
+          FlutterQjsLogger.debug('CHANNEL: $channelName - Message: $message');
         }
       },
     ]);

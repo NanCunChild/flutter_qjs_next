@@ -39,7 +39,7 @@ class _AjvExampleState extends State<AjvExample> {
           "0" : "1"; ajvIsLoaded;
         """).stringResult;
     if (kDebugMode) {
-      print("AJV is Loaded $ajvIsLoaded");
+      FlutterQjsLogger.debug('AJV is loaded $ajvIsLoaded');
     }
     if (ajvIsLoaded == "0") {
       try {
@@ -81,7 +81,7 @@ class _AjvExampleState extends State<AjvExample> {
       """);
       } on PlatformException catch (e) {
         if (kDebugMode) {
-          print('Failed to init js engine: ${e.details}');
+          FlutterQjsLogger.error('Failed to init js engine', e.details);
         }
       }
     }

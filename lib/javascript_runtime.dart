@@ -4,6 +4,7 @@ import 'dart:ffi';
 
 import 'package:flutter/foundation.dart';
 
+import 'flutter_qjs_logger.dart';
 import 'js_eval_result.dart';
 
 class FlutterJsPlatformEmpty extends JavascriptRuntime {
@@ -134,7 +135,7 @@ abstract class JavascriptRuntime {
     onMessage('ConsoleLog', (dynamic args) {
       args..removeAt(0);
       String output = args.join(' ');
-      print(output);
+      FlutterQjsLogger.info(output);
     });
   }
 
@@ -159,7 +160,6 @@ abstract class JavascriptRuntime {
       };
       1
     """);
-    //print('SET TIMEOUT EVAL RESULT: $setTImeoutResult');
     onMessage('SetTimeout', (dynamic args) {
       try {
         int duration = args['timeout'] ?? 0;
@@ -172,9 +172,9 @@ abstract class JavascriptRuntime {
           """);
         });
       } on Exception catch (e) {
-        print('Exception no setTimeout: $e');
+        FlutterQjsLogger.error('Exception in setTimeout callback', e);
       } on Error catch (e) {
-        print('Erro no setTimeout: $e');
+        FlutterQjsLogger.error('Error in setTimeout callback', e);
       }
     });
   }

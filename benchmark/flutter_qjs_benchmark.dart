@@ -6,6 +6,9 @@ import 'package:flutter_qjs_es2023/flutter_qjs.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterQjsLogger.handler = (level, message, error) {
+    stdout.writeln(error == null ? message : '$message: $error');
+  };
   final runtime = QuickJsRuntime2();
   try {
     _runBenchmarks(runtime);
@@ -61,5 +64,5 @@ void _bench(String name, int iterations, void Function() body) {
   }
   watch.stop();
   final avgUs = watch.elapsedMicroseconds / iterations;
-  print('$name: ${avgUs.toStringAsFixed(1)} us/op');
+  FlutterQjsLogger.info('$name: ${avgUs.toStringAsFixed(1)} us/op');
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter_qjs_es2023/flutter_qjs_logger.dart';
 import 'package:flutter_qjs_es2023/javascript_runtime.dart';
 import 'package:flutter_qjs_es2023/js_eval_result.dart';
 import 'package:flutter_qjs_es2023/quickjs/ffi.dart';
@@ -120,7 +121,7 @@ extension HandlePromises on JavascriptRuntime {
           );
         } else {
           if (JavascriptRuntime.debugEnabled) {
-            print('Promise completed');
+            FlutterQjsLogger.debug('Promise completed');
           }
         }
       };
@@ -143,7 +144,6 @@ extension HandlePromises on JavascriptRuntime {
 
     final fnRegisterPromiseFunction = evaluate(REGISTER_PROMISE_FUNCTION);
     final evalRegisterPromise = fnRegisterPromiseFunction.rawResult;
-    // print(fnRegisterPromiseFunction);
     // todo: investigate - application is crashing around this point
     final promiseQuerableIdx = callFunction(
       evalRegisterPromise,
