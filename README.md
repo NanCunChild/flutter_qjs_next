@@ -88,11 +88,28 @@ cd example && flutter run
 
 ## Benchmark
 
+**Use Flutter’s test harness** (loads the plugin native library correctly).
+Do **not** use bare `dart run` on this package: on recent Dart SDKs, standalone
+compilation of `dart:ffi` callbacks (`Pointer.fromFunction`) can crash the
+compiler before any code runs.
+
 ```bash
-dart run benchmark/flutter_qjs_benchmark.dart
+cd example
+flutter test test/benchmark_test.dart
 ```
 
-(Requires a built native library on the platform you run.)
+Results are printed to the test console (µs/op for evaluate, evaluateJson, and
+TypedArray marshalling). Shared logic lives in `example/lib/benchmark_runner.dart`.
+
+Interactive option:
+
+```bash
+cd example && flutter run
+# tap "Run Benchmarks" on the home screen
+```
+
+`benchmark/flutter_qjs_benchmark.dart` only prints these instructions if invoked
+with `dart run` by mistake.
 
 ## Architecture (short)
 

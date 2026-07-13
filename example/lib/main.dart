@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_qjs_next/flutter_qjs.dart';
 import 'package:flutter_qjs_example/ajv_example.dart';
+import 'package:flutter_qjs_example/benchmark_runner.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,8 @@ class _FlutterJsHomeScreenState extends State<FlutterJsHomeScreen> {
   final JavascriptRuntime javascriptRuntime = getJavascriptRuntime();
 
   String? _quickjsVersion;
+  String? _benchmarkSummary;
+  bool _benchmarkRunning = false;
 
   Future<String> evalJS() async {
     JsEvalResult jsResult = await javascriptRuntime.evaluateAsync(
@@ -162,7 +165,47 @@ class _FlutterJsHomeScreenState extends State<FlutterJsHomeScreen> {
             Text(
               'QuickJS Version\n${_quickjsVersion ?? '<NULL>'}',
               textAlign: TextAlign.center,
-            )
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _benchmarkRunning
+                  ? null
+                  : () async {
+                      setState(() {
+                        _benchmarkRunning = true;
+                        _benchmarkSummary = 'Running…';
+                      });
+                      try {
+                        final results = await Future(
+                          () => runFlutterQjsBenchmarks(),
+                        );
+                        if (!mounted) return;
+                        setState(() {
+                          _benchmarkSummary =
+                              results.map((r) => r.toString()).join('\n');
+                        });
+                      } catch (e) {
+                        if (!mounted) return;
+                        setState(() => _benchmarkSummary = 'Error: $e');
+                      } finally {
+                        if (mounted) {
+                          setState(() => _benchmarkRunning = false);
+                        }
+                      }
+                    },
+              child: Text(
+                _benchmarkRunning ? 'Benchmarks…' : 'Run Benchmarks',
+              ),
+            ),
+            if (_benchmarkSummary != null)
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  _benchmarkSummary!,
+                  textAlign: TextAlign.left,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
+                ),
+              ),
           ],
         ),
       ),
