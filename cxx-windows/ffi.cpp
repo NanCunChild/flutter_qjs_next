@@ -352,47 +352,15 @@ extern "C"
     return new JSValue(ta);
   }
 
-  // Detect the JSTypedArrayEnum of `val` via its constructor name.
-  // Returns the enum value (0..11) or -1 if `val` is not a typed array.
-  static int32_t js_typed_array_type(JSContext *ctx, JSValueConst val)
+  // Map object class_id -> JSTypedArrayEnum (0..11). Returns -1 if not a TA.
+  // Class IDs match quickjs internal order: JS_CLASS_UINT8C_ARRAY .. FLOAT64.
+  static int32_t js_typed_array_type(JSValueConst val)
   {
-    JSValue ctor = JS_GetPropertyStr(ctx, val, "constructor");
-    if (JS_IsException(ctor) || JS_IsUndefined(ctor))
-    {
-      JS_FreeValue(ctx, ctor);
+    JSClassID class_id = JS_GetClassID(val);
+    // JS_CLASS_UINT8C_ARRAY == 21 .. JS_CLASS_FLOAT64_ARRAY == 32 in this tree.
+    if (class_id < 21 || class_id > 32)
       return -1;
-    }
-    JSValue nameV = JS_GetPropertyStr(ctx, ctor, "name");
-    JS_FreeValue(ctx, ctor);
-    const char *name = JS_ToCString(ctx, nameV);
-    JS_FreeValue(ctx, nameV);
-    if (name == nullptr)
-      return -1;
-    int32_t type = -1;
-    if (strcmp(name, "Uint8ClampedArray") == 0)
-      type = JS_TYPED_ARRAY_UINT8C;
-    else if (strcmp(name, "Int8Array") == 0)
-      type = JS_TYPED_ARRAY_INT8;
-    else if (strcmp(name, "Uint8Array") == 0)
-      type = JS_TYPED_ARRAY_UINT8;
-    else if (strcmp(name, "Int16Array") == 0)
-      type = JS_TYPED_ARRAY_INT16;
-    else if (strcmp(name, "Uint16Array") == 0)
-      type = JS_TYPED_ARRAY_UINT16;
-    else if (strcmp(name, "Int32Array") == 0)
-      type = JS_TYPED_ARRAY_INT32;
-    else if (strcmp(name, "Uint32Array") == 0)
-      type = JS_TYPED_ARRAY_UINT32;
-    else if (strcmp(name, "BigInt64Array") == 0)
-      type = JS_TYPED_ARRAY_BIG_INT64;
-    else if (strcmp(name, "BigUint64Array") == 0)
-      type = JS_TYPED_ARRAY_BIG_UINT64;
-    else if (strcmp(name, "Float32Array") == 0)
-      type = JS_TYPED_ARRAY_FLOAT32;
-    else if (strcmp(name, "Float64Array") == 0)
-      type = JS_TYPED_ARRAY_FLOAT64;
-    JS_FreeCString(ctx, name);
-    return type;
+    return (int32_t)(class_id - 21);
   }
 
   // If `val` is a typed array, return a pointer to its element data, set
@@ -401,7 +369,7 @@ extern "C"
   DLLEXPORT uint8_t *jsGetTypedArrayData(JSContext *ctx, JSValueConst *val,
                                          size_t *plength, int32_t *ptype)
   {
-    int32_t type = js_typed_array_type(ctx, *val);
+    int32_t type = js_typed_array_type(*val);
     if (type < 0)
       return NULL;
     size_t byte_offset = 0, byte_length = 0, bytes_per_element = 0;

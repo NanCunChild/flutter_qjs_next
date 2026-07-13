@@ -113,16 +113,12 @@ class QuickJsRuntime2 extends JavascriptRuntime {
             return nullptr;
           }
           if (type == JSChannelType.MODULE) {
-            FlutterQjsLogger.error('Host promise rejection handler error', e);
+            FlutterQjsLogger.error('Module handler error', e);
             return nullptr;
           }
           final throwObj = _dartToJs(ctx, e);
           final err = jsThrow(ctx, throwObj);
           jsFreeValue(ctx, throwObj);
-          if (type == JSChannelType.MODULE) {
-            jsFreeValue(ctx, err);
-            return nullptr;
-          }
           return err;
         }
       },
@@ -200,7 +196,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     final jsval = jsEval(
       ctx,
       command,
-      name ?? '<eval>',
+      name ?? sourceUrl ?? '<eval>',
       evalFlags ?? JSEvalFlag.GLOBAL,
     );
 
@@ -210,8 +206,14 @@ class QuickJsRuntime2 extends JavascriptRuntime {
       return JsEvalResult(exception.toString(), exception, isError: true);
     }
     final result = _jsToDart(ctx, jsval);
+    final isPromise = result is Future;
     jsFreeValue(ctx, jsval);
-    return JsEvalResult(result?.toString() ?? "null", result);
+    return JsEvalResult(
+      result?.toString() ?? "null",
+      result,
+      isPromise: isPromise,
+      isError: result is JSError,
+    );
   }
 
   /// Evaluate js script and decode the result via a single `JSON.stringify`
@@ -267,32 +269,44 @@ class QuickJsRuntime2 extends JavascriptRuntime {
 
     calloc.free(pointer);
 
-    if (jsIsException(value) != 0) {
-      jsFreeValue(ctx, value);
+    if (value.address == 0 || jsIsException(value) != 0) {
+      if (value.address != 0) jsFreeValue(ctx, value);
       JSError exception = _parseJSException(ctx);
       return JsEvalResult(exception.toString(), exception, isError: true);
     }
 
     final result = _jsToDart(ctx, value);
     jsFreeValue(ctx, value);
-    return JsEvalResult(result?.toString() ?? "null", result);
+    return JsEvalResult(
+      result?.toString() ?? "null",
+      result,
+      isPromise: result is Future,
+      isError: result is JSError,
+    );
   }
 
+  @override
   Uint8List compile(String script, String fileName) {
+    _ensureEngine();
     final ctx = _ctx!;
     final scriptPtr = script.toNativeUtf8().cast<Char>();
     final fileNamePtr = fileName.toNativeUtf8().cast<Char>();
     final lengthPtr = calloc<IntPtr>();
     final value = compileFn(ctx, scriptPtr, fileNamePtr, lengthPtr);
-    final length = lengthPtr.value;
-    final data = Uint8List.fromList(value.asTypedList(length));
-
-    calloc.free(scriptPtr);
-    calloc.free(fileNamePtr);
-    calloc.free(lengthPtr);
-    calloc.free(value);
-
-    return data;
+    try {
+      if (value.address == 0) {
+        throw _parseJSException(ctx);
+      }
+      final length = lengthPtr.value;
+      return Uint8List.fromList(value.asTypedList(length));
+    } finally {
+      if (value.address != 0) {
+        calloc.free(value);
+      }
+      calloc.free(scriptPtr);
+      calloc.free(fileNamePtr);
+      calloc.free(lengthPtr);
+    }
   }
 
   @override
@@ -302,17 +316,37 @@ class QuickJsRuntime2 extends JavascriptRuntime {
 
   @override
   JsEvalResult callFunction(Pointer<NativeType> fn, Pointer<NativeType> obj) {
-    throw UnimplementedError();
+    _ensureEngine();
+    final ctx = _ctx!;
+    final func = fn.cast<JSValue>();
+    final thisObj = obj.cast<JSValue>();
+    final jsRet = jsCall(ctx, func, thisObj, const []);
+    if (jsIsException(jsRet) != 0) {
+      jsFreeValue(ctx, jsRet);
+      final exception = _parseJSException(ctx);
+      return JsEvalResult(exception.toString(), exception, isError: true);
+    }
+    final result = _jsToDart(ctx, jsRet);
+    jsFreeValue(ctx, jsRet);
+    return JsEvalResult(
+      result?.toString() ?? 'null',
+      result,
+      isPromise: result is Future,
+      isError: result is JSError,
+    );
   }
 
   @override
   T? convertValue<T>(JsEvalResult jsValue) {
-    return true as T;
+    final raw = jsValue.rawResult;
+    if (raw is T) return raw;
+    return null;
   }
 
   @override
   void dispose() {
     try {
+      disposeChannelFunctions();
       port.close(); // stop dispatch loop
       close(); // close engine
     } on JSError catch (e) {
@@ -327,13 +361,21 @@ class QuickJsRuntime2 extends JavascriptRuntime {
 
   @override
   int executePendingJob() {
-    _executePendingJob();
-    return 0;
+    final rt = _rt;
+    if (rt == null) return 0;
+    final err = jsExecutePendingJob(rt);
+    if (err < 0 && _ctx != null) {
+      FlutterQjsLogger.error(
+        'Pending JavaScript job failed',
+        _parseJSException(_ctx!),
+      );
+    }
+    return err;
   }
 
   @override
   String getEngineInstanceId() {
-    return this.hashCode.toString();
+    return identityHashCode(this).toString();
   }
 
   @override
@@ -344,18 +386,25 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     ).rawResult;
     (setToGlobalObject as JSInvokable).invoke([
       'sendMessage',
-      (String channelName, String message) {
+      (String channelName, dynamic message) {
         final channelFunctions = JavascriptRuntime
-            .channelFunctionsRegistered[getEngineInstanceId()]!;
+            .channelFunctionsRegistered[getEngineInstanceId()];
 
-        if (channelFunctions.containsKey(channelName)) {
-          return channelFunctions[channelName]!.call(jsonDecode(message));
-        } else {
+        if (channelFunctions == null ||
+            !channelFunctions.containsKey(channelName)) {
           FlutterQjsLogger.warning('No channel $channelName registered');
+          return null;
         }
-        if (JavascriptRuntime.debugEnabled) {
-          FlutterQjsLogger.debug('CHANNEL: $channelName - Message: $message');
+
+        dynamic payload = message;
+        if (message is String) {
+          try {
+            payload = jsonDecode(message);
+          } catch (_) {
+            payload = message;
+          }
         }
+        return channelFunctions[channelName]!.call(payload);
       },
     ]);
     (setToGlobalObject as JSRef).free();
