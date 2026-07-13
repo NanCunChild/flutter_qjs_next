@@ -13,13 +13,19 @@ This plugin is a simple js engine for flutter using the `quickjs` project. Plugi
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'NanCunChild' => 'https://github.com/NanCunChild' }
   s.source           = { :path => '.' }
-  s.compiler_flags = '-DDUMP_LEAKS'
-  s.source_files = ['Classes/**/*', 'cxx/*.{c,cpp}']
+  s.source_files = 'Classes/**/*', 'cxx/*.{c,cpp,h}'
+  s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.platform = :ios, '8.0'
-
-  # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  s.platform = :ios, '12.0'
+  s.libraries = 'c++'
+  s.pod_target_xcconfig = {
+    'DEFINES_MODULE' => 'YES',
+    'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
+    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
+  }
+  s.user_target_xcconfig = {
+    'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
+  }
   s.prepare_command = 'sh ../cxx/prebuild.sh'
   s.swift_version = '5.0'
 end

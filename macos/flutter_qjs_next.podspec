@@ -13,13 +13,14 @@ This plugin is a simple js engine for flutter using the `quickjs` project. Plugi
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'NanCunChild' => 'https://github.com/NanCunChild' }
   s.source           = { :path => '.' }
-  s.compiler_flags = '-DDUMP_LEAKS'
-  s.source_files = ['Classes/**/*', 'cxx/*.{c,cpp}']
+  s.source_files = 'Classes/**/*', 'cxx/*.{c,cpp,h}'
   s.dependency 'FlutterMacOS'
-
-  s.platform = :osx, '10.11'
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
-  s.vendored_libraries = 'build/Debug/libffiquickjs.dylib'
+  s.platform = :osx, '10.14'
+  s.libraries = 'c++'
+  s.pod_target_xcconfig = {
+    'DEFINES_MODULE' => 'YES',
+    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
+  }
   s.prepare_command = 'sh ../cxx/prebuild.sh'
   s.swift_version = '5.0'
 end
