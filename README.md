@@ -111,3 +111,4 @@ dart run benchmark/flutter_qjs_benchmark.dart
 - [bellard/quickjs](https://github.com/bellard/quickjs)
 - [ekibun/flutter_qjs](https://github.com/ekibun/flutter_qjs)
 - [abner/flutter_js](https://github.com/abner/flutter_js)
+- [kodjodevf/flutter_qjs](https://github.com/kodjodevf/flutter_qjs)
