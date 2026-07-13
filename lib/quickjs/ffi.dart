@@ -116,7 +116,8 @@ abstract base class JSPropertyEnum extends Opaque {}
 final DynamicLibrary _qjsLib = _openQuickJsLibrary();
 
 DynamicLibrary _openQuickJsLibrary() {
-  final explicitPath = Platform.environment['FLUTTER_QJS_ES2023_LIBRARY'];
+  final explicitPath = Platform.environment['FLUTTER_QJS_NEXT_LIBRARY'] ??
+      Platform.environment['FLUTTER_QJS_ES2023_LIBRARY'];
   if (explicitPath != null && explicitPath.isNotEmpty) {
     return DynamicLibrary.open(explicitPath);
   }
@@ -137,6 +138,10 @@ DynamicLibrary _openQuickJsLibrary() {
       '../example/build/linux/x64/release/bundle/lib/libflutter_qjs_next_plugin.so',
       'example/build/linux/x64/debug/bundle/lib/libflutter_qjs_next_plugin.so',
       'example/build/linux/x64/release/bundle/lib/libflutter_qjs_next_plugin.so',
+      'example/build/linux/x64/debug/plugins/flutter_qjs_next/libflutter_qjs_next_plugin.so',
+      'example/build/linux/x64/release/plugins/flutter_qjs_next/libflutter_qjs_next_plugin.so',
+      '../example/build/linux/x64/debug/plugins/flutter_qjs_next/libflutter_qjs_next_plugin.so',
+      '../example/build/linux/x64/release/plugins/flutter_qjs_next/libflutter_qjs_next_plugin.so',
     ];
     for (final path in candidates) {
       if (path.startsWith('lib') || File(path).existsSync()) {
@@ -147,7 +152,7 @@ DynamicLibrary _openQuickJsLibrary() {
     }
     throw StateError(
       'Unable to load flutter_qjs_next native library for Flutter tests. '
-      'Build the Linux example first or set FLUTTER_QJS_ES2023_LIBRARY to the '
+      'Build the Linux example first or set FLUTTER_QJS_NEXT_LIBRARY to the '
       'absolute path of libflutter_qjs_next_plugin.so.',
     );
   }

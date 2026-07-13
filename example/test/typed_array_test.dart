@@ -40,10 +40,10 @@ void main() {
       expect(i16, isA<Int16List>());
       expect((i16 as Int16List).toList(), equals([1000, -2]));
 
-      final f32 = runtime.evaluate('new Float32Array([1.5, 2.25])').rawResult;
-      expect(f32, isA<Float32List>());
-      expect((f32 as Float32List)[0], closeTo(1.5, 1e-5));
-      expect((f32 as Float32List)[1], closeTo(2.25, 1e-5));
+      final f32 = runtime.evaluate('new Float32Array([1.5, 2.25])').rawResult
+          as Float32List;
+      expect(f32[0], closeTo(1.5, 1e-5));
+      expect(f32[1], closeTo(2.25, 1e-5));
     });
 
     test('ArrayBuffer → Uint8List', () {
