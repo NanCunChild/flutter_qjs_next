@@ -1,9 +1,9 @@
-name: flutter_qjs_es2023
+name: flutter_qjs_next
 description: QuickJS ES2023 bindings for Flutter and Dart through dart:ffi, with native support for Android, iOS, macOS, Linux, and Windows.
 version: 0.0.1
-homepage: https://github.com/NanCunChild/flutter_qjs_es2023
-repository: https://github.com/NanCunChild/flutter_qjs_es2023
-issue_tracker: https://github.com/NanCunChild/flutter_qjs_es2023/issues
+homepage: https://github.com/NanCunChild/flutter_qjs_next
+repository: https://github.com/NanCunChild/flutter_qjs_next
+issue_tracker: https://github.com/NanCunChild/flutter_qjs_next/issues
 topics:
   - quickjs
   - javascript
@@ -33,7 +33,7 @@ flutter:
         pluginClass: FlutterQjsPlugin
       android:
         pluginClass: FlutterQjsPlugin
-        package: io.github.nancunchild.flutter_qjs_es2023
+        package: io.github.nancunchild.flutter_qjs_next
       macos:
         pluginClass: FlutterQjsPlugin
       ios:

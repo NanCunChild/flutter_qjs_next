@@ -352,29 +352,65 @@ extern "C"
     return new JSValue(ta);
   }
 
-  // Map object class_id -> JSTypedArrayEnum (0..11). Returns -1 if not a TA.
-  // Class IDs match quickjs internal order: JS_CLASS_UINT8C_ARRAY .. FLOAT64.
-  static int32_t js_typed_array_type(JSValueConst val)
+  // Infer JSTypedArrayEnum from element size + constructor name.
+  // Avoids hardcoding JS_CLASS_* numeric IDs (they change across QuickJS trees).
+  static int32_t js_typed_array_type_from_bpe_and_name(JSContext *ctx, JSValueConst val,
+                                                      size_t bytes_per_element)
   {
-    JSClassID class_id = JS_GetClassID(val);
-    // JS_CLASS_UINT8C_ARRAY == 21 .. JS_CLASS_FLOAT64_ARRAY == 32 in this tree.
-    if (class_id < 21 || class_id > 32)
+    JSValue ctor = JS_GetPropertyStr(ctx, val, "constructor");
+    if (JS_IsException(ctor) || JS_IsUndefined(ctor) || JS_IsNull(ctor)) {
+      JS_FreeValue(ctx, ctor);
       return -1;
-    return (int32_t)(class_id - 21);
+    }
+    JSValue name_val = JS_GetPropertyStr(ctx, ctor, "name");
+    JS_FreeValue(ctx, ctor);
+    if (JS_IsException(name_val)) {
+      JS_FreeValue(ctx, name_val);
+      return -1;
+    }
+    const char *name = JS_ToCString(ctx, name_val);
+    JS_FreeValue(ctx, name_val);
+    if (!name)
+      return -1;
+
+    int32_t type = -1;
+    if (bytes_per_element == 1) {
+      if (!strcmp(name, "Uint8ClampedArray")) type = JS_TYPED_ARRAY_UINT8C;
+      else if (!strcmp(name, "Int8Array")) type = JS_TYPED_ARRAY_INT8;
+      else if (!strcmp(name, "Uint8Array")) type = JS_TYPED_ARRAY_UINT8;
+    } else if (bytes_per_element == 2) {
+      if (!strcmp(name, "Int16Array")) type = JS_TYPED_ARRAY_INT16;
+      else if (!strcmp(name, "Uint16Array")) type = JS_TYPED_ARRAY_UINT16;
+      else if (!strcmp(name, "Float16Array")) type = JS_TYPED_ARRAY_FLOAT16;
+    } else if (bytes_per_element == 4) {
+      if (!strcmp(name, "Int32Array")) type = JS_TYPED_ARRAY_INT32;
+      else if (!strcmp(name, "Uint32Array")) type = JS_TYPED_ARRAY_UINT32;
+      else if (!strcmp(name, "Float32Array")) type = JS_TYPED_ARRAY_FLOAT32;
+    } else if (bytes_per_element == 8) {
+      if (!strcmp(name, "BigInt64Array")) type = JS_TYPED_ARRAY_BIG_INT64;
+      else if (!strcmp(name, "BigUint64Array")) type = JS_TYPED_ARRAY_BIG_UINT64;
+      else if (!strcmp(name, "Float64Array")) type = JS_TYPED_ARRAY_FLOAT64;
+    }
+    JS_FreeCString(ctx, name);
+    return type;
   }
 
   // If `val` is a typed array, return a pointer to its element data, set
   // `*plength` to the byte length and `*ptype` to the JSTypedArrayEnum.
-  // Returns NULL when `val` is not a (supported) typed array.
+  // Returns NULL when `val` is not a (supported) typed array / DataView.
   DLLEXPORT uint8_t *jsGetTypedArrayData(JSContext *ctx, JSValueConst *val,
                                          size_t *plength, int32_t *ptype)
   {
-    int32_t type = js_typed_array_type(*val);
-    if (type < 0)
-      return NULL;
     size_t byte_offset = 0, byte_length = 0, bytes_per_element = 0;
     JSValue buffer = JS_GetTypedArrayBuffer(ctx, *val, &byte_offset, &byte_length, &bytes_per_element);
     if (JS_IsException(buffer))
+    {
+      JS_FreeValue(ctx, buffer);
+      return NULL;
+    }
+    // DataView also succeeds; we only want typed arrays with a known enum.
+    int32_t type = js_typed_array_type_from_bpe_and_name(ctx, *val, bytes_per_element);
+    if (type < 0)
     {
       JS_FreeValue(ctx, buffer);
       return NULL;

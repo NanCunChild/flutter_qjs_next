@@ -121,22 +121,22 @@ DynamicLibrary _openQuickJsLibrary() {
     return DynamicLibrary.open(explicitPath);
   }
   if (Platform.isWindows) {
-    return DynamicLibrary.open('flutter_qjs_es2023_plugin.dll');
+    return DynamicLibrary.open('flutter_qjs_next_plugin.dll');
   }
   if (Platform.isAndroid) {
-    return DynamicLibrary.open('libflutter_qjs_es2023.so');
+    return DynamicLibrary.open('libflutter_qjs_next.so');
   }
   const isFlutterTest = bool.fromEnvironment('FLUTTER_TEST');
   if (Platform.isLinux &&
       (isFlutterTest || Platform.environment['FLUTTER_TEST'] == 'true')) {
     final candidates = [
-      'libflutter_qjs_es2023_plugin.so',
-      'build/linux/x64/debug/bundle/lib/libflutter_qjs_es2023_plugin.so',
-      'build/linux/x64/release/bundle/lib/libflutter_qjs_es2023_plugin.so',
-      '../example/build/linux/x64/debug/bundle/lib/libflutter_qjs_es2023_plugin.so',
-      '../example/build/linux/x64/release/bundle/lib/libflutter_qjs_es2023_plugin.so',
-      'example/build/linux/x64/debug/bundle/lib/libflutter_qjs_es2023_plugin.so',
-      'example/build/linux/x64/release/bundle/lib/libflutter_qjs_es2023_plugin.so',
+      'libflutter_qjs_next_plugin.so',
+      'build/linux/x64/debug/bundle/lib/libflutter_qjs_next_plugin.so',
+      'build/linux/x64/release/bundle/lib/libflutter_qjs_next_plugin.so',
+      '../example/build/linux/x64/debug/bundle/lib/libflutter_qjs_next_plugin.so',
+      '../example/build/linux/x64/release/bundle/lib/libflutter_qjs_next_plugin.so',
+      'example/build/linux/x64/debug/bundle/lib/libflutter_qjs_next_plugin.so',
+      'example/build/linux/x64/release/bundle/lib/libflutter_qjs_next_plugin.so',
     ];
     for (final path in candidates) {
       if (path.startsWith('lib') || File(path).existsSync()) {
@@ -146,9 +146,9 @@ DynamicLibrary _openQuickJsLibrary() {
       }
     }
     throw StateError(
-      'Unable to load flutter_qjs_es2023 native library for Flutter tests. '
+      'Unable to load flutter_qjs_next native library for Flutter tests. '
       'Build the Linux example first or set FLUTTER_QJS_ES2023_LIBRARY to the '
-      'absolute path of libflutter_qjs_es2023_plugin.so.',
+      'absolute path of libflutter_qjs_next_plugin.so.',
     );
   }
   return DynamicLibrary.process();

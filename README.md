@@ -1,100 +1,113 @@
-# flutter_qjs_es2023
+# flutter_qjs_next
 
-Flutter bindings with `dart:ffi` for [QuickJS](https://github.com/bellard/quickjs), a small JavaScript engine with **ES2023** support.
+Flutter / Dart bindings for [QuickJS](https://github.com/bellard/quickjs) via `dart:ffi`.
 
-Supported platforms: Android, iOS, macOS, Linux, and Windows. Web is not supported because this package relies on native FFI.
+- Embedded QuickJS **2025-09-13** (ES2023-era language features)
+- Platforms: **Android, iOS, macOS, Linux, Windows** (no Web — native FFI only)
+- API style compatible with [flutter_js](https://github.com/abner/flutter_js) (`JavascriptRuntime`, `getJavascriptRuntime()`)
 
+## Install
 
-## Examples
-
-Here is a small flutter app showing how to evaluate javascript code inside a flutter app
-
-
-
-```dart
-import 'package:flutter/material.dart';
-import 'dart:async';
-
-import 'package:flutter/services.dart';
-import 'package:flutter_qjs_es2023/flutter_qjs.dart';
-
-void main() => runApp(MyApp());
-
-class MyApp extends StatefulWidget {
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  String _jsResult = '';
-  JavascriptRuntime flutterJs;
-  @override
-  void initState() {
-    super.initState();
-    
-    flutterJs = getJavascriptRuntime();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('FlutterJS Example'),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text('JS Evaluate Result: $_jsResult\n'),
-              SizedBox(height: 20,),
-              Padding(padding: EdgeInsets.all(10), child: Text('Click on the big JS Yellow Button to evaluate the expression bellow using the flutter_qjs plugin'),),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("Math.trunc(Math.random() * 100).toString();", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),),
-              )
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.transparent, 
-          child: Image.asset('assets/js.ico'),
-          onPressed: () async {
-            try {
-              JsEvalResult jsResult = flutterJs.evaluate(
-                  "Math.trunc(Math.random() * 100).toString();");
-              setState(() {
-                _jsResult = jsResult.stringResult;
-              });
-            } on PlatformException catch (e) {
-              print('ERRO: ${e.details}');
-            }
-          },
-        ),
-      ),
-    );
-  }
-}
-
+```yaml
+dependencies:
+  flutter_qjs_next: ^0.0.1
 ```
 
+```dart
+import 'package:flutter_qjs_next/flutter_qjs.dart';
+```
 
-**How to call dart from Javascript**
-
-You can add a channel on `JavascriptRuntime` objects to receive calls from the Javascript engine:
-
-In the dart side:
+## Quick start
 
 ```dart
-javascriptRuntime.onMessage('someChannelName', (dynamic args) {
-     print(args);
+import 'package:flutter_qjs_next/flutter_qjs.dart';
+
+void main() {
+  final js = getJavascriptRuntime(
+    timeout: 5000, // ms of JS work before interrupt; null/0 = off
+    memoryLimit: 32 * 1024 * 1024,
+  );
+
+  final r = js.evaluate('Math.trunc(Math.random() * 100).toString()');
+  print(r.stringResult);
+
+  // Promise / setTimeout need the host event loop:
+  // either call js.dispatch() after async work, or use evaluateAsync + handlePromises.
+  js.dispose();
+}
+```
+
+### Limits
+
+| Parameter | Meaning |
+|-----------|---------|
+| `stackSize` | JS stack size in bytes (default 1 MiB) |
+| `timeout` | Interrupt after this many **ms** of JS execution (`clock()`-based today) |
+| `memoryLimit` | Heap limit in bytes |
+
+`forceJavascriptCoreOnAndroid` and `xhr` are accepted for API compatibility with flutter_js but **are not implemented** (always QuickJS; no built-in XHR/fetch polyfill).
+
+### Dart ↔ JS bridge
+
+```dart
+js.onMessage('log', (args) {
+  print(args); // typically a List from JSON
 });
 ```
 
+```js
+sendMessage('log', JSON.stringify([1, 2, 3]));
+```
 
-Now, if your javascript code calls `sendMessage('someChannelName', JSON.stringify([1,2,3]);` the above dart function provided as the second argument will be called
-with a List containing 1, 2, 3 as it elements.
+Prefer `setupBridge` / newer channel APIs when available; channel names and payloads should be treated as untrusted if they come from user scripts.
 
-## Reference
+### TypedArray / binary
+
+`TypedData` (e.g. `Uint8List`) maps to JS TypedArrays via a bulk buffer path.  
+`ByteBuffer` maps to `ArrayBuffer`.  
+Use `evaluateJson` when you only need a Dart JSON-like tree (often faster for large objects).
+
+### Event loop / Promises
+
+QuickJS jobs and `setTimeout` are drained through the runtime’s `ReceivePort`. After scheduling async JS, call `dispatch()` (or rely on paths that already pump the port, e.g. promise helpers in `handle_promises.dart`).
+
+### Logging
+
+```dart
+FlutterQjsLogger.level = FlutterQjsLogLevel.debug;
+FlutterQjsLogger.handler = (level, message, error) { /* ... */ };
+```
+
+## Example app
+
+See `example/` for a full Flutter demo (AJV, typed arrays, etc.).
+
+```bash
+cd example && flutter run
+```
+
+## Benchmark
+
+```bash
+dart run benchmark/flutter_qjs_benchmark.dart
+```
+
+(Requires a built native library on the platform you run.)
+
+## Architecture (short)
+
+- `lib/quickjs/*` — Dart FFI bindings and marshalling  
+- `cxx/ffi.cpp` — stable C ABI around QuickJS (`JSValue*` on the heap)  
+- `cxx/quickjs/` — embedded engine (same tree used on Windows via `cxx-windows/`)
+
+## Limitations / security
+
+- Scripts run with full engine capability; do not eval untrusted code without your own sandbox policy.
+- No Web platform; no shipping XHR implementation in this package.
+- Dispose runtimes you create (`dispose()`) to free native resources.
+
+## References
+
+- [bellard/quickjs](https://github.com/bellard/quickjs)
 - [ekibun/flutter_qjs](https://github.com/ekibun/flutter_qjs)
 - [abner/flutter_js](https://github.com/abner/flutter_js)

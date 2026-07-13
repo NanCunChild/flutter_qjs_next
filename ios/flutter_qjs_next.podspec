@@ -1,15 +1,15 @@
 #
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
-# Run `pod lib lint flutter_qjs_es2023.podspec' to validate before publishing.
+# Run `pod lib lint flutter_qjs_next.podspec' to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'flutter_qjs_es2023'
+  s.name             = 'flutter_qjs_next'
   s.version          = '0.0.1'
   s.summary          = 'A quickjs engine for flutter.'
   s.description      = <<-DESC
 This plugin is a simple js engine for flutter using the `quickjs` project. Plugin currently supports all the platforms except web!
                        DESC
-  s.homepage         = 'https://github.com/NanCunChild/flutter_qjs_es2023'
+  s.homepage         = 'https://github.com/NanCunChild/flutter_qjs_next'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'NanCunChild' => 'https://github.com/NanCunChild' }
   s.source           = { :path => '.' }

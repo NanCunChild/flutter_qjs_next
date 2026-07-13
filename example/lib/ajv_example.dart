@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_qjs_es2023/flutter_qjs.dart';
+import 'package:flutter_qjs_next/flutter_qjs.dart';
 
 import 'ajv_result_screen.dart';
 import 'form.dart';

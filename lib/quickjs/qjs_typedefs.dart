@@ -1,6 +1,6 @@
 import 'dart:ffi';
 
-import 'package:flutter_qjs_es2023/quickjs/utf8_null_terminated.dart';
+import 'package:flutter_qjs_next/quickjs/utf8_null_terminated.dart';
 
 final class JSContext extends Struct {
   @Uint8()

@@ -5,7 +5,7 @@
 import FlutterMacOS
 import Foundation
 
-import flutter_qjs_es2023
+import flutter_qjs_next
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FlutterQjsPlugin.register(with: registry.registrar(forPlugin: "FlutterQjsPlugin"))

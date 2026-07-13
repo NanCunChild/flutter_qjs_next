@@ -43,7 +43,7 @@ class FlutterQjsLogger {
     }
     developer.log(
       message,
-      name: 'flutter_qjs_es2023',
+      name: 'flutter_qjs_next',
       level: _developerLevel(logLevel),
       error: error,
     );

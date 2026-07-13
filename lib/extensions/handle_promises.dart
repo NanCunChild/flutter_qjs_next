@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:flutter_qjs_es2023/flutter_qjs_logger.dart';
-import 'package:flutter_qjs_es2023/javascript_runtime.dart';
-import 'package:flutter_qjs_es2023/js_eval_result.dart';
+import 'package:flutter_qjs_next/flutter_qjs_logger.dart';
+import 'package:flutter_qjs_next/javascript_runtime.dart';
+import 'package:flutter_qjs_next/js_eval_result.dart';
 /// Promise handling without Timer.periodic polling of JS query helpers.
 ///
 /// QuickJS converts JS Promises to Dart [Future] in `_jsToDart`. Awaiting that

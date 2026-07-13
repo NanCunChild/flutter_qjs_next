@@ -1,4 +1,4 @@
-import 'package:flutter_qjs_es2023/javascript_runtime.dart';
+import 'package:flutter_qjs_next/javascript_runtime.dart';
 import './quickjs/quickjs_runtime2.dart';
 import './extensions/handle_promises.dart';
 
@@ -15,6 +15,9 @@ export 'js_eval_result.dart';
 /// - [stackSize]: JS stack bytes (default 1 MiB)
 /// - [timeout]: interrupt after this many ms of JS work (0 / null = off)
 /// - [memoryLimit]: heap limit bytes (null = unlimited)
+///
+/// [forceJavascriptCoreOnAndroid] and [xhr] are kept for flutter_js-compatible
+/// call sites but are ignored (always QuickJS; no built-in XHR).
 JavascriptRuntime getJavascriptRuntime({
   bool forceJavascriptCoreOnAndroid = false,
   bool xhr = true,
