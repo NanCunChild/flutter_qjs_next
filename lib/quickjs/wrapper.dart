@@ -62,6 +62,8 @@ Pointer<JSValue>? _typedDataToJs(Pointer<JSContext> ctx, TypedData val) {
     type = JSTypedArrayType.INT8;
   else if (val is Uint8ClampedList)
     type = JSTypedArrayType.UINT8C;
+  else if (val is Uint8List)
+    type = JSTypedArrayType.UINT8;
   else if (val is Int16List)
     type = JSTypedArrayType.INT16;
   else if (val is Uint16List)
@@ -190,12 +192,13 @@ Pointer<JSValue> _dartToJs(
     final ta = _typedDataToJs(ctx, val);
     if (ta != null) return ta;
   }
-  if (val is Uint8List) {
-    final ptr = jsAllocBuffer(val.length);
+  // ByteBuffer without a TypedArray view → ArrayBuffer.
+  if (val is ByteBuffer) {
+    final bytes = val.asUint8List();
+    final ptr = jsAllocBuffer(bytes.length);
     if (ptr.address == 0) throw JSError('Out of memory');
-    final byteList = ptr.asTypedList(val.length);
-    byteList.setAll(0, val);
-    return jsNewArrayBufferOwned(ctx, ptr, val.length);
+    ptr.asTypedList(bytes.length).setAll(0, bytes);
+    return jsNewArrayBufferOwned(ctx, ptr, bytes.length);
   }
   if (cache.containsKey(val)) {
     return jsDupValue(ctx, cache[val]!);
