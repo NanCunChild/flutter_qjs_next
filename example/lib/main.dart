@@ -176,13 +176,12 @@ class _FlutterJsHomeScreenState extends State<FlutterJsHomeScreen> {
                         _benchmarkSummary = 'Running…';
                       });
                       try {
-                        final results = await Future(
-                          () => runFlutterQjsBenchmarks(),
+                        final suite = await Future(
+                          () => runFlutterQjsBenchmarkSuite(),
                         );
                         if (!mounted) return;
                         setState(() {
-                          _benchmarkSummary =
-                              results.map((r) => r.toString()).join('\n');
+                          _benchmarkSummary = suite.toString();
                         });
                       } catch (e) {
                         if (!mounted) return;

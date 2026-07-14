@@ -39,6 +39,11 @@ extern "C" {
 
   DLLEXPORT void jsSetMemoryLimit(JSRuntime *rt, size_t limit);
 
+  DLLEXPORT void jsRunGC(JSRuntime *rt);
+
+  /* Fills *out with JS_ComputeMemoryUsage fields (malloc_size, memory_used_size, …). */
+  DLLEXPORT void jsComputeMemoryUsage(JSRuntime *rt, int64_t *out, int32_t n);
+
   DLLEXPORT void jsFreeRuntime(JSRuntime *rt);
 
   DLLEXPORT JSValue *jsNewCFunction(JSContext *ctx, JSValue *funcData);
@@ -151,6 +156,8 @@ extern "C" {
   DLLEXPORT JSValue *jsGetException(JSContext *ctx);
 
   DLLEXPORT int32_t jsExecutePendingJob(JSRuntime *rt);
+
+  DLLEXPORT int32_t jsIsJobPending(JSRuntime *rt);
 
   DLLEXPORT JSValue *jsNewPromiseCapability(JSContext *ctx, JSValue *resolving_funcs);
 

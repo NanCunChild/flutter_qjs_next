@@ -6,6 +6,9 @@ import 'package:flutter/foundation.dart';
 
 import 'flutter_qjs_logger.dart';
 import 'js_eval_result.dart';
+import 'quickjs/ffi.dart' show JsMemoryUsage;
+
+export 'quickjs/ffi.dart' show JsMemoryUsage;
 
 class FlutterJsPlatformEmpty extends JavascriptRuntime {
   @override
@@ -118,6 +121,24 @@ abstract class JavascriptRuntime {
   void initChannelFunctions();
 
   int executePendingJob();
+
+  /// Drain the QuickJS job queue until empty or [maxJobs] jobs run.
+  /// Returns the number of jobs executed, or stops early on error (`-1` job).
+  int executePendingJobs({int maxJobs = 10000}) {
+    var n = 0;
+    while (n < maxJobs) {
+      final r = executePendingJob();
+      if (r <= 0) break;
+      n++;
+    }
+    return n;
+  }
+
+  /// Force a QuickJS GC pass. No-op if the engine is not ready / disposed.
+  void runGC() {}
+
+  /// QuickJS heap usage snapshot, or `null` if unavailable.
+  JsMemoryUsage? getMemoryUsage() => null;
 
   void _setupConsoleLog() {
     evaluate("""

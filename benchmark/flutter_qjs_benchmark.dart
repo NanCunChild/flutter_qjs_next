@@ -7,6 +7,7 @@
 // Dart versions. Use the Flutter test harness instead:
 //
 //   cd example && flutter test test/benchmark_test.dart
+//   cd example && flutter test test/benchmark_test.dart --dart-define=BENCH_RUNS=3
 //
 // Or open the example app and tap "Run Benchmarks".
 //
@@ -17,6 +18,9 @@ void main() {
 flutter_qjs_next benchmarks must run under Flutter (not bare `dart run`).
 
   cd example && flutter test test/benchmark_test.dart
+  # default: 8 seeds → mean ± σ
+  # --dart-define=BENCH_RUNS=N  (repeats)
+  # --dart-define=BENCH_SEED=S  (base seed)
 
 Or:
 

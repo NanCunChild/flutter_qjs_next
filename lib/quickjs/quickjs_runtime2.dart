@@ -25,19 +25,27 @@ typedef _JsModuleHandler = String Function(String name);
 /// Handler to manage unhandled promise rejection.
 typedef _JsHostPromiseRejectionHandler = void Function(dynamic reason);
 
+int _nextEngineSerial = 0;
+
 /// Quickjs engine for flutter.
 class QuickJsRuntime2 extends JavascriptRuntime {
   Pointer<JSRuntime>? _rt;
   Pointer<JSContext>? _ctx;
   Pointer<JSValue>? _jsonStringifyFn;
 
+  /// Stable unique id for channel maps (not [identityHashCode]).
+  late final String _engineInstanceId =
+      'qjs-${_nextEngineSerial++}-${DateTime.now().microsecondsSinceEpoch}';
+
+  bool _disposed = false;
+
   /// Max stack size for quickjs.
   int stackSize;
 
-  /// Max stack size for quickjs.
+  /// Interrupt after this many ms of wall-clock JS work (`null`/`0` = off).
   final int? timeout;
 
-  /// Max memory for quickjs.
+  /// Heap limit bytes (`null`/`0` = unlimited).
   final int? memoryLimit;
 
   /// Message Port for event loop. Close it to stop dispatching event loop.
@@ -60,6 +68,9 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   }
 
   _ensureEngine() {
+    if (_disposed) {
+      throw StateError('QuickJsRuntime2 is disposed');
+    }
     if (_rt != null) return;
     final rt = jsNewRuntime(
       (ctx, type, ptr) {
@@ -86,12 +97,10 @@ class QuickJsRuntime2 extends JavascriptRuntime {
               );
             case JSChannelType.MODULE:
               if (moduleHandler == null) throw JSError('No ModuleHandler');
+              // Ownership transferred to native js_module_loader (free(str)).
               final ret = moduleHandler!(
                 ptr.cast<Utf8>().toDartString(),
               ).toNativeUtf8();
-              Future.microtask(() {
-                malloc.free(ret);
-              });
               return ret.cast();
             case JSChannelType.PROMISE_TRACK:
               final err = _parseJSException(ctx, ptr);
@@ -133,17 +142,25 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     _ctx = jsNewContext(rt);
   }
 
-  /// Free Runtime and Context which can be recreate when evaluate again.
+  /// Free Runtime and Context. After [dispose], the engine cannot be reopened.
   close() {
     final rt = _rt;
     final ctx = _ctx;
     if (rt == null) return;
-    _executePendingJob();
+    try {
+      _executePendingJob();
+    } catch (_) {}
     if (ctx != null) {
       final jsonStringifyFn = _jsonStringifyFn;
       _jsonStringifyFn = null;
-      if (jsonStringifyFn != null) jsFreeValue(ctx, jsonStringifyFn);
-      jsFreeContext(ctx);
+      if (jsonStringifyFn != null) {
+        try {
+          jsFreeValue(ctx, jsonStringifyFn);
+        } catch (_) {}
+      }
+      try {
+        jsFreeContext(ctx);
+      } catch (_) {}
     }
     _rt = null;
     _ctx = null;
@@ -177,6 +194,20 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     await for (final _ in port) {
       _executePendingJob();
     }
+  }
+
+  @override
+  void runGC() {
+    final rt = _rt;
+    if (rt == null || _disposed) return;
+    jsRunGC(rt);
+  }
+
+  @override
+  JsMemoryUsage? getMemoryUsage() {
+    final rt = _rt;
+    if (rt == null || _disposed) return null;
+    return jsComputeMemoryUsage(rt);
   }
 
   @override
@@ -345,11 +376,21 @@ class QuickJsRuntime2 extends JavascriptRuntime {
 
   @override
   void dispose() {
+    if (_disposed) return;
+    _disposed = true;
     try {
       disposeChannelFunctions();
-      port.close(); // stop dispatch loop
-      close(); // close engine
+    } catch (e) {
+      FlutterQjsLogger.error('disposeChannelFunctions failed', e);
+    }
+    try {
+      port.close();
+    } catch (_) {}
+    try {
+      close();
     } on JSError catch (e) {
+      FlutterQjsLogger.error('QuickJS dispose failed', e);
+    } catch (e) {
       FlutterQjsLogger.error('QuickJS dispose failed', e);
     }
   }
@@ -373,10 +414,15 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     return err;
   }
 
-  @override
-  String getEngineInstanceId() {
-    return identityHashCode(this).toString();
+  /// True if QuickJS has at least one pending job (Promise reactions, etc.).
+  bool get hasPendingJobs {
+    final rt = _rt;
+    if (rt == null || _disposed) return false;
+    return jsIsJobPending(rt) != 0;
   }
+
+  @override
+  String getEngineInstanceId() => _engineInstanceId;
 
   @override
   void initChannelFunctions() {

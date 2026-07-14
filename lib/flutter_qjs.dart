@@ -6,15 +6,23 @@ export './extensions/handle_promises.dart';
 export './quickjs/quickjs_runtime2.dart';
 export 'flutter_qjs_logger.dart';
 export 'javascript_runtime.dart';
+export 'js_engine_pool.dart';
 export 'js_eval_result.dart';
+
+/// Default JS heap limit (64 MiB). Pass `memoryLimit: 0` for unlimited.
+const int kDefaultJsMemoryLimit = 64 * 1024 * 1024;
 
 /// Creates a [JavascriptRuntime] backed by QuickJS.
 ///
-/// Limits (also accepted via [extraArgs] keys `stackSize`, `timeout`,
-/// `memoryLimit` for backward compatibility):
+/// **Limits** (also via [extraArgs] keys `stackSize`, `timeout`, `memoryLimit`):
 /// - [stackSize]: JS stack bytes (default 1 MiB)
-/// - [timeout]: interrupt after this many ms of JS work (0 / null = off)
-/// - [memoryLimit]: heap limit bytes (null = unlimited)
+/// - [timeout]: interrupt after this many ms of wall-clock JS work
+///   (`null` / `0` = off). Prefer a positive value for untrusted scripts.
+/// - [memoryLimit]: heap limit bytes (default [kDefaultJsMemoryLimit];
+///   `0` = unlimited — not recommended for multi-engine / untrusted JS).
+///
+/// Each runtime is a separate QuickJS engine (own heap, channels, port).
+/// Prefer [JsEnginePool] when many short-lived scripts run in parallel.
 ///
 /// [forceJavascriptCoreOnAndroid] and [xhr] are kept for flutter_js-compatible
 /// call sites but are ignored (always QuickJS; no built-in XHR).
@@ -24,7 +32,7 @@ JavascriptRuntime getJavascriptRuntime({
   Map<String, dynamic>? extraArgs = const {},
   int stackSize = 1024 * 1024,
   int? timeout,
-  int? memoryLimit,
+  int? memoryLimit = kDefaultJsMemoryLimit,
 }) {
   final resolvedStack = (extraArgs?['stackSize'] as int?) ?? stackSize;
   final resolvedTimeout = (extraArgs?['timeout'] as int?) ?? timeout;

@@ -29,8 +29,216 @@ class BenchmarkResult {
   }
 }
 
+/// Mean (and optional σ) over [BenchmarkSuite.runs] single-engine suites.
+class AggregatedBenchmarkResult {
+  AggregatedBenchmarkResult({
+    required this.name,
+    required this.meanUsPerOp,
+    required this.stdevUsPerOp,
+    required this.runs,
+    required this.iterationsPerRun,
+    this.bytes,
+  });
+
+  final String name;
+  final double meanUsPerOp;
+  final double stdevUsPerOp;
+  final int runs;
+  final int iterationsPerRun;
+  final int? bytes;
+
+  double? get mbPerSec {
+    if (bytes == null || meanUsPerOp <= 0) return null;
+    return bytes! / (meanUsPerOp * 1e-6) / (1024 * 1024);
+  }
+
+  @override
+  String toString() {
+    final thr = mbPerSec;
+    final thrStr =
+        thr == null ? '' : '  ${thr.toStringAsFixed(1)} MiB/s';
+    final sigma =
+        runs > 1 ? ' σ=${stdevUsPerOp.toStringAsFixed(1)}' : '';
+    return '$name: ${meanUsPerOp.toStringAsFixed(1)} us/op '
+        '(n=$runs$sigma, $iterationsPerRun iters/run)$thrStr';
+  }
+}
+
+/// Multi-run suite: mean ± σ across distinct RNG seeds.
+class BenchmarkSuite {
+  BenchmarkSuite({
+    required this.results,
+    required this.runs,
+    required this.seeds,
+    required this.length,
+    required this.iterations,
+  });
+
+  final List<AggregatedBenchmarkResult> results;
+  final int runs;
+  final List<int> seeds;
+  final int length;
+  final int iterations;
+
+  @override
+  String toString() {
+    final buf = StringBuffer()
+      ..writeln(
+        'benchmark suite: runs=$runs seeds=$seeds '
+        'length=$length iterations=$iterations',
+      );
+    for (final r in results) {
+      buf.writeln(r);
+    }
+    return buf.toString().trimRight();
+  }
+}
+
 /// Fixed RNG seed so multi-size buffer payloads are comparable across commits.
 const int kBenchmarkSeed = 0x714A5;
+
+/// Default multi-seed set (8) used for mean/σ when [runs] > 1.
+const List<int> kBenchmarkDefaultSeeds = <int>[
+  464037,
+  1118481,
+  2236962,
+  3355443,
+  11259375,
+  5613141,
+  14593470,
+  12648430,
+];
+
+List<int> _resolveSeeds({
+  required int runs,
+  required int baseSeed,
+  List<int>? seeds,
+}) {
+  if (runs < 1) {
+    throw ArgumentError.value(runs, 'runs', 'must be >= 1');
+  }
+  if (seeds != null) {
+    if (seeds.length < runs) {
+      throw ArgumentError(
+        'seeds.length (${seeds.length}) must be >= runs ($runs)',
+      );
+    }
+    return seeds.take(runs).toList(growable: false);
+  }
+  if (runs == 1) {
+    return <int>[baseSeed];
+  }
+  if (runs <= kBenchmarkDefaultSeeds.length) {
+    return kBenchmarkDefaultSeeds.take(runs).toList(growable: false);
+  }
+  final out = List<int>.from(kBenchmarkDefaultSeeds);
+  var s = baseSeed ^ 0x9E3779B9;
+  while (out.length < runs) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    out.add(s);
+  }
+  return out;
+}
+
+double _mean(List<double> xs) {
+  var sum = 0.0;
+  for (final x in xs) {
+    sum += x;
+  }
+  return sum / xs.length;
+}
+
+/// Sample standard deviation (n−1); 0 when n < 2.
+double _stdev(List<double> xs, double mean) {
+  if (xs.length < 2) return 0;
+  var acc = 0.0;
+  for (final x in xs) {
+    final d = x - mean;
+    acc += d * d;
+  }
+  return sqrt(acc / (xs.length - 1));
+}
+
+/// Run the suite [runs] times (default **8**), each with a different seed,
+/// and return per-metric mean ± σ.
+///
+/// ```dart
+/// // default: 8 seeds
+/// final suite = runFlutterQjsBenchmarkSuite(log: print);
+///
+/// // fewer / more repeats
+/// runFlutterQjsBenchmarkSuite(runs: 3, log: print);
+/// runFlutterQjsBenchmarkSuite(runs: 1, seed: kBenchmarkSeed, log: print);
+/// ```
+///
+/// CLI (via `example/test/benchmark_test.dart`):
+/// `--dart-define=BENCH_RUNS=8` · `--dart-define=BENCH_SEED=464037`
+BenchmarkSuite runFlutterQjsBenchmarkSuite({
+  int runs = 8,
+  int length = 10000,
+  int iterations = 40,
+  int seed = kBenchmarkSeed,
+  List<int>? seeds,
+  void Function(String line)? log,
+}) {
+  void emit(String line) {
+    log?.call(line);
+    FlutterQjsLogger.info(line);
+  }
+
+  final resolved = _resolveSeeds(runs: runs, baseSeed: seed, seeds: seeds);
+  emit(
+    'benchmark suite: runs=${resolved.length} seeds=$resolved '
+    'length=$length iterations=$iterations',
+  );
+
+  final byName = <String, List<double>>{};
+  final meta = <String, ({int iterations, int? bytes})>{};
+
+  for (var i = 0; i < resolved.length; i++) {
+    final s = resolved[i];
+    emit('--- run ${i + 1}/${resolved.length} seed=$s ---');
+    final one = runFlutterQjsBenchmarks(
+      length: length,
+      iterations: iterations,
+      seed: s,
+      log: log,
+    );
+    for (final r in one) {
+      byName.putIfAbsent(r.name, () => <double>[]).add(r.avgUsPerOp);
+      meta.putIfAbsent(
+        r.name,
+        () => (iterations: r.iterations, bytes: r.bytes),
+      );
+    }
+  }
+
+  final aggregated = <AggregatedBenchmarkResult>[];
+  for (final name in byName.keys) {
+    final samples = byName[name]!;
+    final m = _mean(samples);
+    final sd = _stdev(samples, m);
+    final info = meta[name]!;
+    final ar = AggregatedBenchmarkResult(
+      name: name,
+      meanUsPerOp: m,
+      stdevUsPerOp: sd,
+      runs: samples.length,
+      iterationsPerRun: info.iterations,
+      bytes: info.bytes,
+    );
+    emit(ar.toString());
+    aggregated.add(ar);
+  }
+
+  return BenchmarkSuite(
+    results: aggregated,
+    runs: resolved.length,
+    seeds: resolved,
+    length: length,
+    iterations: iterations,
+  );
+}
 
 List<BenchmarkResult> runFlutterQjsBenchmarks({
   int length = 10000,

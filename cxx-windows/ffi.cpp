@@ -10,9 +10,32 @@
 #include <future>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+#if defined(_WIN32)
+#include <windows.h>
+#endif
 
 extern "C"
 {
+
+  /* Wall-clock ms for interrupt timeout (not process CPU time). */
+  static int64_t js_monotonic_ms(void)
+  {
+#if defined(_WIN32)
+    return (int64_t)GetTickCount64();
+#elif defined(CLOCK_MONOTONIC)
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0)
+      return (int64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+    return 0;
+#else
+    struct timespec ts;
+    if (clock_gettime(CLOCK_REALTIME, &ts) == 0)
+      return (int64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+    return 0;
+#endif
+  }
 
   DLLEXPORT JSValue *jsThrow(JSContext *ctx, JSValue *obj)
   {
@@ -36,18 +59,21 @@ extern "C"
 
   struct RuntimeOpaque {
       JSChannel * channel;
-      int64_t timeout;
-      int64_t start;
+      int64_t timeout; /* ms, 0 = off */
+      int64_t start_ms; /* monotonic ms when outermost call began; 0 = inactive */
+      int call_depth; /* nested js_begin_call / end */
   };
 
   JSModuleDef *js_module_loader(
       JSContext *ctx,
       const char *module_name, void *opaque)
   {
-    const char *str = (char *)((RuntimeOpaque *)opaque)->channel(ctx, JSChannelType_MODULE, (void *)module_name);
+    char *str = (char *)((RuntimeOpaque *)opaque)->channel(ctx, JSChannelType_MODULE, (void *)module_name);
     if (str == 0)
       return NULL;
     JSValue func_val = JS_Eval(ctx, str, strlen(str), module_name, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
+    /* Dart allocates module source with malloc; free after copy into QuickJS */
+    free(str);
     if (JS_IsException(func_val))
       return NULL;
     /* the module is already referenced, so we must free it */
@@ -79,8 +105,9 @@ extern "C"
 
   int js_interrupt_handler(JSRuntime * rt, void * opaque) {
     RuntimeOpaque *op = (RuntimeOpaque *)opaque;
-    if(op->timeout && op->start && (clock() - op->start) > op->timeout * CLOCKS_PER_SEC / 1000) {
-      op->start = 0;
+    if (op->timeout && op->start_ms &&
+        (js_monotonic_ms() - op->start_ms) > op->timeout) {
+      op->start_ms = 0;
       return 1;
     }
     return 0;
@@ -89,7 +116,7 @@ extern "C"
   DLLEXPORT JSRuntime *jsNewRuntime(JSChannel channel, int64_t timeout)
   {
     JSRuntime *rt = JS_NewRuntime();
-    RuntimeOpaque *opaque = new RuntimeOpaque({channel, timeout, 0});
+    RuntimeOpaque *opaque = new RuntimeOpaque({channel, timeout, 0, 0});
     JS_SetRuntimeOpaque(rt, opaque);
     JS_SetHostPromiseRejectionTracker(rt, js_promise_rejection_tracker, opaque);
     JS_SetModuleLoaderFunc(rt, nullptr, js_module_loader, opaque);
@@ -150,6 +177,35 @@ extern "C"
     JS_SetMemoryLimit(rt, limit);
   }
 
+  DLLEXPORT void jsRunGC(JSRuntime *rt)
+  {
+    JS_RunGC(rt);
+  }
+
+  /* out[0..]: malloc_size, malloc_limit, memory_used_size, malloc_count,
+     memory_used_count, atom_count, atom_size, str_count, str_size,
+     obj_count, obj_size, prop_count, prop_size (n must be >= 13). */
+  DLLEXPORT void jsComputeMemoryUsage(JSRuntime *rt, int64_t *out, int32_t n)
+  {
+    JSMemoryUsage s;
+    JS_ComputeMemoryUsage(rt, &s);
+    if (!out || n < 13)
+      return;
+    out[0] = s.malloc_size;
+    out[1] = s.malloc_limit;
+    out[2] = s.memory_used_size;
+    out[3] = s.malloc_count;
+    out[4] = s.memory_used_count;
+    out[5] = s.atom_count;
+    out[6] = s.atom_size;
+    out[7] = s.str_count;
+    out[8] = s.str_size;
+    out[9] = s.obj_count;
+    out[10] = s.obj_size;
+    out[11] = s.prop_count;
+    out[12] = s.prop_size;
+  }
+
   DLLEXPORT void jsFreeRuntime(JSRuntime *rt)
   {
     RuntimeOpaque *opauqe = (RuntimeOpaque *)JS_GetRuntimeOpaque(rt);
@@ -183,8 +239,21 @@ extern "C"
 
   void js_begin_call(JSRuntime *rt) {
     JS_UpdateStackTop(rt);
-    RuntimeOpaque * opaque = (RuntimeOpaque *)JS_GetRuntimeOpaque(rt);
-    if(opaque) opaque->start = clock();
+    RuntimeOpaque *opaque = (RuntimeOpaque *)JS_GetRuntimeOpaque(rt);
+    if (!opaque)
+      return;
+    if (opaque->call_depth == 0)
+      opaque->start_ms = js_monotonic_ms();
+    opaque->call_depth++;
+  }
+
+  void js_end_call(JSRuntime *rt) {
+    RuntimeOpaque *opaque = (RuntimeOpaque *)JS_GetRuntimeOpaque(rt);
+    if (!opaque || opaque->call_depth <= 0)
+      return;
+    opaque->call_depth--;
+    if (opaque->call_depth == 0)
+      opaque->start_ms = 0;
   }
 
   DLLEXPORT JSValue *jsEval(JSContext *ctx, const char *input, size_t input_len, const char *filename, int32_t eval_flags)
@@ -192,6 +261,7 @@ extern "C"
     JSRuntime *rt = JS_GetRuntime(ctx);
     js_begin_call(rt);
     JSValue *ret = new JSValue(JS_Eval(ctx, input, input_len, filename, eval_flags));
+    js_end_call(rt);
     return ret;
   }
 
@@ -311,6 +381,7 @@ extern "C"
     JSRuntime *rt = JS_GetRuntime(ctx);
     js_begin_call(rt);
     const char *ret = JS_ToCString(ctx, *val);
+    js_end_call(rt);
     return ret;
   }
 
@@ -523,6 +594,7 @@ extern "C"
     JSRuntime *rt = JS_GetRuntime(ctx);
     js_begin_call(rt);
     JSValue *ret = new JSValue(JS_Call(ctx, *func_obj, *this_obj, argc, argv));
+    js_end_call(rt);
     return ret;
   }
 
@@ -541,7 +613,13 @@ extern "C"
     js_begin_call(rt);
     JSContext *ctx;
     int ret = JS_ExecutePendingJob(rt, &ctx);
+    js_end_call(rt);
     return ret;
+  }
+
+  DLLEXPORT int32_t jsIsJobPending(JSRuntime *rt)
+  {
+    return JS_IsJobPending(rt);
   }
 
   DLLEXPORT JSValue *jsNewPromiseCapability(JSContext *ctx, JSValue *resolving_funcs)
@@ -555,26 +633,34 @@ extern "C"
   }
 
   DLLEXPORT uint8_t *CompileScript(JSContext *ctx, const char *script, const char *fileName, size_t *lengthPtr) {
+    JSRuntime *rt = JS_GetRuntime(ctx);
+    js_begin_call(rt);
     JSValue value = JS_Eval(ctx, script, strlen(script), fileName, JS_EVAL_FLAG_COMPILE_ONLY);
 
     if (JS_IsException(value)) {
       JS_FreeValue(ctx, value);
+      js_end_call(rt);
       return NULL;
     }
 
     uint8_t *out = JS_WriteObject(ctx, lengthPtr, value, JS_WRITE_OBJ_BYTECODE);
     JS_FreeValue(ctx, value);
+    js_end_call(rt);
     return out;
   }
 
   DLLEXPORT JSValue *EvaluateBytecode(JSContext *ctx, size_t length, uint8_t *buf) {
+    JSRuntime *rt = JS_GetRuntime(ctx);
+    js_begin_call(rt);
     JSValue obj = JS_ReadObject(ctx, buf, length, JS_READ_OBJ_BYTECODE);
 
     if (JS_IsException(obj)) {
+      js_end_call(rt);
       return NULL;
     }
 
     JSValue value = JS_EvalFunction(ctx, obj);
+    js_end_call(rt);
 
     return new JSValue(value);
   }

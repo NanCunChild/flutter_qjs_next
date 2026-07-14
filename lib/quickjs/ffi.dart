@@ -303,6 +303,89 @@ final void Function(Pointer<JSRuntime>, int) jsSetMemoryLimit = _qjsLib
     )
     .asFunction();
 
+/// DLLEXPORT int32_t jsIsJobPending(JSRuntime *rt)
+final int Function(Pointer<JSRuntime>) jsIsJobPending = _qjsLib
+    .lookup<NativeFunction<Int32 Function(Pointer<JSRuntime>)>>(
+      'jsIsJobPending',
+    )
+    .asFunction();
+
+/// DLLEXPORT void jsRunGC(JSRuntime *rt)
+final void Function(Pointer<JSRuntime>) jsRunGC = _qjsLib
+    .lookup<NativeFunction<Void Function(Pointer<JSRuntime>)>>('jsRunGC')
+    .asFunction();
+
+/// DLLEXPORT void jsComputeMemoryUsage(JSRuntime *rt, int64_t *out, int32_t n)
+final void Function(Pointer<JSRuntime>, Pointer<Int64>, int)
+    _jsComputeMemoryUsage = _qjsLib
+        .lookup<
+            NativeFunction<
+                Void Function(Pointer<JSRuntime>, Pointer<Int64>, Int32)>>(
+          'jsComputeMemoryUsage',
+        )
+        .asFunction();
+
+/// Snapshot of QuickJS [JSMemoryUsage] fields used for monitoring.
+class JsMemoryUsage {
+  final int mallocSize;
+  final int mallocLimit;
+  final int memoryUsedSize;
+  final int mallocCount;
+  final int memoryUsedCount;
+  final int atomCount;
+  final int atomSize;
+  final int strCount;
+  final int strSize;
+  final int objCount;
+  final int objSize;
+  final int propCount;
+  final int propSize;
+
+  const JsMemoryUsage({
+    required this.mallocSize,
+    required this.mallocLimit,
+    required this.memoryUsedSize,
+    required this.mallocCount,
+    required this.memoryUsedCount,
+    required this.atomCount,
+    required this.atomSize,
+    required this.strCount,
+    required this.strSize,
+    required this.objCount,
+    required this.objSize,
+    required this.propCount,
+    required this.propSize,
+  });
+
+  @override
+  String toString() =>
+      'JsMemoryUsage(malloc=$mallocSize, used=$memoryUsedSize, objs=$objCount)';
+}
+
+JsMemoryUsage jsComputeMemoryUsage(Pointer<JSRuntime> rt) {
+  final out = calloc<Int64>(13);
+  try {
+    _jsComputeMemoryUsage(rt, out, 13);
+    return JsMemoryUsage(
+      mallocSize: out[0],
+      mallocLimit: out[1],
+      memoryUsedSize: out[2],
+      mallocCount: out[3],
+      memoryUsedCount: out[4],
+      atomCount: out[5],
+      atomSize: out[6],
+      strCount: out[7],
+      strSize: out[8],
+      objCount: out[9],
+      objSize: out[10],
+      propCount: out[11],
+      propSize: out[12],
+    );
+  } finally {
+    calloc.free(out);
+  }
+}
+
 /// void jsFreeRuntime(JSRuntime *rt)
 final void Function(Pointer<JSRuntime>) _jsFreeRuntime = _qjsLib
     .lookup<NativeFunction<Void Function(Pointer<JSRuntime>)>>('jsFreeRuntime')
@@ -310,13 +393,13 @@ final void Function(Pointer<JSRuntime>) _jsFreeRuntime = _qjsLib
 
 void jsFreeRuntime(Pointer<JSRuntime> rt) {
   final referenceleak = <String>[];
-  final opaque = runtimeOpaques[rt];
+  final opaque = runtimeOpaques.remove(rt);
   if (opaque != null) {
     while (true) {
       final ref = opaque._ref.firstWhereOrNull((ref) => ref is JSRefLeakable);
       if (ref == null) break;
       ref.destroy();
-      runtimeOpaques[rt]?._ref.remove(ref);
+      opaque._ref.remove(ref);
     }
     while (opaque._ref.isNotEmpty) {
       final ref = opaque._ref.first;
