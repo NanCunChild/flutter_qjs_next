@@ -9,10 +9,15 @@ class JsEnginePoolConfig {
   final int? timeout;
   final int? memoryLimit;
 
+  /// When true (default), [JsEnginePool.release] calls [JavascriptRuntime.reinitialize]
+  /// so the next tenant does not see prior `globalThis` / channel state.
+  final bool resetOnRelease;
+
   const JsEnginePoolConfig({
     this.stackSize = 1024 * 1024,
     this.timeout,
     this.memoryLimit = kDefaultJsMemoryLimit,
+    this.resetOnRelease = true,
   });
 }
 
@@ -20,6 +25,10 @@ class JsEnginePoolConfig {
 ///
 /// Engines are created lazily up to [maxSize]. Call [acquire] / [release], or
 /// use [withEngine]. Always [dispose] the pool when finished.
+///
+/// By default [JsEnginePoolConfig.resetOnRelease] reinitializes engines on
+/// return so scripts do not share dirty globals. Set `resetOnRelease: false`
+/// only when callers guarantee cleanup.
 class JsEnginePool {
   final int maxSize;
   final JsEnginePoolConfig config;
@@ -75,6 +84,15 @@ class JsEnginePool {
     return c.future;
   }
 
+  void _prepareForReuse(JavascriptRuntime engine) {
+    if (!config.resetOnRelease) return;
+    try {
+      engine.reinitialize();
+    } catch (_) {
+      _destroy(engine);
+    }
+  }
+
   /// Return an engine to the pool. Do not use [engine] after this call.
   void release(JavascriptRuntime engine) {
     if (_disposed) {
@@ -83,6 +101,21 @@ class JsEnginePool {
     }
     if (!_all.contains(engine)) {
       throw ArgumentError('Engine not owned by this pool');
+    }
+    _prepareForReuse(engine);
+    if (!_all.contains(engine)) {
+      // reinitialize failed and engine was destroyed; try to fill a waiter with a new one
+      if (_waiters.isNotEmpty && _all.length < maxSize) {
+        final eng = _create();
+        _all.add(eng);
+        final w = _waiters.removeFirst();
+        if (!w.isCompleted) {
+          w.complete(eng);
+          return;
+        }
+        _idle.addLast(eng);
+      }
+      return;
     }
     while (_waiters.isNotEmpty) {
       final w = _waiters.removeFirst();

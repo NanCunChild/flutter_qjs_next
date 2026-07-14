@@ -27,6 +27,10 @@ typedef _JsHostPromiseRejectionHandler = void Function(dynamic reason);
 
 int _nextEngineSerial = 0;
 
+String _newEngineInstanceId() =>
+    'qjs-${Isolate.current.hashCode}-${_nextEngineSerial++}-'
+    '${DateTime.now().microsecondsSinceEpoch}';
+
 /// Quickjs engine for flutter.
 class QuickJsRuntime2 extends JavascriptRuntime {
   Pointer<JSRuntime>? _rt;
@@ -34,10 +38,13 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   Pointer<JSValue>? _jsonStringifyFn;
 
   /// Stable unique id for channel maps (not [identityHashCode]).
-  late final String _engineInstanceId =
-      'qjs-${_nextEngineSerial++}-${DateTime.now().microsecondsSinceEpoch}';
+  late String _engineInstanceId = _newEngineInstanceId();
 
   bool _disposed = false;
+
+  /// When true (default), [evaluate] / [evaluateJson] / [callFunction] drain
+  /// Promise microtasks via [executePendingJobs] after the call.
+  bool autoExecutePendingJobs;
 
   /// Max stack size for quickjs.
   int stackSize;
@@ -63,6 +70,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     this.timeout,
     this.memoryLimit,
     this.hostPromiseRejectionHandler,
+    this.autoExecutePendingJobs = true,
   }) {
     this.init();
   }
@@ -143,6 +151,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   }
 
   /// Free Runtime and Context. After [dispose], the engine cannot be reopened.
+  /// After [close] without [dispose], the next [evaluate] recreates the engine.
   close() {
     final rt = _rt;
     final ctx = _ctx;
@@ -169,6 +178,32 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     } on String catch (e) {
       throw JSError(e);
     }
+  }
+
+  /// Drop native heap + channels and re-run [init] (console, setTimeout, bridges).
+  /// Used by [JsEnginePool] when `resetOnRelease` is true.
+  @override
+  void reinitialize() {
+    if (_disposed) {
+      throw StateError('QuickJsRuntime2 is disposed');
+    }
+    try {
+      close();
+    } catch (_) {}
+    try {
+      disposeChannelFunctions();
+    } catch (_) {}
+    localContext.clear();
+    dartContext.clear();
+    _engineInstanceId = _newEngineInstanceId();
+    init();
+  }
+
+  void _maybeDrainJobs() {
+    if (!autoExecutePendingJobs || _rt == null || _disposed) return;
+    try {
+      executePendingJobs();
+    } catch (_) {}
   }
 
   void _executePendingJob() {
@@ -239,6 +274,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     final result = _jsToDart(ctx, jsval);
     final isPromise = result is Future;
     jsFreeValue(ctx, jsval);
+    _maybeDrainJobs();
     return JsEvalResult(
       result?.toString() ?? "null",
       result,
@@ -287,6 +323,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     }
     final jsonStr = jsToCString(ctx, jsonVal);
     jsFreeValue(ctx, jsonVal);
+    _maybeDrainJobs();
     return jsonDecode(jsonStr);
   }
 
@@ -308,6 +345,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
 
     final result = _jsToDart(ctx, value);
     jsFreeValue(ctx, value);
+    _maybeDrainJobs();
     return JsEvalResult(
       result?.toString() ?? "null",
       result,
@@ -359,6 +397,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     }
     final result = _jsToDart(ctx, jsRet);
     jsFreeValue(ctx, jsRet);
+    _maybeDrainJobs();
     return JsEvalResult(
       result?.toString() ?? 'null',
       result,

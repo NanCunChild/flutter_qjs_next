@@ -109,6 +109,9 @@ void _runJsIsolate(Map spawnMessage) async {
   SendPort sendPort = spawnMessage[#port];
   ReceivePort port = ReceivePort();
   sendPort.send(port.sendPort);
+  // Module loader is sync in QuickJS; host resolution is async on another
+  // isolate. Reply is a native source string pointer written into [slot]
+  // (0 = pending, -1 = error). Worker parks with 1ms sleeps (not 1µs spin).
   final qjs = QuickJsRuntime2(
     stackSize: spawnMessage[#stackSize] ?? 1024 * 1024,
     timeout: spawnMessage[#timeout],
@@ -120,13 +123,16 @@ void _runJsIsolate(Map spawnMessage) async {
       });
     },
     moduleHandler: (name) {
-      final ptr = calloc<Pointer<Utf8>>();
-      ptr.value = Pointer.fromAddress(ptr.address);
-      sendPort.send({#type: #module, #name: name, #ptr: ptr.address});
-      while (ptr.value.address == ptr.address) sleep(Duration(microseconds: 1));
-      final ret = ptr.value;
-      malloc.free(ptr);
-      if (ret.address == -1) throw JSError('Module Not found');
+      final slot = calloc<IntPtr>();
+      slot.value = 0;
+      sendPort.send({#type: #module, #name: name, #slot: slot.address});
+      while (slot.value == 0) {
+        sleep(const Duration(milliseconds: 1));
+      }
+      final addr = slot.value;
+      calloc.free(slot);
+      if (addr == -1) throw JSError('Module Not found');
+      final ret = Pointer<Utf8>.fromAddress(addr);
       final retString = ret.toDartString();
       malloc.free(ret);
       return retString;
@@ -272,11 +278,16 @@ class IsolateQjs {
             }
             break;
           case #module:
-            final ptr = Pointer<Pointer>.fromAddress(msg[#ptr]);
+            final slot = Pointer<IntPtr>.fromAddress(msg[#slot] as int);
             try {
-              ptr.value = (await moduleHandler!(msg[#name])).toNativeUtf8();
+              if (moduleHandler == null) {
+                slot.value = -1;
+              } else {
+                final source = await moduleHandler!(msg[#name] as String);
+                slot.value = source.toNativeUtf8().address;
+              }
             } catch (e) {
-              ptr.value = Pointer.fromAddress(-1);
+              slot.value = -1;
             }
             break;
         }

@@ -140,6 +140,10 @@ abstract class JavascriptRuntime {
   /// QuickJS heap usage snapshot, or `null` if unavailable.
   JsMemoryUsage? getMemoryUsage() => null;
 
+  /// Drop native heap and re-run channel / console / setTimeout setup.
+  /// Used by [JsEnginePool] when resetting a leased engine. Default is no-op.
+  void reinitialize() {}
+
   void _setupConsoleLog() {
     evaluate("""
     var console = {

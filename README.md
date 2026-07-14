@@ -50,12 +50,20 @@ Each `getJavascriptRuntime()` is a **separate** QuickJS engine (own heap, channe
 ### Multi-engine pool
 
 ```dart
-final pool = JsEnginePool(maxSize: 4, config: JsEnginePoolConfig(timeout: 3000));
+final pool = JsEnginePool(
+  maxSize: 4,
+  config: JsEnginePoolConfig(
+    timeout: 3000,
+    // default: resetOnRelease true → reinitialize() between tenants
+  ),
+);
 final out = await pool.withEngine((js) async {
   return js.evaluate('1 + 1').stringResult;
 });
 pool.dispose();
 ```
+
+Engine ids include the isolate hash (`qjs-<isolate>-<serial>-<us>`) so parallel isolates do not collide in channel maps. By default `evaluate` / `callFunction` / `evaluateJson` also drain Promise jobs (`QuickJsRuntime2.autoExecutePendingJobs`).
 
 `forceJavascriptCoreOnAndroid` and `xhr` are accepted for API compatibility with flutter_js but **are not implemented** (always QuickJS; no built-in XHR/fetch polyfill).
 
