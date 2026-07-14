@@ -98,8 +98,17 @@ cd example
 flutter test test/benchmark_test.dart
 ```
 
-Results are printed to the test console (µs/op for evaluate, evaluateJson, and
-TypedArray marshalling). Shared logic lives in `example/lib/benchmark_runner.dart`.
+Results are printed to the test console (µs/op; large buffers also report MiB/s).
+Shared logic lives in `example/lib/benchmark_runner.dart`.
+
+Coverage:
+
+1. Hot path: tiny `evaluate` and cached `JSInvokable.invoke`
+2. String / small `Map` Dart↔JS identity round-trips
+3. Buffer size ladder (1 KiB / 64 KiB / 1 MiB) for owned TypedArray path
+4. `evaluateJson` vs full `evaluate` (deep jsToDart) on array and object payloads
+5. Fixed RNG seed (`kBenchmarkSeed`) plus OS / CPU / executable banner for
+   cross-commit comparison
 
 Interactive option:
 
