@@ -6,8 +6,10 @@
 #define DLLEXPORT __attribute__((visibility("default"))) __attribute__((used))
 #endif
 
-extern "C"
-{
+#ifdef __cplusplus
+extern "C" {
+#endif
+
   enum JSChannelType {
     JSChannelType_METHON = 0,
     JSChannelType_MODULE = 1,
@@ -158,4 +160,7 @@ extern "C"
 
   DLLEXPORT JSValue *EvaluateBytecode(JSContext *ctx, size_t length, uint8_t *buf);
 
+#ifdef __cplusplus
 }
+#endif
+
