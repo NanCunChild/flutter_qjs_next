@@ -394,7 +394,9 @@ final void Function(Pointer<JSRuntime>) _jsFreeRuntime = _qjsLib
 
 void jsFreeRuntime(Pointer<JSRuntime> rt) {
   final referenceleak = <String>[];
-  final opaque = runtimeOpaques.remove(rt);
+  // Keep [runtimeOpaques] until after ref cleanup so nested [destroy]/[free]
+  // can still [removeRef] (e.g. Future resolve/reject held by _DartObject).
+  final opaque = runtimeOpaques[rt];
   if (opaque != null) {
     while (true) {
       final ref = opaque._ref.firstWhereOrNull((ref) => ref is JSRefLeakable);
@@ -410,7 +412,9 @@ void jsFreeRuntime(Pointer<JSRuntime> rt) {
         "  ${identityHashCode(ref)}\t${ref._refCount + 1}\t${ref.runtimeType.toString()}\t$objStr",
       );
       ref.destroy();
+      opaque._ref.remove(ref);
     }
+    runtimeOpaques.remove(rt);
   }
   _jsFreeRuntime(rt);
   if (referenceleak.length > 0) {

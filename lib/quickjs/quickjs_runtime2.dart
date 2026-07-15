@@ -431,6 +431,8 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     try {
       close();
     } on JSError catch (e) {
+      // Surface unreclaimed JSRef (functions/objects) so callers can detect leaks.
+      if (e.message.contains('reference leak')) rethrow;
       FlutterQjsLogger.error('QuickJS dispose failed', e);
     } catch (e) {
       FlutterQjsLogger.error('QuickJS dispose failed', e);

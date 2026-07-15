@@ -171,10 +171,15 @@ Pointer<JSValue> _dartToJs(
     val
         .then(
           (value) {
-            res.invoke([value]);
+            // Engine may already be disposed (JSValue released).
+            try {
+              res.invoke([value]);
+            } catch (_) {}
           },
           onError: (e) {
-            rej.invoke([e]);
+            try {
+              rej.invoke([e]);
+            } catch (_) {}
           },
         )
         .whenComplete(() {

@@ -134,7 +134,8 @@ void main() {
         for (var j = 0; j < data.length; j++) {
           data[j] = j & 0xff;
         }
-        js.evaluate('globalThis.echo = (a) => a');
+        // Avoid assignment rawResult (function) becoming an unfreed JSRef.
+        js.evaluate('globalThis.echo = (a) => a; undefined');
         final fn = js.evaluate('echo').rawResult as JSInvokable;
         final out = fn.invoke([data]);
         expect(out, isA<Uint8List>());
