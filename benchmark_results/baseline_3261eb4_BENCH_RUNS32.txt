@@ -1,0 +1,1280 @@
+# Baseline 3261eb4 (pre-optimization)
+
+Command:
+
+```bash
+cd example && flutter test test/benchmark_test.dart --dart-define=BENCH_RUNS=32
+```
+
+## Environment
+
+```
+benchmark suite: runs=32 seeds=[464037, 1118481, 2236962, 3355443, 11259375, 5613141, 14593470, 12648430, 461712677, 454274810, 1443749035, 1952792328, 813725345, 1818083526, 332109959, 898843572, 1066195933, 602219346, 1019164195, 1643833120, 218126553, 1963860638, 163910015, 2071418188, 848603541, 1396034218, 992167579, 1684699704, 1910721041, 1484646262, 90550647, 1097400804] length=10000 iterations=40
+benchmark env: os=linux processors=22 seed=464037 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+```
+
+## Aggregated means (n=32)
+
+```
+evaluate tiny (1+1): 4.7 us/op (n=32 σ=3.8, 200 iters/run)
+invoke host (a,b)=>a+b: 3.0 us/op (n=32 σ=1.6, 200 iters/run)
+string Dart→JS→Dart (identity): 9.2 us/op (n=32 σ=17.3, 40 iters/run)
+small Map Dart→JS→Dart (identity): 23.5 us/op (n=32 σ=13.8, 40 iters/run)
+Dart Uint8List→JS length (1024 B): 2.9 us/op (n=32 σ=1.4, 40 iters/run)  333.1 MiB/s
+Dart Uint8List→JS length (65536 B): 8.2 us/op (n=32 σ=7.5, 40 iters/run)  7656.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 110.4 us/op (n=32 σ=75.8, 20 iters/run)  9058.5 MiB/s
+Dart Float64List→JS length (10000): 1566.6 us/op (n=32 σ=130.1, 40 iters/run)  48.7 MiB/s
+evaluate large array (full jsToDart): 2570.5 us/op (n=32 σ=153.9, 40 iters/run)
+evaluateJson large array: 1118.1 us/op (n=32 σ=68.9, 40 iters/run)
+evaluate large object (full jsToDart): 4982.8 us/op (n=32 σ=260.2, 40 iters/run)
+evaluateJson large object: 802.9 us/op (n=32 σ=42.7, 40 iters/run)
+JS Uint8Array→Dart (1024 B): 567.5 us/op (n=32 σ=23.3, 40 iters/run)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 43340.9 us/op (n=32 σ=1972.8, 40 iters/run)  1.4 MiB/s
+JS Uint8Array→Dart (1048576 B): 931803.1 us/op (n=32 σ=31111.4, 20 iters/run)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6778.7 us/op (n=32 σ=290.4, 40 iters/run)  11.3 MiB/s
+```
+
+## Full flutter test log
+
+```
+Resolving dependencies...
+Downloading packages...
+  async 2.13.0 (2.13.1 available)
+  cupertino_icons 1.0.8 (1.0.9 available)
+  flutter_lints 5.0.0 (6.0.0 available)
+  lints 5.1.1 (6.1.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.18.0 (1.19.0 available)
+  source_span 1.10.1 (1.10.2 available)
+  test_api 0.7.11 (0.7.13 available)
+  vector_math 2.2.0 (2.4.0 available)
+  vm_service 15.0.0 (15.2.0 available)
+Got dependencies!
+10 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Plugin flutter_qjs does not have Swift Package Manager support for ios. Consider adding Swift Package Manager compatibility to your plugin. See https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-plugin-authors for more information.
+Plugin flutter_qjs does not have Swift Package Manager support for macos. Consider adding Swift Package Manager compatibility to your plugin. See https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-plugin-authors for more information.
+00:00 +0: loading /home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart
+00:00 +0: flutter_qjs baseline micro-benchmarks
+benchmark suite: runs=32 seeds=[464037, 1118481, 2236962, 3355443, 11259375, 5613141, 14593470, 12648430, 461712677, 454274810, 1443749035, 1952792328, 813725345, 1818083526, 332109959, 898843572, 1066195933, 602219346, 1019164195, 1643833120, 218126553, 1963860638, 163910015, 2071418188, 848603541, 1396034218, 992167579, 1684699704, 1910721041, 1484646262, 90550647, 1097400804] length=10000 iterations=40
+--- run 1/32 seed=464037 ---
+benchmark env: os=linux processors=22 seed=464037 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 8.9 us/op (200 iters)
+invoke host (a,b)=>a+b: 5.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 8.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 57.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 6.0 us/op (40 iters)  162.1 MiB/s
+Dart Uint8List→JS length (65536 B): 9.2 us/op (40 iters)  6775.1 MiB/s
+Dart Uint8List→JS length (1048576 B): 519.6 us/op (20 iters)  1924.6 MiB/s
+Dart Float64List→JS length (10000): 1704.0 us/op (40 iters)  44.8 MiB/s
+evaluate large array (full jsToDart): 2583.4 us/op (40 iters)
+evaluateJson large array: 1116.5 us/op (40 iters)
+evaluate large object (full jsToDart): 5183.5 us/op (40 iters)
+evaluateJson large object: 819.9 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 553.3 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 43669.1 us/op (40 iters)  1.4 MiB/s
+JS Uint8Array→Dart (1048576 B): 977567.0 us/op (20 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7105.1 us/op (40 iters)  10.7 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  103196210	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  862734854	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 2/32 seed=1118481 ---
+benchmark env: os=linux processors=22 seed=1118481 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 4.5 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.4 us/op (200 iters)
+string Dart→JS→Dart (identity): 4.4 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 20.8 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 4.1 us/op (40 iters)  239.6 MiB/s
+Dart Uint8List→JS length (65536 B): 7.3 us/op (40 iters)  8591.1 MiB/s
+Dart Uint8List→JS length (1048576 B): 105.6 us/op (20 iters)  9469.7 MiB/s
+Dart Float64List→JS length (10000): 1636.2 us/op (40 iters)  46.6 MiB/s
+evaluate large array (full jsToDart): 2662.2 us/op (40 iters)
+evaluateJson large array: 1178.2 us/op (40 iters)
+evaluate large object (full jsToDart): 5339.6 us/op (40 iters)
+evaluateJson large object: 804.8 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 585.9 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 44915.4 us/op (40 iters)  1.4 MiB/s
+JS Uint8Array→Dart (1048576 B): 944352.4 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6667.8 us/op (40 iters)  11.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  450955096	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  741163409	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 3/32 seed=2236962 ---
+benchmark env: os=linux processors=22 seed=2236962 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.6 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.1 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.6 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.9 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 3.4 us/op (40 iters)  287.2 MiB/s
+Dart Uint8List→JS length (65536 B): 6.5 us/op (40 iters)  9689.9 MiB/s
+Dart Uint8List→JS length (1048576 B): 102.5 us/op (20 iters)  9760.9 MiB/s
+Dart Float64List→JS length (10000): 1522.8 us/op (40 iters)  50.1 MiB/s
+evaluate large array (full jsToDart): 2445.1 us/op (40 iters)
+evaluateJson large array: 1062.5 us/op (40 iters)
+evaluate large object (full jsToDart): 4891.3 us/op (40 iters)
+evaluateJson large object: 940.0 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 560.0 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 43097.5 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 975792.0 us/op (20 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7346.1 us/op (40 iters)  10.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  806446143	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  541991767	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 4/32 seed=3355443 ---
+benchmark env: os=linux processors=22 seed=3355443 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.7 us/op (200 iters)
+invoke host (a,b)=>a+b: 7.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 20.9 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 3.8 us/op (40 iters)  260.4 MiB/s
+Dart Uint8List→JS length (65536 B): 7.3 us/op (40 iters)  8532.4 MiB/s
+Dart Uint8List→JS length (1048576 B): 145.5 us/op (20 iters)  6872.9 MiB/s
+Dart Float64List→JS length (10000): 1638.0 us/op (40 iters)  46.6 MiB/s
+evaluate large array (full jsToDart): 2711.4 us/op (40 iters)
+evaluateJson large array: 1133.2 us/op (40 iters)
+evaluate large object (full jsToDart): 5449.2 us/op (40 iters)
+evaluateJson large object: 844.6 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 601.1 us/op (40 iters)  1.6 MiB/s
+JS Uint8Array→Dart (65536 B): 48756.9 us/op (40 iters)  1.3 MiB/s
+JS Uint8Array→Dart (1048576 B): 1030017.3 us/op (20 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7334.6 us/op (40 iters)  10.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  151290184	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  1020206893	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 5/32 seed=11259375 ---
+benchmark env: os=linux processors=22 seed=11259375 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 5.2 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.2 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 26.8 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 3.4 us/op (40 iters)  287.2 MiB/s
+Dart Uint8List→JS length (65536 B): 7.2 us/op (40 iters)  8741.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 104.9 us/op (20 iters)  9532.9 MiB/s
+Dart Float64List→JS length (10000): 1648.9 us/op (40 iters)  46.3 MiB/s
+evaluate large array (full jsToDart): 2907.7 us/op (40 iters)
+evaluateJson large array: 1392.9 us/op (40 iters)
+evaluate large object (full jsToDart): 5739.3 us/op (40 iters)
+evaluateJson large object: 902.9 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 629.0 us/op (40 iters)  1.6 MiB/s
+JS Uint8Array→Dart (65536 B): 48804.0 us/op (40 iters)  1.3 MiB/s
+JS Uint8Array→Dart (1048576 B): 928969.9 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6481.1 us/op (40 iters)  11.8 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  66157856	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  19578652	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 6/32 seed=5613141 ---
+benchmark env: os=linux processors=22 seed=5613141 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.3 us/op (200 iters)
+invoke host (a,b)=>a+b: 7.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.2 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.9 us/op (40 iters)  336.7 MiB/s
+Dart Uint8List→JS length (65536 B): 6.2 us/op (40 iters)  10162.6 MiB/s
+Dart Uint8List→JS length (1048576 B): 89.8 us/op (20 iters)  11142.1 MiB/s
+Dart Float64List→JS length (10000): 1479.5 us/op (40 iters)  51.6 MiB/s
+evaluate large array (full jsToDart): 2437.3 us/op (40 iters)
+evaluateJson large array: 1099.3 us/op (40 iters)
+evaluate large object (full jsToDart): 4715.8 us/op (40 iters)
+evaluateJson large object: 759.3 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 543.2 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 42763.7 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 925760.5 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 7015.2 us/op (40 iters)  10.9 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  356479581	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  249547643	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 7/32 seed=14593470 ---
+benchmark env: os=linux processors=22 seed=14593470 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 4.2 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.8 us/op (40 iters)  351.9 MiB/s
+Dart Uint8List→JS length (65536 B): 6.4 us/op (40 iters)  9803.9 MiB/s
+Dart Uint8List→JS length (1048576 B): 90.5 us/op (20 iters)  11049.7 MiB/s
+Dart Float64List→JS length (10000): 1579.7 us/op (40 iters)  48.3 MiB/s
+evaluate large array (full jsToDart): 2494.0 us/op (40 iters)
+evaluateJson large array: 1104.4 us/op (40 iters)
+evaluate large object (full jsToDart): 4950.1 us/op (40 iters)
+evaluateJson large object: 802.0 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 558.4 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 43068.3 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 934370.2 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6706.0 us/op (40 iters)  11.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  375797617	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  162542599	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 8/32 seed=12648430 ---
+benchmark env: os=linux processors=22 seed=12648430 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.7 us/op (200 iters)
+invoke host (a,b)=>a+b: 4.5 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.3 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 17.8 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 3.0 us/op (40 iters)  328.3 MiB/s
+Dart Uint8List→JS length (65536 B): 7.6 us/op (40 iters)  8196.7 MiB/s
+Dart Uint8List→JS length (1048576 B): 92.3 us/op (20 iters)  10834.2 MiB/s
+Dart Float64List→JS length (10000): 1579.8 us/op (40 iters)  48.3 MiB/s
+evaluate large array (full jsToDart): 2656.4 us/op (40 iters)
+evaluateJson large array: 1110.5 us/op (40 iters)
+evaluate large object (full jsToDart): 5261.9 us/op (40 iters)
+evaluateJson large object: 797.5 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 569.8 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 44370.9 us/op (40 iters)  1.4 MiB/s
+JS Uint8Array→Dart (1048576 B): 990286.1 us/op (20 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7428.3 us/op (40 iters)  10.3 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  379506105	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  1058170602	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 9/32 seed=461712677 ---
+benchmark env: os=linux processors=22 seed=461712677 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.9 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.3 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.3 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 18.4 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 3.0 us/op (40 iters)  322.8 MiB/s
+Dart Uint8List→JS length (65536 B): 6.4 us/op (40 iters)  9803.9 MiB/s
+Dart Uint8List→JS length (1048576 B): 107.2 us/op (20 iters)  9328.4 MiB/s
+Dart Float64List→JS length (10000): 2113.7 us/op (40 iters)  36.1 MiB/s
+evaluate large array (full jsToDart): 3047.2 us/op (40 iters)
+evaluateJson large array: 1165.1 us/op (40 iters)
+evaluate large object (full jsToDart): 5114.9 us/op (40 iters)
+evaluateJson large object: 791.0 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 577.1 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 47117.0 us/op (40 iters)  1.3 MiB/s
+JS Uint8Array→Dart (1048576 B): 982191.9 us/op (20 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7052.6 us/op (40 iters)  10.8 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  572420442	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  711349903	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 10/32 seed=454274810 ---
+benchmark env: os=linux processors=22 seed=454274810 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.4 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.9 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.5 us/op (40 iters)  390.6 MiB/s
+Dart Uint8List→JS length (65536 B): 5.8 us/op (40 iters)  10869.6 MiB/s
+Dart Uint8List→JS length (1048576 B): 111.0 us/op (20 iters)  9013.1 MiB/s
+Dart Float64List→JS length (10000): 1609.5 us/op (40 iters)  47.4 MiB/s
+evaluate large array (full jsToDart): 2626.4 us/op (40 iters)
+evaluateJson large array: 1148.2 us/op (40 iters)
+evaluate large object (full jsToDart): 5247.4 us/op (40 iters)
+evaluateJson large object: 823.6 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 587.6 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 46422.8 us/op (40 iters)  1.3 MiB/s
+JS Uint8Array→Dart (1048576 B): 967104.8 us/op (20 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7164.4 us/op (40 iters)  10.6 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  739821956	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  696229824	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 11/32 seed=1443749035 ---
+benchmark env: os=linux processors=22 seed=1443749035 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 4.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 18.5 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.7 us/op (40 iters)  361.7 MiB/s
+Dart Uint8List→JS length (65536 B): 8.7 us/op (40 iters)  7163.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 119.8 us/op (20 iters)  8350.7 MiB/s
+Dart Float64List→JS length (10000): 1674.6 us/op (40 iters)  45.6 MiB/s
+evaluate large array (full jsToDart): 2700.7 us/op (40 iters)
+evaluateJson large array: 1206.2 us/op (40 iters)
+evaluate large object (full jsToDart): 5450.0 us/op (40 iters)
+evaluateJson large object: 871.1 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 620.0 us/op (40 iters)  1.6 MiB/s
+JS Uint8Array→Dart (65536 B): 44105.1 us/op (40 iters)  1.4 MiB/s
+JS Uint8Array→Dart (1048576 B): 909053.4 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6807.7 us/op (40 iters)  11.2 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  687308715	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  458362237	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 12/32 seed=1952792328 ---
+benchmark env: os=linux processors=22 seed=1952792328 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.2 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 6.6 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.4 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.4 us/op (40 iters)  402.7 MiB/s
+Dart Uint8List→JS length (65536 B): 5.3 us/op (40 iters)  11682.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 97.5 us/op (20 iters)  10256.4 MiB/s
+Dart Float64List→JS length (10000): 1597.9 us/op (40 iters)  47.7 MiB/s
+evaluate large array (full jsToDart): 2645.4 us/op (40 iters)
+evaluateJson large array: 1116.5 us/op (40 iters)
+evaluate large object (full jsToDart): 4971.4 us/op (40 iters)
+evaluateJson large object: 766.5 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 544.6 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 41047.3 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 931515.8 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6666.4 us/op (40 iters)  11.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  173069120	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  911135461	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 13/32 seed=813725345 ---
+benchmark env: os=linux processors=22 seed=813725345 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 74.5 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 26.1 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 8.4 us/op (40 iters)  116.6 MiB/s
+Dart Uint8List→JS length (65536 B): 5.5 us/op (40 iters)  11261.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 88.7 us/op (20 iters)  11280.3 MiB/s
+Dart Float64List→JS length (10000): 1465.3 us/op (40 iters)  52.1 MiB/s
+evaluate large array (full jsToDart): 2436.0 us/op (40 iters)
+evaluateJson large array: 1061.0 us/op (40 iters)
+evaluate large object (full jsToDart): 4875.9 us/op (40 iters)
+evaluateJson large object: 792.1 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 560.6 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 42324.4 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 916074.7 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6609.8 us/op (40 iters)  11.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  645564345	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  289378931	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 14/32 seed=1818083526 ---
+benchmark env: os=linux processors=22 seed=1818083526 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 16.4 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.9 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 18.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.0 us/op (40 iters)  476.4 MiB/s
+Dart Uint8List→JS length (65536 B): 6.3 us/op (40 iters)  9881.4 MiB/s
+Dart Uint8List→JS length (1048576 B): 113.8 us/op (20 iters)  8791.2 MiB/s
+Dart Float64List→JS length (10000): 1505.7 us/op (40 iters)  50.7 MiB/s
+evaluate large array (full jsToDart): 2736.2 us/op (40 iters)
+evaluateJson large array: 1097.5 us/op (40 iters)
+evaluate large object (full jsToDart): 4874.4 us/op (40 iters)
+evaluateJson large object: 789.5 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 569.6 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 42110.8 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 910995.8 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6585.3 us/op (40 iters)  11.6 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  19768523	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  656505940	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 15/32 seed=332109959 ---
+benchmark env: os=linux processors=22 seed=332109959 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.3 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.4 us/op (200 iters)
+string Dart→JS→Dart (identity): 27.1 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.9 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.1 us/op (40 iters)  465.0 MiB/s
+Dart Uint8List→JS length (65536 B): 8.2 us/op (40 iters)  7622.0 MiB/s
+Dart Uint8List→JS length (1048576 B): 88.5 us/op (20 iters)  11305.8 MiB/s
+Dart Float64List→JS length (10000): 1476.2 us/op (40 iters)  51.7 MiB/s
+evaluate large array (full jsToDart): 2421.9 us/op (40 iters)
+evaluateJson large array: 1068.3 us/op (40 iters)
+evaluate large object (full jsToDart): 4751.1 us/op (40 iters)
+evaluateJson large object: 765.0 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 546.0 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 42537.3 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 915897.7 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6694.2 us/op (40 iters)  11.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  293330232	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  632113215	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 16/32 seed=898843572 ---
+benchmark env: os=linux processors=22 seed=898843572 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.9 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.7 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.7 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.1 us/op (40 iters)  459.6 MiB/s
+Dart Uint8List→JS length (65536 B): 9.0 us/op (40 iters)  6963.8 MiB/s
+Dart Uint8List→JS length (1048576 B): 85.4 us/op (20 iters)  11709.6 MiB/s
+Dart Float64List→JS length (10000): 1551.1 us/op (40 iters)  49.2 MiB/s
+evaluate large array (full jsToDart): 2507.4 us/op (40 iters)
+evaluateJson large array: 1142.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4861.6 us/op (40 iters)
+evaluateJson large object: 780.2 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 544.3 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 41899.2 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 921875.3 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6916.8 us/op (40 iters)  11.0 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  957305146	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  471083215	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 17/32 seed=1066195933 ---
+benchmark env: os=linux processors=22 seed=1066195933 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 8.7 us/op (200 iters)
+invoke host (a,b)=>a+b: 5.5 us/op (200 iters)
+string Dart→JS→Dart (identity): 6.5 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 40.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 6.3 us/op (40 iters)  154.4 MiB/s
+Dart Uint8List→JS length (65536 B): 12.4 us/op (40 iters)  5030.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 108.4 us/op (20 iters)  9225.1 MiB/s
+Dart Float64List→JS length (10000): 1543.5 us/op (40 iters)  49.4 MiB/s
+evaluate large array (full jsToDart): 2546.8 us/op (40 iters)
+evaluateJson large array: 1110.9 us/op (40 iters)
+evaluate large object (full jsToDart): 5023.1 us/op (40 iters)
+evaluateJson large object: 804.1 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 575.0 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 43403.9 us/op (40 iters)  1.4 MiB/s
+JS Uint8Array→Dart (1048576 B): 912158.2 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6664.4 us/op (40 iters)  11.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  889057793	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  1058413137	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 18/32 seed=602219346 ---
+benchmark env: os=linux processors=22 seed=602219346 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 4.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.3 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.3 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.8 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.2 us/op (40 iters)  438.9 MiB/s
+Dart Uint8List→JS length (65536 B): 8.7 us/op (40 iters)  7225.4 MiB/s
+Dart Uint8List→JS length (1048576 B): 87.6 us/op (20 iters)  11415.5 MiB/s
+Dart Float64List→JS length (10000): 1526.5 us/op (40 iters)  50.0 MiB/s
+evaluate large array (full jsToDart): 2508.3 us/op (40 iters)
+evaluateJson large array: 1115.7 us/op (40 iters)
+evaluate large object (full jsToDart): 4895.8 us/op (40 iters)
+evaluateJson large object: 795.3 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 563.9 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 42403.4 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 908716.0 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6876.8 us/op (40 iters)  11.1 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  837817852	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  9835567	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 19/32 seed=1019164195 ---
+benchmark env: os=linux processors=22 seed=1019164195 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.9 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.3 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.5 us/op (40 iters)  398.6 MiB/s
+Dart Uint8List→JS length (65536 B): 12.6 us/op (40 iters)  4980.1 MiB/s
+Dart Uint8List→JS length (1048576 B): 88.5 us/op (20 iters)  11305.8 MiB/s
+Dart Float64List→JS length (10000): 1501.5 us/op (40 iters)  50.8 MiB/s
+evaluate large array (full jsToDart): 2473.5 us/op (40 iters)
+evaluateJson large array: 1075.2 us/op (40 iters)
+evaluate large object (full jsToDart): 4762.5 us/op (40 iters)
+evaluateJson large object: 768.4 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 542.8 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 41198.0 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 887853.2 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6642.9 us/op (40 iters)  11.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  43328830	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  481144	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 20/32 seed=1643833120 ---
+benchmark env: os=linux processors=22 seed=1643833120 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.7 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.4 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 49.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.1 us/op (40 iters)  470.6 MiB/s
+Dart Uint8List→JS length (65536 B): 6.8 us/op (40 iters)  9157.5 MiB/s
+Dart Uint8List→JS length (1048576 B): 88.5 us/op (20 iters)  11293.1 MiB/s
+Dart Float64List→JS length (10000): 1521.3 us/op (40 iters)  50.2 MiB/s
+evaluate large array (full jsToDart): 2548.3 us/op (40 iters)
+evaluateJson large array: 1077.2 us/op (40 iters)
+evaluate large object (full jsToDart): 4795.2 us/op (40 iters)
+evaluateJson large object: 770.9 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 559.0 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 42738.4 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 924134.6 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6779.8 us/op (40 iters)  11.3 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  638885464	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  506965458	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 21/32 seed=218126553 ---
+benchmark env: os=linux processors=22 seed=218126553 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.9 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.3 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.5 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.1 us/op (40 iters)  470.6 MiB/s
+Dart Uint8List→JS length (65536 B): 5.5 us/op (40 iters)  11312.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 94.2 us/op (20 iters)  10621.3 MiB/s
+Dart Float64List→JS length (10000): 1515.0 us/op (40 iters)  50.4 MiB/s
+evaluate large array (full jsToDart): 2652.9 us/op (40 iters)
+evaluateJson large array: 1206.6 us/op (40 iters)
+evaluate large object (full jsToDart): 5091.1 us/op (40 iters)
+evaluateJson large object: 810.8 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 562.5 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 42947.7 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 925344.7 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6570.6 us/op (40 iters)  11.6 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  368337255	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  315931891	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 22/32 seed=1963860638 ---
+benchmark env: os=linux processors=22 seed=1963860638 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 11.2 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.3 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.2 us/op (40 iters)  443.9 MiB/s
+Dart Uint8List→JS length (65536 B): 47.7 us/op (40 iters)  1309.6 MiB/s
+Dart Uint8List→JS length (1048576 B): 105.0 us/op (20 iters)  9528.3 MiB/s
+Dart Float64List→JS length (10000): 1496.0 us/op (40 iters)  51.0 MiB/s
+evaluate large array (full jsToDart): 2514.6 us/op (40 iters)
+evaluateJson large array: 1106.2 us/op (40 iters)
+evaluate large object (full jsToDart): 4756.9 us/op (40 iters)
+evaluateJson large object: 764.0 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 558.2 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 42665.9 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 914620.8 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 7197.1 us/op (40 iters)  10.6 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  108613363	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  611551825	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 23/32 seed=163910015 ---
+benchmark env: os=linux processors=22 seed=163910015 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 19.9 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.2 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 20.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.8 us/op (40 iters)  355.1 MiB/s
+Dart Uint8List→JS length (65536 B): 5.3 us/op (40 iters)  11682.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 88.8 us/op (20 iters)  11254.9 MiB/s
+Dart Float64List→JS length (10000): 1461.6 us/op (40 iters)  52.2 MiB/s
+evaluate large array (full jsToDart): 2449.6 us/op (40 iters)
+evaluateJson large array: 1066.5 us/op (40 iters)
+evaluate large object (full jsToDart): 4863.3 us/op (40 iters)
+evaluateJson large object: 771.1 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 554.1 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 42773.6 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 915399.8 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6553.9 us/op (40 iters)  11.6 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  373650473	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  350628282	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 24/32 seed=2071418188 ---
+benchmark env: os=linux processors=22 seed=2071418188 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.6 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 53.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.1 us/op (40 iters)  459.6 MiB/s
+Dart Uint8List→JS length (65536 B): 7.5 us/op (40 iters)  8278.1 MiB/s
+Dart Uint8List→JS length (1048576 B): 88.0 us/op (20 iters)  11370.1 MiB/s
+Dart Float64List→JS length (10000): 1492.8 us/op (40 iters)  51.1 MiB/s
+evaluate large array (full jsToDart): 2451.5 us/op (40 iters)
+evaluateJson large array: 1095.9 us/op (40 iters)
+evaluate large object (full jsToDart): 4736.1 us/op (40 iters)
+evaluateJson large object: 774.1 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 553.1 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 42978.8 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 924601.8 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6437.1 us/op (40 iters)  11.9 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  1027814480	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  814198857	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 25/32 seed=848603541 ---
+benchmark env: os=linux processors=22 seed=848603541 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.4 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 13.4 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.0 us/op (40 iters)  482.3 MiB/s
+Dart Uint8List→JS length (65536 B): 5.1 us/op (40 iters)  12195.1 MiB/s
+Dart Uint8List→JS length (1048576 B): 91.8 us/op (20 iters)  10887.3 MiB/s
+Dart Float64List→JS length (10000): 1463.7 us/op (40 iters)  52.1 MiB/s
+evaluate large array (full jsToDart): 2432.0 us/op (40 iters)
+evaluateJson large array: 1078.0 us/op (40 iters)
+evaluate large object (full jsToDart): 4981.5 us/op (40 iters)
+evaluateJson large object: 816.4 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 614.4 us/op (40 iters)  1.6 MiB/s
+JS Uint8Array→Dart (65536 B): 43596.1 us/op (40 iters)  1.4 MiB/s
+JS Uint8Array→Dart (1048576 B): 921637.7 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6604.4 us/op (40 iters)  11.6 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  437776855	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  988657193	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 26/32 seed=1396034218 ---
+benchmark env: os=linux processors=22 seed=1396034218 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.4 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 10.1 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 54.9 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.3 us/op (40 iters)  420.0 MiB/s
+Dart Uint8List→JS length (65536 B): 5.3 us/op (40 iters)  11682.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 82.7 us/op (20 iters)  12091.9 MiB/s
+Dart Float64List→JS length (10000): 1812.7 us/op (40 iters)  42.1 MiB/s
+evaluate large array (full jsToDart): 2607.9 us/op (40 iters)
+evaluateJson large array: 1082.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4785.1 us/op (40 iters)
+evaluateJson large object: 777.1 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 553.3 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 41355.6 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 897872.9 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6542.9 us/op (40 iters)  11.7 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  372128680	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  48464062	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 27/32 seed=992167579 ---
+benchmark env: os=linux processors=22 seed=992167579 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.2 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.3 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 13.5 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.1 us/op (40 iters)  459.6 MiB/s
+Dart Uint8List→JS length (65536 B): 5.2 us/op (40 iters)  12077.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 92.0 us/op (20 iters)  10875.5 MiB/s
+Dart Float64List→JS length (10000): 1462.1 us/op (40 iters)  52.2 MiB/s
+evaluate large array (full jsToDart): 2429.0 us/op (40 iters)
+evaluateJson large array: 1065.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4726.0 us/op (40 iters)
+evaluateJson large object: 777.4 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 543.0 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 41817.1 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 897231.8 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6491.9 us/op (40 iters)  11.8 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  13703904	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  1000611098	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 28/32 seed=1684699704 ---
+benchmark env: os=linux processors=22 seed=1684699704 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.5 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 13.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.0 us/op (40 iters)  488.3 MiB/s
+Dart Uint8List→JS length (65536 B): 5.2 us/op (40 iters)  12077.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 92.7 us/op (20 iters)  10793.3 MiB/s
+Dart Float64List→JS length (10000): 1456.2 us/op (40 iters)  52.4 MiB/s
+evaluate large array (full jsToDart): 2420.9 us/op (40 iters)
+evaluateJson large array: 1067.3 us/op (40 iters)
+evaluate large object (full jsToDart): 4777.2 us/op (40 iters)
+evaluateJson large object: 807.4 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 571.7 us/op (40 iters)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 43098.6 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 944483.9 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6524.3 us/op (40 iters)  11.7 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  93198070	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  450179212	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 29/32 seed=1910721041 ---
+benchmark env: os=linux processors=22 seed=1910721041 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.9 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.6 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 13.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.1 us/op (40 iters)  459.6 MiB/s
+Dart Uint8List→JS length (65536 B): 5.2 us/op (40 iters)  11961.7 MiB/s
+Dart Uint8List→JS length (1048576 B): 89.7 us/op (20 iters)  11154.5 MiB/s
+Dart Float64List→JS length (10000): 1493.1 us/op (40 iters)  51.1 MiB/s
+evaluate large array (full jsToDart): 2470.3 us/op (40 iters)
+evaluateJson large array: 1076.5 us/op (40 iters)
+evaluate large object (full jsToDart): 4785.7 us/op (40 iters)
+evaluateJson large object: 775.4 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 555.1 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 42832.0 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 933067.3 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6955.6 us/op (40 iters)  11.0 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  101679373	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  779555067	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 30/32 seed=1484646262 ---
+benchmark env: os=linux processors=22 seed=1484646262 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.3 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.9 us/op (200 iters)
+string Dart→JS→Dart (identity): 12.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 47.5 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.1 us/op (40 iters)  465.0 MiB/s
+Dart Uint8List→JS length (65536 B): 5.3 us/op (40 iters)  11904.8 MiB/s
+Dart Uint8List→JS length (1048576 B): 89.0 us/op (20 iters)  11229.6 MiB/s
+Dart Float64List→JS length (10000): 1548.9 us/op (40 iters)  49.3 MiB/s
+evaluate large array (full jsToDart): 2828.9 us/op (40 iters)
+evaluateJson large array: 1233.4 us/op (40 iters)
+evaluate large object (full jsToDart): 5257.9 us/op (40 iters)
+evaluateJson large object: 770.0 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 555.3 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 42173.8 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 933258.1 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6539.7 us/op (40 iters)  11.7 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  1047842173	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  307379948	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 31/32 seed=90550647 ---
+benchmark env: os=linux processors=22 seed=90550647 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.9 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.3 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.3 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 1.9 us/op (40 iters)  500.8 MiB/s
+Dart Uint8List→JS length (65536 B): 5.3 us/op (40 iters)  11848.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 95.4 us/op (20 iters)  10482.2 MiB/s
+Dart Float64List→JS length (10000): 1588.0 us/op (40 iters)  48.0 MiB/s
+evaluate large array (full jsToDart): 2456.9 us/op (40 iters)
+evaluateJson large array: 1086.2 us/op (40 iters)
+evaluate large object (full jsToDart): 4788.8 us/op (40 iters)
+evaluateJson large object: 876.9 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 599.3 us/op (40 iters)  1.6 MiB/s
+JS Uint8Array→Dart (65536 B): 43326.6 us/op (40 iters)  1.4 MiB/s
+JS Uint8Array→Dart (1048576 B): 904037.3 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6344.7 us/op (40 iters)  12.0 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  265492869	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  796887646	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 32/32 seed=1097400804 ---
+benchmark env: os=linux processors=22 seed=1097400804 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.9 us/op (200 iters)
+string Dart→JS→Dart (identity): 70.5 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.0 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.4 us/op (40 iters)  415.6 MiB/s
+Dart Uint8List→JS length (65536 B): 5.2 us/op (40 iters)  11961.7 MiB/s
+Dart Uint8List→JS length (1048576 B): 88.2 us/op (20 iters)  11337.9 MiB/s
+Dart Float64List→JS length (10000): 1465.7 us/op (40 iters)  52.1 MiB/s
+evaluate large array (full jsToDart): 2445.9 us/op (40 iters)
+evaluateJson large array: 1032.0 us/op (40 iters)
+evaluate large object (full jsToDart): 4746.6 us/op (40 iters)
+evaluateJson large object: 783.3 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 550.2 us/op (40 iters)  1.8 MiB/s
+JS Uint8Array→Dart (65536 B): 40588.6 us/op (40 iters)  1.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 911455.8 us/op (20 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6612.3 us/op (40 iters)  11.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  678546309	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  957823031	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:378:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:202:17)
+#5      main.<anonymous closure> (file:///home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+evaluate tiny (1+1): 4.7 us/op (n=32 σ=3.8, 200 iters/run)
+invoke host (a,b)=>a+b: 3.0 us/op (n=32 σ=1.6, 200 iters/run)
+string Dart→JS→Dart (identity): 9.2 us/op (n=32 σ=17.3, 40 iters/run)
+small Map Dart→JS→Dart (identity): 23.5 us/op (n=32 σ=13.8, 40 iters/run)
+Dart Uint8List→JS length (1024 B): 2.9 us/op (n=32 σ=1.4, 40 iters/run)  333.1 MiB/s
+Dart Uint8List→JS length (65536 B): 8.2 us/op (n=32 σ=7.5, 40 iters/run)  7656.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 110.4 us/op (n=32 σ=75.8, 20 iters/run)  9058.5 MiB/s
+Dart Float64List→JS length (10000): 1566.6 us/op (n=32 σ=130.1, 40 iters/run)  48.7 MiB/s
+evaluate large array (full jsToDart): 2570.5 us/op (n=32 σ=153.9, 40 iters/run)
+evaluateJson large array: 1118.1 us/op (n=32 σ=68.9, 40 iters/run)
+evaluate large object (full jsToDart): 4982.8 us/op (n=32 σ=260.2, 40 iters/run)
+evaluateJson large object: 802.9 us/op (n=32 σ=42.7, 40 iters/run)
+JS Uint8Array→Dart (1024 B): 567.5 us/op (n=32 σ=23.3, 40 iters/run)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 43340.9 us/op (n=32 σ=1972.8, 40 iters/run)  1.4 MiB/s
+JS Uint8Array→Dart (1048576 B): 931803.1 us/op (n=32 σ=31111.4, 20 iters/run)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6778.7 us/op (n=32 σ=290.4, 40 iters/run)  11.3 MiB/s
+benchmark suite: runs=32 seeds=[464037, 1118481, 2236962, 3355443, 11259375, 5613141, 14593470, 12648430, 461712677, 454274810, 1443749035, 1952792328, 813725345, 1818083526, 332109959, 898843572, 1066195933, 602219346, 1019164195, 1643833120, 218126553, 1963860638, 163910015, 2071418188, 848603541, 1396034218, 992167579, 1684699704, 1910721041, 1484646262, 90550647, 1097400804] length=10000 iterations=40
+evaluate tiny (1+1): 4.7 us/op (n=32 σ=3.8, 200 iters/run)
+invoke host (a,b)=>a+b: 3.0 us/op (n=32 σ=1.6, 200 iters/run)
+string Dart→JS→Dart (identity): 9.2 us/op (n=32 σ=17.3, 40 iters/run)
+small Map Dart→JS→Dart (identity): 23.5 us/op (n=32 σ=13.8, 40 iters/run)
+Dart Uint8List→JS length (1024 B): 2.9 us/op (n=32 σ=1.4, 40 iters/run)  333.1 MiB/s
+Dart Uint8List→JS length (65536 B): 8.2 us/op (n=32 σ=7.5, 40 iters/run)  7656.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 110.4 us/op (n=32 σ=75.8, 20 iters/run)  9058.5 MiB/s
+Dart Float64List→JS length (10000): 1566.6 us/op (n=32 σ=130.1, 40 iters/run)  48.7 MiB/s
+evaluate large array (full jsToDart): 2570.5 us/op (n=32 σ=153.9, 40 iters/run)
+evaluateJson large array: 1118.1 us/op (n=32 σ=68.9, 40 iters/run)
+evaluate large object (full jsToDart): 4982.8 us/op (n=32 σ=260.2, 40 iters/run)
+evaluateJson large object: 802.9 us/op (n=32 σ=42.7, 40 iters/run)
+JS Uint8Array→Dart (1024 B): 567.5 us/op (n=32 σ=23.3, 40 iters/run)  1.7 MiB/s
+JS Uint8Array→Dart (65536 B): 43340.9 us/op (n=32 σ=1972.8, 40 iters/run)  1.4 MiB/s
+JS Uint8Array→Dart (1048576 B): 931803.1 us/op (n=32 σ=31111.4, 20 iters/run)  1.1 MiB/s
+JS Float64Array→Dart (10000): 6778.7 us/op (n=32 σ=290.4, 40 iters/run)  11.3 MiB/s
+11:47 +1: All tests passed!
+```

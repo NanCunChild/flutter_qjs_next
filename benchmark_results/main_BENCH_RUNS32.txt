@@ -1,0 +1,744 @@
+# main (current flutter_qjs_next)
+
+Command:
+
+```bash
+cd example && flutter test test/benchmark_test.dart --dart-define=BENCH_RUNS=32
+```
+
+## Environment
+
+```
+benchmark suite: runs=32 seeds=[464037, 1118481, 2236962, 3355443, 11259375, 5613141, 14593470, 12648430, 461712677, 454274810, 1443749035, 1952792328, 813725345, 1818083526, 332109959, 898843572, 1066195933, 602219346, 1019164195, 1643833120, 218126553, 1963860638, 163910015, 2071418188, 848603541, 1396034218, 992167579, 1684699704, 1910721041, 1484646262, 90550647, 1097400804] length=10000 iterations=40
+benchmark env: os=linux processors=22 seed=464037 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+```
+
+## Aggregated means (n=32)
+
+```
+evaluate tiny (1+1): 3.6 us/op (n=32 σ=1.7, 200 iters/run)
+invoke host (a,b)=>a+b: 2.1 us/op (n=32 σ=0.8, 200 iters/run)
+string Dart→JS→Dart (identity): 2.7 us/op (n=32 σ=1.8, 40 iters/run)
+small Map Dart→JS→Dart (identity): 16.9 us/op (n=32 σ=8.1, 40 iters/run)
+Dart Uint8List→JS length (1024 B): 2.6 us/op (n=32 σ=1.0, 40 iters/run)  374.6 MiB/s
+Dart Uint8List→JS length (65536 B): 4.0 us/op (n=32 σ=2.2, 40 iters/run)  15515.9 MiB/s
+Dart Uint8List→JS length (1048576 B): 35.7 us/op (n=32 σ=5.2, 20 iters/run)  28010.0 MiB/s
+Dart Float64List→JS length (10000): 4.0 us/op (n=32 σ=0.9, 40 iters/run)  19047.4 MiB/s
+evaluate large array (full jsToDart): 1647.7 us/op (n=32 σ=70.0, 40 iters/run)
+evaluateJson large array: 1094.4 us/op (n=32 σ=33.0, 40 iters/run)
+evaluate large object (full jsToDart): 4431.1 us/op (n=32 σ=133.8, 40 iters/run)
+evaluateJson large object: 795.6 us/op (n=32 σ=28.8, 40 iters/run)
+JS Uint8Array→Dart (1024 B): 37.8 us/op (n=32 σ=6.8, 40 iters/run)  25.9 MiB/s
+JS Uint8Array→Dart (65536 B): 1467.1 us/op (n=32 σ=37.0, 40 iters/run)  42.6 MiB/s
+JS Uint8Array→Dart (1048576 B): 25239.4 us/op (n=32 σ=565.7, 20 iters/run)  39.6 MiB/s
+JS Float64Array→Dart (10000): 711.6 us/op (n=32 σ=55.7, 40 iters/run)  107.2 MiB/s
+```
+
+## Full flutter test log
+
+```
+Resolving dependencies...
+Downloading packages...
+  async 2.13.0 (2.13.1 available)
+  cupertino_icons 1.0.8 (1.0.9 available)
+  flutter_lints 5.0.0 (6.0.0 available)
+  lints 5.1.1 (6.1.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.18.0 (1.19.0 available)
+  source_span 1.10.1 (1.10.2 available)
+  test_api 0.7.11 (0.7.13 available)
+  vector_math 2.2.0 (2.4.0 available)
+  vm_service 15.0.0 (15.2.0 available)
+Got dependencies!
+10 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Plugin flutter_qjs_next has a Package.swift for ios but is missing a dependency on FlutterFramework. Add the following to your Package.swift dependencies:
+    .package(name: "FlutterFramework", path: "../FlutterFramework")
+And add FlutterFramework as a target dependency:
+    .product(name: "FlutterFramework", package: "FlutterFramework")
+See https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-plugin-authors for more information.
+Plugin flutter_qjs_next has a Package.swift for macos but is missing a dependency on FlutterFramework. Add the following to your Package.swift dependencies:
+    .package(name: "FlutterFramework", path: "../FlutterFramework")
+And add FlutterFramework as a target dependency:
+    .product(name: "FlutterFramework", package: "FlutterFramework")
+See https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-plugin-authors for more information.
+00:00 +0: loading /home/nancunchild/projects/flutter_qjs_next/example/test/benchmark_test.dart
+00:00 +0: flutter_qjs_next micro-benchmarks
+benchmark suite: runs=32 seeds=[464037, 1118481, 2236962, 3355443, 11259375, 5613141, 14593470, 12648430, 461712677, 454274810, 1443749035, 1952792328, 813725345, 1818083526, 332109959, 898843572, 1066195933, 602219346, 1019164195, 1643833120, 218126553, 1963860638, 163910015, 2071418188, 848603541, 1396034218, 992167579, 1684699704, 1910721041, 1484646262, 90550647, 1097400804] length=10000 iterations=40
+--- run 1/32 seed=464037 ---
+benchmark env: os=linux processors=22 seed=464037 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 12.6 us/op (200 iters)
+invoke host (a,b)=>a+b: 5.3 us/op (200 iters)
+string Dart→JS→Dart (identity): 11.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 58.4 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 6.6 us/op (40 iters)  147.4 MiB/s
+Dart Uint8List→JS length (65536 B): 7.7 us/op (40 iters)  8090.6 MiB/s
+Dart Uint8List→JS length (1048576 B): 51.0 us/op (20 iters)  19627.1 MiB/s
+Dart Float64List→JS length (10000): 7.6 us/op (40 iters)  10071.8 MiB/s
+evaluate large array (full jsToDart): 1770.5 us/op (40 iters)
+evaluateJson large array: 1149.4 us/op (40 iters)
+evaluate large object (full jsToDart): 4854.1 us/op (40 iters)
+evaluateJson large object: 853.1 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 71.7 us/op (40 iters)  13.6 MiB/s
+JS Uint8Array→Dart (65536 B): 1533.5 us/op (40 iters)  40.8 MiB/s
+JS Uint8Array→Dart (1048576 B): 25680.9 us/op (20 iters)  38.9 MiB/s
+JS Float64Array→Dart (10000): 618.7 us/op (40 iters)  123.3 MiB/s
+--- run 2/32 seed=1118481 ---
+benchmark env: os=linux processors=22 seed=1118481 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 4.5 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 4.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 21.4 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 3.8 us/op (40 iters)  255.3 MiB/s
+Dart Uint8List→JS length (65536 B): 4.8 us/op (40 iters)  13089.0 MiB/s
+Dart Uint8List→JS length (1048576 B): 36.0 us/op (20 iters)  27816.4 MiB/s
+Dart Float64List→JS length (10000): 5.8 us/op (40 iters)  13041.7 MiB/s
+evaluate large array (full jsToDart): 1643.2 us/op (40 iters)
+evaluateJson large array: 1102.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4312.6 us/op (40 iters)
+evaluateJson large object: 784.9 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 44.6 us/op (40 iters)  21.9 MiB/s
+JS Uint8Array→Dart (65536 B): 1445.8 us/op (40 iters)  43.2 MiB/s
+JS Uint8Array→Dart (1048576 B): 25508.5 us/op (20 iters)  39.2 MiB/s
+JS Float64Array→Dart (10000): 536.9 us/op (40 iters)  142.1 MiB/s
+--- run 3/32 seed=2236962 ---
+benchmark env: os=linux processors=22 seed=2236962 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.8 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.1 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.4 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 3.7 us/op (40 iters)  265.7 MiB/s
+Dart Uint8List→JS length (65536 B): 14.8 us/op (40 iters)  4215.9 MiB/s
+Dart Uint8List→JS length (1048576 B): 35.1 us/op (20 iters)  28449.5 MiB/s
+Dart Float64List→JS length (10000): 4.8 us/op (40 iters)  15977.8 MiB/s
+evaluate large array (full jsToDart): 1612.7 us/op (40 iters)
+evaluateJson large array: 1099.5 us/op (40 iters)
+evaluate large object (full jsToDart): 4415.5 us/op (40 iters)
+evaluateJson large object: 816.7 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 38.2 us/op (40 iters)  25.6 MiB/s
+JS Uint8Array→Dart (65536 B): 1469.5 us/op (40 iters)  42.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 25236.8 us/op (20 iters)  39.6 MiB/s
+JS Float64Array→Dart (10000): 712.4 us/op (40 iters)  107.1 MiB/s
+--- run 4/32 seed=3355443 ---
+benchmark env: os=linux processors=22 seed=3355443 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.5 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.9 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 3.2 us/op (40 iters)  305.2 MiB/s
+Dart Uint8List→JS length (65536 B): 4.3 us/op (40 iters)  14705.9 MiB/s
+Dart Uint8List→JS length (1048576 B): 39.0 us/op (20 iters)  25608.2 MiB/s
+Dart Float64List→JS length (10000): 4.8 us/op (40 iters)  16061.9 MiB/s
+evaluate large array (full jsToDart): 1597.1 us/op (40 iters)
+evaluateJson large array: 1073.0 us/op (40 iters)
+evaluate large object (full jsToDart): 4267.6 us/op (40 iters)
+evaluateJson large object: 773.4 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 36.5 us/op (40 iters)  26.8 MiB/s
+JS Uint8Array→Dart (65536 B): 1431.2 us/op (40 iters)  43.7 MiB/s
+JS Uint8Array→Dart (1048576 B): 24650.8 us/op (20 iters)  40.6 MiB/s
+JS Float64Array→Dart (10000): 838.8 us/op (40 iters)  91.0 MiB/s
+--- run 5/32 seed=11259375 ---
+benchmark env: os=linux processors=22 seed=11259375 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 4.5 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.5 us/op (200 iters)
+string Dart→JS→Dart (identity): 4.6 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 26.0 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 4.3 us/op (40 iters)  227.1 MiB/s
+Dart Uint8List→JS length (65536 B): 6.0 us/op (40 iters)  10504.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 33.4 us/op (20 iters)  29985.0 MiB/s
+Dart Float64List→JS length (10000): 4.5 us/op (40 iters)  16767.9 MiB/s
+evaluate large array (full jsToDart): 1559.0 us/op (40 iters)
+evaluateJson large array: 1206.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4299.1 us/op (40 iters)
+evaluateJson large object: 790.4 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 36.1 us/op (40 iters)  27.1 MiB/s
+JS Uint8Array→Dart (65536 B): 1462.5 us/op (40 iters)  42.7 MiB/s
+JS Uint8Array→Dart (1048576 B): 25021.8 us/op (20 iters)  40.0 MiB/s
+JS Float64Array→Dart (10000): 701.0 us/op (40 iters)  108.8 MiB/s
+--- run 6/32 seed=5613141 ---
+benchmark env: os=linux processors=22 seed=5613141 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 4.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.2 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.5 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 3.2 us/op (40 iters)  302.8 MiB/s
+Dart Uint8List→JS length (65536 B): 4.2 us/op (40 iters)  15060.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 36.5 us/op (20 iters)  27359.8 MiB/s
+Dart Float64List→JS length (10000): 4.7 us/op (40 iters)  16146.9 MiB/s
+evaluate large array (full jsToDart): 1633.4 us/op (40 iters)
+evaluateJson large array: 1090.2 us/op (40 iters)
+evaluate large object (full jsToDart): 4315.3 us/op (40 iters)
+evaluateJson large object: 785.8 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 38.5 us/op (40 iters)  25.4 MiB/s
+JS Uint8Array→Dart (65536 B): 1462.3 us/op (40 iters)  42.7 MiB/s
+JS Uint8Array→Dart (1048576 B): 24990.3 us/op (20 iters)  40.0 MiB/s
+JS Float64Array→Dart (10000): 685.3 us/op (40 iters)  111.3 MiB/s
+--- run 7/32 seed=14593470 ---
+benchmark env: os=linux processors=22 seed=14593470 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.5 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.3 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.8 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 3.0 us/op (40 iters)  331.0 MiB/s
+Dart Uint8List→JS length (65536 B): 4.3 us/op (40 iters)  14705.9 MiB/s
+Dart Uint8List→JS length (1048576 B): 34.9 us/op (20 iters)  28653.3 MiB/s
+Dart Float64List→JS length (10000): 4.5 us/op (40 iters)  17144.7 MiB/s
+evaluate large array (full jsToDart): 1604.3 us/op (40 iters)
+evaluateJson large array: 1088.3 us/op (40 iters)
+evaluate large object (full jsToDart): 4356.2 us/op (40 iters)
+evaluateJson large object: 794.7 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 36.2 us/op (40 iters)  27.0 MiB/s
+JS Uint8Array→Dart (65536 B): 1478.8 us/op (40 iters)  42.3 MiB/s
+JS Uint8Array→Dart (1048576 B): 24898.8 us/op (20 iters)  40.2 MiB/s
+JS Float64Array→Dart (10000): 666.6 us/op (40 iters)  114.4 MiB/s
+--- run 8/32 seed=12648430 ---
+benchmark env: os=linux processors=22 seed=12648430 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.3 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.3 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.7 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 18.3 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 3.2 us/op (40 iters)  307.6 MiB/s
+Dart Uint8List→JS length (65536 B): 3.6 us/op (40 iters)  17123.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 33.5 us/op (20 iters)  29850.7 MiB/s
+Dart Float64List→JS length (10000): 3.8 us/op (40 iters)  20345.1 MiB/s
+evaluate large array (full jsToDart): 1882.8 us/op (40 iters)
+evaluateJson large array: 1123.9 us/op (40 iters)
+evaluate large object (full jsToDart): 4352.0 us/op (40 iters)
+evaluateJson large object: 751.7 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 35.3 us/op (40 iters)  27.7 MiB/s
+JS Uint8Array→Dart (65536 B): 1410.6 us/op (40 iters)  44.3 MiB/s
+JS Uint8Array→Dart (1048576 B): 24238.1 us/op (20 iters)  41.3 MiB/s
+JS Float64Array→Dart (10000): 674.5 us/op (40 iters)  113.1 MiB/s
+--- run 9/32 seed=461712677 ---
+benchmark env: os=linux processors=22 seed=461712677 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.1 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.2 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.3 us/op (40 iters)  424.6 MiB/s
+Dart Uint8List→JS length (65536 B): 3.5 us/op (40 iters)  18115.9 MiB/s
+Dart Uint8List→JS length (1048576 B): 35.0 us/op (20 iters)  28530.7 MiB/s
+Dart Float64List→JS length (10000): 3.8 us/op (40 iters)  20210.3 MiB/s
+evaluate large array (full jsToDart): 1569.7 us/op (40 iters)
+evaluateJson large array: 1073.3 us/op (40 iters)
+evaluate large object (full jsToDart): 4326.9 us/op (40 iters)
+evaluateJson large object: 773.3 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 45.0 us/op (40 iters)  21.7 MiB/s
+JS Uint8Array→Dart (65536 B): 1434.6 us/op (40 iters)  43.6 MiB/s
+JS Uint8Array→Dart (1048576 B): 24862.8 us/op (20 iters)  40.2 MiB/s
+JS Float64Array→Dart (10000): 673.7 us/op (40 iters)  113.2 MiB/s
+--- run 10/32 seed=454274810 ---
+benchmark env: os=linux processors=22 seed=454274810 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.1 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.4 us/op (40 iters)  415.6 MiB/s
+Dart Uint8List→JS length (65536 B): 3.5 us/op (40 iters)  17985.6 MiB/s
+Dart Uint8List→JS length (1048576 B): 37.4 us/op (20 iters)  26738.0 MiB/s
+Dart Float64List→JS length (10000): 3.9 us/op (40 iters)  19688.8 MiB/s
+evaluate large array (full jsToDart): 1578.8 us/op (40 iters)
+evaluateJson large array: 1063.3 us/op (40 iters)
+evaluate large object (full jsToDart): 4599.5 us/op (40 iters)
+evaluateJson large object: 816.6 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 36.0 us/op (40 iters)  27.1 MiB/s
+JS Uint8Array→Dart (65536 B): 1483.3 us/op (40 iters)  42.1 MiB/s
+JS Uint8Array→Dart (1048576 B): 26038.8 us/op (20 iters)  38.4 MiB/s
+JS Float64Array→Dart (10000): 696.4 us/op (40 iters)  109.6 MiB/s
+--- run 11/32 seed=1443749035 ---
+benchmark env: os=linux processors=22 seed=1443749035 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.3 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.7 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.4 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 20.5 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.3 us/op (40 iters)  434.0 MiB/s
+Dart Uint8List→JS length (65536 B): 3.6 us/op (40 iters)  17123.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 32.3 us/op (20 iters)  31007.8 MiB/s
+Dart Float64List→JS length (10000): 4.6 us/op (40 iters)  16496.0 MiB/s
+evaluate large array (full jsToDart): 1659.8 us/op (40 iters)
+evaluateJson large array: 1104.9 us/op (40 iters)
+evaluate large object (full jsToDart): 4439.7 us/op (40 iters)
+evaluateJson large object: 798.4 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 35.0 us/op (40 iters)  27.9 MiB/s
+JS Uint8Array→Dart (65536 B): 1470.2 us/op (40 iters)  42.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 25068.3 us/op (20 iters)  39.9 MiB/s
+JS Float64Array→Dart (10000): 694.9 us/op (40 iters)  109.8 MiB/s
+--- run 12/32 seed=1952792328 ---
+benchmark env: os=linux processors=22 seed=1952792328 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.1 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.5 us/op (40 iters)  394.6 MiB/s
+Dart Uint8List→JS length (65536 B): 3.6 us/op (40 iters)  17482.5 MiB/s
+Dart Uint8List→JS length (1048576 B): 29.1 us/op (20 iters)  34423.4 MiB/s
+Dart Float64List→JS length (10000): 3.7 us/op (40 iters)  20760.3 MiB/s
+evaluate large array (full jsToDart): 1619.6 us/op (40 iters)
+evaluateJson large array: 1072.0 us/op (40 iters)
+evaluate large object (full jsToDart): 4321.3 us/op (40 iters)
+evaluateJson large object: 778.7 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 38.1 us/op (40 iters)  25.6 MiB/s
+JS Uint8Array→Dart (65536 B): 1423.9 us/op (40 iters)  43.9 MiB/s
+JS Uint8Array→Dart (1048576 B): 25141.8 us/op (20 iters)  39.8 MiB/s
+JS Float64Array→Dart (10000): 784.3 us/op (40 iters)  97.3 MiB/s
+--- run 13/32 seed=813725345 ---
+benchmark env: os=linux processors=22 seed=813725345 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.3 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.7 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.1 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.4 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.4 us/op (40 iters)  415.6 MiB/s
+Dart Uint8List→JS length (65536 B): 3.8 us/op (40 iters)  16556.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 49.0 us/op (20 iters)  20429.0 MiB/s
+Dart Float64List→JS length (10000): 3.9 us/op (40 iters)  19688.8 MiB/s
+evaluate large array (full jsToDart): 1745.2 us/op (40 iters)
+evaluateJson large array: 1076.3 us/op (40 iters)
+evaluate large object (full jsToDart): 4443.6 us/op (40 iters)
+evaluateJson large object: 821.9 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 39.9 us/op (40 iters)  24.5 MiB/s
+JS Uint8Array→Dart (65536 B): 1517.3 us/op (40 iters)  41.2 MiB/s
+JS Uint8Array→Dart (1048576 B): 25204.3 us/op (20 iters)  39.7 MiB/s
+JS Float64Array→Dart (10000): 744.4 us/op (40 iters)  102.5 MiB/s
+--- run 14/32 seed=1818083526 ---
+benchmark env: os=linux processors=22 seed=1818083526 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.1 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.4 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.0 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.1 us/op (40 iters)  454.2 MiB/s
+Dart Uint8List→JS length (65536 B): 3.3 us/op (40 iters)  18797.0 MiB/s
+Dart Uint8List→JS length (1048576 B): 39.6 us/op (20 iters)  25220.7 MiB/s
+Dart Float64List→JS length (10000): 3.7 us/op (40 iters)  20760.3 MiB/s
+evaluate large array (full jsToDart): 1642.9 us/op (40 iters)
+evaluateJson large array: 1103.6 us/op (40 iters)
+evaluate large object (full jsToDart): 4408.7 us/op (40 iters)
+evaluateJson large object: 796.5 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 35.3 us/op (40 iters)  27.7 MiB/s
+JS Uint8Array→Dart (65536 B): 1478.0 us/op (40 iters)  42.3 MiB/s
+JS Uint8Array→Dart (1048576 B): 25001.2 us/op (20 iters)  40.0 MiB/s
+JS Float64Array→Dart (10000): 672.1 us/op (40 iters)  113.5 MiB/s
+--- run 15/32 seed=332109959 ---
+benchmark env: os=linux processors=22 seed=332109959 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 1.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.8 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.1 us/op (40 iters)  454.2 MiB/s
+Dart Uint8List→JS length (65536 B): 3.4 us/op (40 iters)  18518.5 MiB/s
+Dart Uint8List→JS length (1048576 B): 33.6 us/op (20 iters)  29717.7 MiB/s
+Dart Float64List→JS length (10000): 3.9 us/op (40 iters)  19562.6 MiB/s
+evaluate large array (full jsToDart): 1614.8 us/op (40 iters)
+evaluateJson large array: 1071.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4302.2 us/op (40 iters)
+evaluateJson large object: 776.0 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 34.9 us/op (40 iters)  28.0 MiB/s
+JS Uint8Array→Dart (65536 B): 1430.7 us/op (40 iters)  43.7 MiB/s
+JS Uint8Array→Dart (1048576 B): 24467.5 us/op (20 iters)  40.9 MiB/s
+JS Float64Array→Dart (10000): 677.4 us/op (40 iters)  112.6 MiB/s
+--- run 16/32 seed=898843572 ---
+benchmark env: os=linux processors=22 seed=898843572 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.7 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.2 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 1.9 us/op (40 iters)  520.8 MiB/s
+Dart Uint8List→JS length (65536 B): 3.0 us/op (40 iters)  20491.8 MiB/s
+Dart Uint8List→JS length (1048576 B): 33.7 us/op (20 iters)  29673.6 MiB/s
+Dart Float64List→JS length (10000): 3.4 us/op (40 iters)  22275.6 MiB/s
+evaluate large array (full jsToDart): 1593.1 us/op (40 iters)
+evaluateJson large array: 1076.0 us/op (40 iters)
+evaluate large object (full jsToDart): 4349.1 us/op (40 iters)
+evaluateJson large object: 779.7 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 35.0 us/op (40 iters)  27.9 MiB/s
+JS Uint8Array→Dart (65536 B): 1431.7 us/op (40 iters)  43.7 MiB/s
+JS Uint8Array→Dart (1048576 B): 25342.1 us/op (20 iters)  39.5 MiB/s
+JS Float64Array→Dart (10000): 683.6 us/op (40 iters)  111.6 MiB/s
+--- run 17/32 seed=1066195933 ---
+benchmark env: os=linux processors=22 seed=1066195933 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.6 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.1 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.7 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.5 us/op (40 iters)  398.6 MiB/s
+Dart Uint8List→JS length (65536 B): 3.1 us/op (40 iters)  20325.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 28.9 us/op (20 iters)  34542.3 MiB/s
+Dart Float64List→JS length (10000): 3.9 us/op (40 iters)  19562.6 MiB/s
+evaluate large array (full jsToDart): 1600.3 us/op (40 iters)
+evaluateJson large array: 1070.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4332.2 us/op (40 iters)
+evaluateJson large object: 774.5 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 34.8 us/op (40 iters)  28.1 MiB/s
+JS Uint8Array→Dart (65536 B): 1463.6 us/op (40 iters)  42.7 MiB/s
+JS Uint8Array→Dart (1048576 B): 25283.5 us/op (20 iters)  39.6 MiB/s
+JS Float64Array→Dart (10000): 700.6 us/op (40 iters)  108.9 MiB/s
+--- run 18/32 seed=602219346 ---
+benchmark env: os=linux processors=22 seed=602219346 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.4 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.0 us/op (40 iters)  494.5 MiB/s
+Dart Uint8List→JS length (65536 B): 3.1 us/op (40 iters)  20161.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 34.5 us/op (20 iters)  28943.6 MiB/s
+Dart Float64List→JS length (10000): 3.3 us/op (40 iters)  22945.5 MiB/s
+evaluate large array (full jsToDart): 1695.2 us/op (40 iters)
+evaluateJson large array: 1084.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4464.6 us/op (40 iters)
+evaluateJson large object: 814.3 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 38.0 us/op (40 iters)  25.7 MiB/s
+JS Uint8Array→Dart (65536 B): 1468.8 us/op (40 iters)  42.6 MiB/s
+JS Uint8Array→Dart (1048576 B): 25441.0 us/op (20 iters)  39.3 MiB/s
+JS Float64Array→Dart (10000): 707.1 us/op (40 iters)  107.9 MiB/s
+--- run 19/32 seed=1019164195 ---
+benchmark env: os=linux processors=22 seed=1019164195 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.7 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.4 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 19.1 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.4 us/op (40 iters)  411.2 MiB/s
+Dart Uint8List→JS length (65536 B): 3.0 us/op (40 iters)  20491.8 MiB/s
+Dart Uint8List→JS length (1048576 B): 36.3 us/op (20 iters)  27586.2 MiB/s
+Dart Float64List→JS length (10000): 4.3 us/op (40 iters)  17846.5 MiB/s
+evaluate large array (full jsToDart): 1622.8 us/op (40 iters)
+evaluateJson large array: 1098.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4437.2 us/op (40 iters)
+evaluateJson large object: 800.2 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 37.5 us/op (40 iters)  26.1 MiB/s
+JS Uint8Array→Dart (65536 B): 1470.9 us/op (40 iters)  42.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 25343.7 us/op (20 iters)  39.5 MiB/s
+JS Float64Array→Dart (10000): 728.4 us/op (40 iters)  104.7 MiB/s
+--- run 20/32 seed=1643833120 ---
+benchmark env: os=linux processors=22 seed=1643833120 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.4 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 1.9 us/op (40 iters)  514.0 MiB/s
+Dart Uint8List→JS length (65536 B): 3.9 us/op (40 iters)  16025.6 MiB/s
+Dart Uint8List→JS length (1048576 B): 36.0 us/op (20 iters)  27777.8 MiB/s
+Dart Float64List→JS length (10000): 3.4 us/op (40 iters)  22774.3 MiB/s
+evaluate large array (full jsToDart): 1646.4 us/op (40 iters)
+evaluateJson large array: 1086.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4493.0 us/op (40 iters)
+evaluateJson large object: 801.9 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 36.6 us/op (40 iters)  26.7 MiB/s
+JS Uint8Array→Dart (65536 B): 1490.5 us/op (40 iters)  41.9 MiB/s
+JS Uint8Array→Dart (1048576 B): 25387.9 us/op (20 iters)  39.4 MiB/s
+JS Float64Array→Dart (10000): 709.7 us/op (40 iters)  107.5 MiB/s
+--- run 21/32 seed=218126553 ---
+benchmark env: os=linux processors=22 seed=218126553 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.3 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.1 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 1.9 us/op (40 iters)  520.8 MiB/s
+Dart Uint8List→JS length (65536 B): 3.2 us/op (40 iters)  19685.0 MiB/s
+Dart Uint8List→JS length (1048576 B): 34.9 us/op (20 iters)  28653.3 MiB/s
+Dart Float64List→JS length (10000): 3.7 us/op (40 iters)  20481.6 MiB/s
+evaluate large array (full jsToDart): 1593.3 us/op (40 iters)
+evaluateJson large array: 1070.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4327.9 us/op (40 iters)
+evaluateJson large object: 776.0 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 34.3 us/op (40 iters)  28.5 MiB/s
+JS Uint8Array→Dart (65536 B): 1442.7 us/op (40 iters)  43.3 MiB/s
+JS Uint8Array→Dart (1048576 B): 24597.3 us/op (20 iters)  40.7 MiB/s
+JS Float64Array→Dart (10000): 686.5 us/op (40 iters)  111.1 MiB/s
+--- run 22/32 seed=1963860638 ---
+benchmark env: os=linux processors=22 seed=1963860638 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 2.9 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 12.6 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 1.9 us/op (40 iters)  507.3 MiB/s
+Dart Uint8List→JS length (65536 B): 3.0 us/op (40 iters)  21186.4 MiB/s
+Dart Uint8List→JS length (1048576 B): 33.2 us/op (20 iters)  30120.5 MiB/s
+Dart Float64List→JS length (10000): 3.3 us/op (40 iters)  22945.5 MiB/s
+evaluate large array (full jsToDart): 1574.5 us/op (40 iters)
+evaluateJson large array: 1070.2 us/op (40 iters)
+evaluate large object (full jsToDart): 4366.9 us/op (40 iters)
+evaluateJson large object: 779.9 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 35.3 us/op (40 iters)  27.7 MiB/s
+JS Uint8Array→Dart (65536 B): 1461.4 us/op (40 iters)  42.8 MiB/s
+JS Uint8Array→Dart (1048576 B): 25093.4 us/op (20 iters)  39.9 MiB/s
+JS Float64Array→Dart (10000): 763.4 us/op (40 iters)  99.9 MiB/s
+--- run 23/32 seed=163910015 ---
+benchmark env: os=linux processors=22 seed=163910015 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.9 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.6 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.0 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.6 us/op (40 iters)  379.2 MiB/s
+Dart Uint8List→JS length (65536 B): 3.2 us/op (40 iters)  19531.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 47.3 us/op (20 iters)  21164.0 MiB/s
+Dart Float64List→JS length (10000): 3.5 us/op (40 iters)  21798.3 MiB/s
+evaluate large array (full jsToDart): 1633.7 us/op (40 iters)
+evaluateJson large array: 1076.3 us/op (40 iters)
+evaluate large object (full jsToDart): 4433.9 us/op (40 iters)
+evaluateJson large object: 772.6 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 35.9 us/op (40 iters)  27.2 MiB/s
+JS Uint8Array→Dart (65536 B): 1460.3 us/op (40 iters)  42.8 MiB/s
+JS Uint8Array→Dart (1048576 B): 25552.3 us/op (20 iters)  39.1 MiB/s
+JS Float64Array→Dart (10000): 706.8 us/op (40 iters)  108.0 MiB/s
+--- run 24/32 seed=2071418188 ---
+benchmark env: os=linux processors=22 seed=2071418188 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.4 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 1.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 13.8 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 1.9 us/op (40 iters)  520.8 MiB/s
+Dart Uint8List→JS length (65536 B): 3.1 us/op (40 iters)  19841.3 MiB/s
+Dart Uint8List→JS length (1048576 B): 37.1 us/op (20 iters)  26954.2 MiB/s
+Dart Float64List→JS length (10000): 3.5 us/op (40 iters)  22114.2 MiB/s
+evaluate large array (full jsToDart): 1688.0 us/op (40 iters)
+evaluateJson large array: 1127.4 us/op (40 iters)
+evaluate large object (full jsToDart): 4666.2 us/op (40 iters)
+evaluateJson large object: 810.3 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 42.0 us/op (40 iters)  23.2 MiB/s
+JS Uint8Array→Dart (65536 B): 1469.8 us/op (40 iters)  42.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 25894.6 us/op (20 iters)  38.6 MiB/s
+JS Float64Array→Dart (10000): 748.1 us/op (40 iters)  102.0 MiB/s
+--- run 25/32 seed=848603541 ---
+benchmark env: os=linux processors=22 seed=848603541 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.5 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.1 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.5 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 12.8 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.0 us/op (40 iters)  482.3 MiB/s
+Dart Uint8List→JS length (65536 B): 3.0 us/op (40 iters)  20661.2 MiB/s
+Dart Uint8List→JS length (1048576 B): 34.0 us/op (20 iters)  29411.8 MiB/s
+Dart Float64List→JS length (10000): 3.3 us/op (40 iters)  22945.5 MiB/s
+evaluate large array (full jsToDart): 1660.5 us/op (40 iters)
+evaluateJson large array: 1099.9 us/op (40 iters)
+evaluate large object (full jsToDart): 4516.9 us/op (40 iters)
+evaluateJson large object: 795.9 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 34.9 us/op (40 iters)  28.0 MiB/s
+JS Uint8Array→Dart (65536 B): 1505.1 us/op (40 iters)  41.5 MiB/s
+JS Uint8Array→Dart (1048576 B): 25630.0 us/op (20 iters)  39.0 MiB/s
+JS Float64Array→Dart (10000): 778.7 us/op (40 iters)  98.0 MiB/s
+--- run 26/32 seed=1396034218 ---
+benchmark env: os=linux processors=22 seed=1396034218 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.8 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.4 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.1 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.9 us/op (40 iters)  342.7 MiB/s
+Dart Uint8List→JS length (65536 B): 3.4 us/op (40 iters)  18656.7 MiB/s
+Dart Uint8List→JS length (1048576 B): 40.8 us/op (20 iters)  24539.9 MiB/s
+Dart Float64List→JS length (10000): 3.6 us/op (40 iters)  20902.5 MiB/s
+evaluate large array (full jsToDart): 1798.1 us/op (40 iters)
+evaluateJson large array: 1175.8 us/op (40 iters)
+evaluate large object (full jsToDart): 4683.5 us/op (40 iters)
+evaluateJson large object: 912.1 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 34.4 us/op (40 iters)  28.4 MiB/s
+JS Uint8Array→Dart (65536 B): 1602.3 us/op (40 iters)  39.0 MiB/s
+JS Uint8Array→Dart (1048576 B): 27361.8 us/op (20 iters)  36.5 MiB/s
+JS Float64Array→Dart (10000): 725.3 us/op (40 iters)  105.2 MiB/s
+--- run 27/32 seed=992167579 ---
+benchmark env: os=linux processors=22 seed=992167579 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.0 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.5 us/op (40 iters)  383.0 MiB/s
+Dart Uint8List→JS length (65536 B): 4.0 us/op (40 iters)  15625.0 MiB/s
+Dart Uint8List→JS length (1048576 B): 29.6 us/op (20 iters)  33840.9 MiB/s
+Dart Float64List→JS length (10000): 4.2 us/op (40 iters)  18165.2 MiB/s
+evaluate large array (full jsToDart): 1667.3 us/op (40 iters)
+evaluateJson large array: 1110.9 us/op (40 iters)
+evaluate large object (full jsToDart): 4537.4 us/op (40 iters)
+evaluateJson large object: 794.5 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 34.7 us/op (40 iters)  28.2 MiB/s
+JS Uint8Array→Dart (65536 B): 1480.8 us/op (40 iters)  42.2 MiB/s
+JS Uint8Array→Dart (1048576 B): 25586.0 us/op (20 iters)  39.1 MiB/s
+JS Float64Array→Dart (10000): 754.6 us/op (40 iters)  101.1 MiB/s
+--- run 28/32 seed=1684699704 ---
+benchmark env: os=linux processors=22 seed=1684699704 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.2 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.7 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.2 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 12.8 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.4 us/op (40 iters)  415.6 MiB/s
+Dart Uint8List→JS length (65536 B): 3.4 us/op (40 iters)  18382.4 MiB/s
+Dart Uint8List→JS length (1048576 B): 32.0 us/op (20 iters)  31250.0 MiB/s
+Dart Float64List→JS length (10000): 3.4 us/op (40 iters)  22774.3 MiB/s
+evaluate large array (full jsToDart): 1680.4 us/op (40 iters)
+evaluateJson large array: 1084.9 us/op (40 iters)
+evaluate large object (full jsToDart): 4526.9 us/op (40 iters)
+evaluateJson large object: 801.1 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 34.4 us/op (40 iters)  28.4 MiB/s
+JS Uint8Array→Dart (65536 B): 1494.5 us/op (40 iters)  41.8 MiB/s
+JS Uint8Array→Dart (1048576 B): 25655.5 us/op (20 iters)  39.0 MiB/s
+JS Float64Array→Dart (10000): 778.9 us/op (40 iters)  98.0 MiB/s
+--- run 29/32 seed=1910721041 ---
+benchmark env: os=linux processors=22 seed=1910721041 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 3.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 12.8 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 1.9 us/op (40 iters)  514.0 MiB/s
+Dart Uint8List→JS length (65536 B): 3.1 us/op (40 iters)  20000.0 MiB/s
+Dart Uint8List→JS length (1048576 B): 32.8 us/op (20 iters)  30487.8 MiB/s
+Dart Float64List→JS length (10000): 3.4 us/op (40 iters)  22439.4 MiB/s
+evaluate large array (full jsToDart): 1675.4 us/op (40 iters)
+evaluateJson large array: 1099.1 us/op (40 iters)
+evaluate large object (full jsToDart): 4579.2 us/op (40 iters)
+evaluateJson large object: 783.7 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 34.0 us/op (40 iters)  28.7 MiB/s
+JS Uint8Array→Dart (65536 B): 1452.6 us/op (40 iters)  43.0 MiB/s
+JS Uint8Array→Dart (1048576 B): 25005.5 us/op (20 iters)  40.0 MiB/s
+JS Float64Array→Dart (10000): 705.5 us/op (40 iters)  108.1 MiB/s
+--- run 30/32 seed=1484646262 ---
+benchmark env: os=linux processors=22 seed=1484646262 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 2.9 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.7 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 12.8 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.1 us/op (40 iters)  470.6 MiB/s
+Dart Uint8List→JS length (65536 B): 3.0 us/op (40 iters)  20491.8 MiB/s
+Dart Uint8List→JS length (1048576 B): 29.4 us/op (20 iters)  33955.9 MiB/s
+Dart Float64List→JS length (10000): 3.4 us/op (40 iters)  22605.6 MiB/s
+evaluate large array (full jsToDart): 1632.0 us/op (40 iters)
+evaluateJson large array: 1065.0 us/op (40 iters)
+evaluate large object (full jsToDart): 4324.2 us/op (40 iters)
+evaluateJson large object: 797.6 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 35.6 us/op (40 iters)  27.5 MiB/s
+JS Uint8Array→Dart (65536 B): 1438.7 us/op (40 iters)  43.4 MiB/s
+JS Uint8Array→Dart (1048576 B): 24675.5 us/op (20 iters)  40.5 MiB/s
+JS Float64Array→Dart (10000): 728.5 us/op (40 iters)  104.7 MiB/s
+--- run 31/32 seed=90550647 ---
+benchmark env: os=linux processors=22 seed=90550647 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 2.9 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 1.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 12.9 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 1.9 us/op (40 iters)  527.9 MiB/s
+Dart Uint8List→JS length (65536 B): 3.0 us/op (40 iters)  20491.8 MiB/s
+Dart Uint8List→JS length (1048576 B): 31.6 us/op (20 iters)  31695.7 MiB/s
+Dart Float64List→JS length (10000): 3.4 us/op (40 iters)  22275.6 MiB/s
+evaluate large array (full jsToDart): 1611.3 us/op (40 iters)
+evaluateJson large array: 1057.0 us/op (40 iters)
+evaluate large object (full jsToDart): 4364.7 us/op (40 iters)
+evaluateJson large object: 778.1 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 34.6 us/op (40 iters)  28.2 MiB/s
+JS Uint8Array→Dart (65536 B): 1447.5 us/op (40 iters)  43.2 MiB/s
+JS Uint8Array→Dart (1048576 B): 24842.8 us/op (20 iters)  40.3 MiB/s
+JS Float64Array→Dart (10000): 687.7 us/op (40 iters)  110.9 MiB/s
+--- run 32/32 seed=1097400804 ---
+benchmark env: os=linux processors=22 seed=1097400804 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-2 #1 SMP PREEMPT_DYNAMIC Thu, 09 Jul 2026 19:55:55 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (1+1): 2.9 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.1 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 12.9 us/op (40 iters)
+Dart Uint8List→JS length (1024 B): 2.0 us/op (40 iters)  488.3 MiB/s
+Dart Uint8List→JS length (65536 B): 3.0 us/op (40 iters)  20491.8 MiB/s
+Dart Uint8List→JS length (1048576 B): 35.0 us/op (20 iters)  28530.7 MiB/s
+Dart Float64List→JS length (10000): 3.4 us/op (40 iters)  22774.3 MiB/s
+evaluate large array (full jsToDart): 1621.0 us/op (40 iters)
+evaluateJson large array: 1067.9 us/op (40 iters)
+evaluate large object (full jsToDart): 4377.1 us/op (40 iters)
+evaluateJson large object: 775.4 us/op (40 iters)
+JS Uint8Array→Dart (1024 B): 35.2 us/op (40 iters)  27.8 MiB/s
+JS Uint8Array→Dart (65536 B): 1433.4 us/op (40 iters)  43.6 MiB/s
+JS Uint8Array→Dart (1048576 B): 24956.6 us/op (20 iters)  40.1 MiB/s
+JS Float64Array→Dart (10000): 800.5 us/op (40 iters)  95.3 MiB/s
+evaluate tiny (1+1): 3.6 us/op (n=32 σ=1.7, 200 iters/run)
+invoke host (a,b)=>a+b: 2.1 us/op (n=32 σ=0.8, 200 iters/run)
+string Dart→JS→Dart (identity): 2.7 us/op (n=32 σ=1.8, 40 iters/run)
+small Map Dart→JS→Dart (identity): 16.9 us/op (n=32 σ=8.1, 40 iters/run)
+Dart Uint8List→JS length (1024 B): 2.6 us/op (n=32 σ=1.0, 40 iters/run)  374.6 MiB/s
+Dart Uint8List→JS length (65536 B): 4.0 us/op (n=32 σ=2.2, 40 iters/run)  15515.9 MiB/s
+Dart Uint8List→JS length (1048576 B): 35.7 us/op (n=32 σ=5.2, 20 iters/run)  28010.0 MiB/s
+Dart Float64List→JS length (10000): 4.0 us/op (n=32 σ=0.9, 40 iters/run)  19047.4 MiB/s
+evaluate large array (full jsToDart): 1647.7 us/op (n=32 σ=70.0, 40 iters/run)
+evaluateJson large array: 1094.4 us/op (n=32 σ=33.0, 40 iters/run)
+evaluate large object (full jsToDart): 4431.1 us/op (n=32 σ=133.8, 40 iters/run)
+evaluateJson large object: 795.6 us/op (n=32 σ=28.8, 40 iters/run)
+JS Uint8Array→Dart (1024 B): 37.8 us/op (n=32 σ=6.8, 40 iters/run)  25.9 MiB/s
+JS Uint8Array→Dart (65536 B): 1467.1 us/op (n=32 σ=37.0, 40 iters/run)  42.6 MiB/s
+JS Uint8Array→Dart (1048576 B): 25239.4 us/op (n=32 σ=565.7, 20 iters/run)  39.6 MiB/s
+JS Float64Array→Dart (10000): 711.6 us/op (n=32 σ=55.7, 40 iters/run)  107.2 MiB/s
+benchmark suite: runs=32 seeds=[464037, 1118481, 2236962, 3355443, 11259375, 5613141, 14593470, 12648430, 461712677, 454274810, 1443749035, 1952792328, 813725345, 1818083526, 332109959, 898843572, 1066195933, 602219346, 1019164195, 1643833120, 218126553, 1963860638, 163910015, 2071418188, 848603541, 1396034218, 992167579, 1684699704, 1910721041, 1484646262, 90550647, 1097400804] length=10000 iterations=40
+evaluate tiny (1+1): 3.6 us/op (n=32 σ=1.7, 200 iters/run)
+invoke host (a,b)=>a+b: 2.1 us/op (n=32 σ=0.8, 200 iters/run)
+string Dart→JS→Dart (identity): 2.7 us/op (n=32 σ=1.8, 40 iters/run)
+small Map Dart→JS→Dart (identity): 16.9 us/op (n=32 σ=8.1, 40 iters/run)
+Dart Uint8List→JS length (1024 B): 2.6 us/op (n=32 σ=1.0, 40 iters/run)  374.6 MiB/s
+Dart Uint8List→JS length (65536 B): 4.0 us/op (n=32 σ=2.2, 40 iters/run)  15515.9 MiB/s
+Dart Uint8List→JS length (1048576 B): 35.7 us/op (n=32 σ=5.2, 20 iters/run)  28010.0 MiB/s
+Dart Float64List→JS length (10000): 4.0 us/op (n=32 σ=0.9, 40 iters/run)  19047.4 MiB/s
+evaluate large array (full jsToDart): 1647.7 us/op (n=32 σ=70.0, 40 iters/run)
+evaluateJson large array: 1094.4 us/op (n=32 σ=33.0, 40 iters/run)
+evaluate large object (full jsToDart): 4431.1 us/op (n=32 σ=133.8, 40 iters/run)
+evaluateJson large object: 795.6 us/op (n=32 σ=28.8, 40 iters/run)
+JS Uint8Array→Dart (1024 B): 37.8 us/op (n=32 σ=6.8, 40 iters/run)  25.9 MiB/s
+JS Uint8Array→Dart (65536 B): 1467.1 us/op (n=32 σ=37.0, 40 iters/run)  42.6 MiB/s
+JS Uint8Array→Dart (1048576 B): 25239.4 us/op (n=32 σ=565.7, 20 iters/run)  39.6 MiB/s
+JS Float64Array→Dart (10000): 711.6 us/op (n=32 σ=55.7, 40 iters/run)  107.2 MiB/s
+00:30 +1: All tests passed!
+```

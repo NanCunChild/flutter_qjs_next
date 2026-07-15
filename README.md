@@ -165,6 +165,51 @@ cd example && flutter run
 `benchmark/flutter_qjs_benchmark.dart` only prints these instructions if invoked
 with `dart run` by mistake.
 
+### Performance vs pre-optimization baseline
+
+Compared **`main`** to git commit **`3261eb4`** (pre bulk-buffer / marshalling work)
+on the same machine, same seeds, **`BENCH_RUNS=32`**, via
+`flutter test test/benchmark_test.dart`.
+
+| Scenario | Baseline (us/op) | main (us/op) | Speedup |
+|----------|-----------------:|-------------:|--------:|
+| evaluate tiny (`1+1`) | 4.7 | 3.6 | **1.3×** |
+| host invoke `(a,b)=>a+b` | 3.0 | 2.1 | **1.4×** |
+| string Dart→JS→Dart | 9.2 | 2.7 | **3.4×** |
+| small Map Dart→JS→Dart | 23.5 | 16.9 | **1.4×** |
+| Dart `Uint8List`→JS (1 MiB) | 110 | 36 | **3.1×** |
+| Dart `Float64List`→JS (10k) | 1567 | 4.0 | **~392×** |
+| evaluate large array (full jsToDart) | 2571 | 1648 | **1.6×** |
+| evaluate large object (full jsToDart) | 4983 | 4431 | **1.1×** |
+| JS `Uint8Array`→Dart (1 KiB) | 568 | 38 | **15×** |
+| JS `Uint8Array`→Dart (64 KiB) | 43341 | 1467 | **30×** |
+| JS `Uint8Array`→Dart (1 MiB) | 931803 | 25239 | **37×** |
+| JS `Float64Array`→Dart (10k) | 6779 | 712 | **9.5×** |
+
+Approximate throughput on the same run:
+
+| Path | Baseline | main |
+|------|---------:|-----:|
+| Dart `Uint8List`→JS 1 MiB | ~9 GiB/s | ~27 GiB/s |
+| Dart `Float64List`→JS 10k | ~49 MiB/s | ~19 GiB/s |
+| JS `Uint8Array`→Dart 1 MiB | ~1.1 MiB/s | ~40 MiB/s |
+| JS `Float64Array`→Dart 10k | ~11 MiB/s | ~107 MiB/s |
+
+**What improved most**
+
+- **TypedArray / buffer paths** — bulk copy instead of per-element marshalling
+  (largest wins on JS→Dart and non-byte TypedArrays Dart→JS).
+- **String / host invoke** — leaner FFI and value conversion.
+- **Large array `evaluate`** — faster recursive jsToDart; use **`evaluateJson`**
+  when you only need a JSON-like tree (avoids deep object graph conversion).
+
+Raw logs (full suite output + aggregated means):  
+`benchmark_results/baseline_3261eb4_BENCH_RUNS32.txt`,  
+`benchmark_results/main_BENCH_RUNS32.txt`.
+
+Numbers are single-host microbenchmarks (Linux `flutter_tester`); treat them as
+relative, not absolute product SLOs.
+
 ## Architecture (short)
 
 - `lib/quickjs/*` — Dart FFI bindings and marshalling  
