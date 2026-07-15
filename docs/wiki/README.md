@@ -10,7 +10,10 @@ Flutter / Dart bindings for [QuickJS](https://github.com/bellard/quickjs) via `d
 | **API style** | Compatible with [flutter_js](https://github.com/abner/flutter_js) (`JavascriptRuntime`, `getJavascriptRuntime()`) |
 | **Package** | `flutter_qjs_next` |
 
-This tree under `docs/wiki/` is the **source of truth** for the project wiki. It can be mirrored to the GitHub Wiki.
+This tree under `docs/wiki/` is the **source of truth** for the project wiki.  
+On push to `main`/`master` (paths under `docs/wiki/**`), CI runs `scripts/sync-wiki.sh` and mirrors pages to the [GitHub Wiki](https://github.com/NanCunChild/flutter_qjs_next/wiki) (`README.md` → `Home.md`).
+
+**One-time setup:** enable **Wikis** in repo settings, create any first page in the Wiki UI (creates `*.wiki.git`), and allow Actions **read/write** contents. Local dry-run: `WIKI_DRY_RUN=1 bash scripts/sync-wiki.sh`.
 
 ## Start here
 
