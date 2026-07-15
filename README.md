@@ -2,7 +2,7 @@
 
 Flutter / Dart bindings for [QuickJS](https://github.com/bellard/quickjs) via `dart:ffi`.
 
-- Embedded QuickJS **2025-09-13**
+- Embedded QuickJS **2026-06-04**
 - Platforms: **Android, iOS, macOS, Linux, Windows** (no Web — native FFI only)
 - API style compatible with [flutter_js](https://github.com/abner/flutter_js) (`JavascriptRuntime`, `getJavascriptRuntime()`)
 
@@ -134,6 +134,18 @@ Default **heap limit is 64 MiB** (`memoryLimit: 0` for unlimited). Always call *
 FlutterQjsLogger.level = FlutterQjsLogLevel.debug;
 FlutterQjsLogger.handler = (level, message, error) { /* ... */ };
 ```
+
+## Documentation
+
+Full package wiki: **[docs/wiki/](docs/wiki/README.md)**
+
+| | |
+|--|--|
+| Start here | [Getting started](docs/wiki/getting-started.md) · [Concepts](docs/wiki/concepts.md) |
+| API | [API reference](docs/wiki/api/overview.md) · [Runtime](docs/wiki/api/runtime.md) · [Bridge](docs/wiki/api/bridge.md) |
+| Guides | [Security](docs/wiki/guides/security.md) · [Performance](docs/wiki/guides/performance.md) · [Migration](docs/wiki/guides/migration-from-flutter-js.md) |
+| Recipes | [Hello evaluate](docs/wiki/recipes/hello-evaluate.md) · [Async bridge](docs/wiki/recipes/async-bridge.md) · [Pool](docs/wiki/recipes/multi-tenant-pool.md) |
+| Ops | [FAQ](docs/wiki/faq.md) · [Troubleshooting](docs/wiki/troubleshooting.md) · [Testing](docs/wiki/testing-and-benchmarks.md) |
 
 ## Example app
 

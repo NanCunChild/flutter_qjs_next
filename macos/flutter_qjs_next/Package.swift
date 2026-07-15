@@ -22,13 +22,13 @@ let package = Package(
             cSettings: [
                 .headerSearchPath("."),
                 .headerSearchPath("quickjs"),
-                .define("CONFIG_VERSION", to: "\"2025-09-13\""),
+                .define("CONFIG_VERSION", to: "\"2026-06-04\""),
                 .define("DUMP_LEAKS", to: "1", .when(configuration: .debug)),
             ],
             cxxSettings: [
                 .headerSearchPath("."),
                 .headerSearchPath("quickjs"),
-                .define("CONFIG_VERSION", to: "\"2025-09-13\""),
+                .define("CONFIG_VERSION", to: "\"2026-06-04\""),
                 .define("DUMP_LEAKS", to: "1", .when(configuration: .debug)),
             ],
             linkerSettings: [

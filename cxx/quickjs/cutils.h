@@ -57,9 +57,7 @@
 #define minimum_length(n)  n
 #endif
 
-#ifndef __OBJC__
 typedef int BOOL;
-#endif
 
 #ifndef FALSE
 enum {

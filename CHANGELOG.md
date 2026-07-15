@@ -1,3 +1,7 @@
+## Unreleased
+
+* Bump embedded QuickJS to **2026-06-04** (all platforms: `cxx/`, `cxx-windows/`, iOS/macOS SPM trees).
+
 ## 0.0.1
 
 * Package name: `flutter_qjs_next` (QuickJS engine bindings for Flutter).
