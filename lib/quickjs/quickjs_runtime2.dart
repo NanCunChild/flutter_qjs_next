@@ -153,6 +153,9 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   /// Free Runtime and Context. After [dispose], the engine cannot be reopened.
   /// After [close] without [dispose], the next [evaluate] recreates the engine.
   close() {
+    try {
+      releaseHostCaches();
+    } catch (_) {}
     final rt = _rt;
     final ctx = _ctx;
     if (rt == null) return;

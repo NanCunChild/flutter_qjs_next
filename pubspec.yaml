@@ -1,5 +1,5 @@
 name: flutter_qjs_next
-description: QuickJS ES2023 bindings for Flutter and Dart through dart:ffi, with native support for Android, iOS, macOS, Linux, and Windows.
+description: QuickJS bindings for Flutter and Dart through dart:ffi (flutter_qjs_next), with native support for Android, iOS, macOS, Linux, and Windows.
 version: 0.0.1
 homepage: https://github.com/NanCunChild/flutter_qjs_next
 repository: https://github.com/NanCunChild/flutter_qjs_next
@@ -7,7 +7,7 @@ issue_tracker: https://github.com/NanCunChild/flutter_qjs_next/issues
 topics:
   - quickjs
   - javascript
-  - es2023
+  - flutter-qjs-next
   - ffi
   - flutter-plugin
 

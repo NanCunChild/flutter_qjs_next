@@ -2,7 +2,7 @@
 
 Flutter / Dart bindings for [QuickJS](https://github.com/bellard/quickjs) via `dart:ffi`.
 
-- Embedded QuickJS **2025-09-13** (ES2023-era language features)
+- Embedded QuickJS **2025-09-13**
 - Platforms: **Android, iOS, macOS, Linux, Windows** (no Web — native FFI only)
 - API style compatible with [flutter_js](https://github.com/abner/flutter_js) (`JavascriptRuntime`, `getJavascriptRuntime()`)
 
@@ -63,7 +63,7 @@ final out = await pool.withEngine((js) async {
 pool.dispose();
 ```
 
-Engine ids include the isolate hash (`qjs-<isolate>-<serial>-<us>`) so parallel isolates do not collide in channel maps. By default `evaluate` / `callFunction` / `evaluateJson` also drain Promise jobs (`QuickJsRuntime2.autoExecutePendingJobs`).
+Engine ids include the isolate hash (`qjs-<isolate>-<serial>-<us>`) so parallel isolates do not collide in channel maps.
 
 `forceJavascriptCoreOnAndroid` and `xhr` are accepted for API compatibility with flutter_js but **are not implemented** (always QuickJS; no built-in XHR/fetch polyfill).
 
@@ -98,6 +98,26 @@ js.executePendingJobs(); // or executePendingJob() once per job
 // QuickJsRuntime2 only:
 // (js as QuickJsRuntime2).hasPendingJobs
 ```
+
+#### `autoExecutePendingJobs` (QuickJsRuntime2)
+
+Default is **`true`**: after `evaluate`, `evaluateJson`, `evaluateBytecode`, and `callFunction`, the runtime automatically drains the QuickJS job queue via `executePendingJobs()` (Promise reactions / microtasks).
+
+Implications:
+
+- Synchronous scripts that schedule Promises often settle without an extra manual drain.
+- Call order / timing can differ from engines that only run jobs when you call `dispatch()` / `executePendingJobs()` yourself.
+- There is a small cost after each of those entry points when jobs are pending.
+
+Disable when you need explicit control or minimal post-call work:
+
+```dart
+final js = QuickJsRuntime2(autoExecutePendingJobs: false);
+// or:
+(js as QuickJsRuntime2).autoExecutePendingJobs = false;
+```
+
+With `autoExecutePendingJobs: false`, drain jobs yourself (`executePendingJobs()`, `dispatch()`, or `handlePromises`) after async JS.
 
 ### Memory / GC
 

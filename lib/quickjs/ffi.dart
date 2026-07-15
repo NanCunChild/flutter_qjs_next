@@ -116,6 +116,7 @@ abstract base class JSPropertyEnum extends Opaque {}
 final DynamicLibrary _qjsLib = _openQuickJsLibrary();
 
 DynamicLibrary _openQuickJsLibrary() {
+  // Prefer FLUTTER_QJS_NEXT_LIBRARY; legacy FLUTTER_QJS_ES2023_LIBRARY still accepted.
   final explicitPath = Platform.environment['FLUTTER_QJS_NEXT_LIBRARY'] ??
       Platform.environment['FLUTTER_QJS_ES2023_LIBRARY'];
   if (explicitPath != null && explicitPath.isNotEmpty) {

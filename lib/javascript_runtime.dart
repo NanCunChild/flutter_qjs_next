@@ -144,6 +144,38 @@ abstract class JavascriptRuntime {
   /// Used by [JsEnginePool] when resetting a leased engine. Default is no-op.
   void reinitialize() {}
 
+  /// Free Dart-side JS refs that must not outlive [close]/call before native free.
+  @protected
+  void releaseHostCaches() {
+    _releaseSetTimeoutRunner();
+  }
+
+  static const _setTimeoutRunnerKey = '__setTimeoutRunner';
+
+  void _releaseSetTimeoutRunner() {
+    final runner = localContext.remove(_setTimeoutRunnerKey);
+    if (runner == null) return;
+    try {
+      (runner as dynamic).free();
+    } catch (_) {}
+  }
+
+  dynamic _getSetTimeoutRunner() {
+    final cached = localContext[_setTimeoutRunnerKey];
+    if (cached != null) return cached;
+    final runner = evaluate(r'''
+      (function(i) {
+        var cb = __NATIVE_FLUTTER_JS__setTimeoutCallbacks[i];
+        if (cb) {
+          delete __NATIVE_FLUTTER_JS__setTimeoutCallbacks[i];
+          cb();
+        }
+      })
+    ''').rawResult;
+    localContext[_setTimeoutRunnerKey] = runner;
+    return runner;
+  }
+
   void _setupConsoleLog() {
     evaluate("""
     var console = {
@@ -214,24 +246,13 @@ abstract class JavascriptRuntime {
         if (idx == null) return;
 
         Timer(Duration(milliseconds: duration < 0 ? 0 : duration), () {
-          final runner = evaluate(r'''
-            (function(i) {
-              var cb = __NATIVE_FLUTTER_JS__setTimeoutCallbacks[i];
-              if (cb) {
-                delete __NATIVE_FLUTTER_JS__setTimeoutCallbacks[i];
-                cb();
-              }
-            })
-          ''').rawResult;
-          // JSInvokable from QuickJS binding (avoid importing runtime here).
+          // Cached invokable (see _getSetTimeoutRunner); never free per-fire.
           try {
+            final runner = _getSetTimeoutRunner();
+            if (runner == null) return;
             (runner as dynamic).invoke([idx]);
           } catch (_) {
-            // Fallback: never inject index via string concatenation.
-          } finally {
-            try {
-              (runner as dynamic).free();
-            } catch (_) {}
+            // Engine disposed/reinitialized, or invoke failed.
           }
         });
       } on Exception catch (e) {
