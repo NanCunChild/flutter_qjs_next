@@ -210,6 +210,27 @@ Raw logs (full suite output + aggregated means):
 Numbers are single-host microbenchmarks (Linux `flutter_tester`); treat them as
 relative, not absolute product SLOs.
 
+### Soak / stress (long-haul)
+
+Separate from micro-benchmarks: high-concurrency burn-in, RSS/metrics, fail-fast
+dump (not us/op). Shared logic: `example/lib/soak_stress_runner.dart`.
+
+```bash
+cd example
+# short smoke (default ~30s)
+flutter test test/soak_stress_test.dart
+
+# ≥1h burn-in example
+flutter test test/soak_stress_test.dart \
+  --dart-define=SOAK_DURATION_SEC=3600 \
+  --dart-define=SOAK_POOL_SIZE=8 \
+  --dart-define=SOAK_WORKERS=32
+```
+
+On failure, a dump is written under `soak_dumps/` (config, pool stats, RSS,
+recent ops, sample `getMemoryUsage`). Native core dump is optional/external
+(`gcore` / `ulimit -c`).
+
 ## Architecture (short)
 
 - `lib/quickjs/*` — Dart FFI bindings and marshalling  
