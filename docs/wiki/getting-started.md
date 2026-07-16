@@ -71,7 +71,7 @@ import 'package:flutter_qjs_next/flutter_qjs.dart';
 void runOnce() {
   final js = getJavascriptRuntime(
     timeout: 5000, // ms; recommended for untrusted scripts; null/0 = off
-    // memoryLimit defaults to 64 MiB; use 0 for unlimited
+    // per-runtime QuickJS heap limit; null/negative -> 64 MiB, 0 -> unlimited
   );
 
   final r = js.evaluate('Math.trunc(Math.random() * 100).toString()');
@@ -88,9 +88,14 @@ void runOnce() {
 |-----------|---------|---------|
 | `stackSize` | JS stack size (bytes) | 1 MiB |
 | `timeout` | Interrupt after this many **ms** of wall-clock JS work (`null`/`0` = off) | off |
-| `memoryLimit` | Heap limit (bytes); `0` = unlimited | **64 MiB** |
+| `memoryLimit` | Per-runtime QuickJS heap limit; `0` = unlimited; null/negative use default | **64 MiB** |
 
 Each call to `getJavascriptRuntime()` creates a **separate** QuickJS engine (own heap, channels, `ReceivePort`). Prefer one long-lived runtime or a [pool](api/engine-pool.md) over create-per-call.
+
+The heap limit is not a cap on the Flutter process or its RSS. Dart, Flutter,
+plugin/native allocations and all runtime overhead remain outside it. For
+untrusted inputs, also use a positive timeout, validate bridge payload sizes,
+and limit the number of live engines.
 
 ---
 

@@ -30,9 +30,9 @@
 
 | Symptom | Fix |
 |---------|-----|
-| OOM / allocate failures | Lower script size; raise `memoryLimit` carefully; `runGC`; fewer engines |
+| OOM / allocate failures | Lower JS/payload size; raise per-runtime `memoryLimit` carefully; run `runGC`; use fewer engines |
 | Slow large objects | Use `evaluateJson` or TypedArray |
-| Growing RSS over time | Check dispose/free; pool max; leak tests |
+| Growing RSS over time | `memoryLimit` does not cap RSS; check dispose/free, pool max, bridge payloads and native/Dart allocations; use leak tests |
 
 ## Modules
 

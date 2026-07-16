@@ -1,13 +1,20 @@
 # Memory & lifecycle
 
-## Heap limit
+## Memory limits
 
-Default: **`kDefaultJsMemoryLimit` = 64 MiB** per engine.
+Default: **`kDefaultJsMemoryLimit` = 64 MiB** per QuickJS engine.
 
 ```dart
 getJavascriptRuntime(memoryLimit: 32 * 1024 * 1024);
 getJavascriptRuntime(memoryLimit: 0); // unlimited — avoid for multi-engine / untrusted
 ```
+
+`memoryLimit` applies to the QuickJS heap of one runtime. `0` means unlimited;
+`null` and negative values use the 64 MiB default. It is not a process-level
+memory cap. Dart objects, Flutter memory, all native/plugin allocations and
+process RSS are outside this limit. Oversized single `TypedData` and
+`ByteBuffer` bridge payloads are rejected, but cumulative bridge allocations
+and Dart-side result allocations are not fully accounted for.
 
 `getMemoryUsage()` returns a snapshot (`JsMemoryUsage`) when the engine is live; `null` if disposed / not ready.
 
@@ -15,7 +22,8 @@ getJavascriptRuntime(memoryLimit: 0); // unlimited — avoid for multi-engine / 
 js.runGC(); // force QuickJS GC
 ```
 
-Process RSS includes Dart, Flutter, and native heaps — JS limit is only the QuickJS side.
+Process RSS includes Dart, Flutter, native and plugin heaps. Monitor it
+separately; a QuickJS heap limit alone cannot enforce a process RSS ceiling.
 
 ## Runtime lifecycle
 
@@ -40,7 +48,9 @@ create → evaluate… → (optional close / reinitialize) → dispose
 ## Pool
 
 - `maxSize` caps concurrent engines.  
-- Default reset on release avoids cross-tenant memory retention of JS objects (native heap still recycled via reinitialize/close).  
+- Each engine has its own heap limit; the pool's aggregate QuickJS usage can be
+  roughly `maxSize * memoryLimit`, before Dart and native overhead.
+- Default reset on release avoids cross-tenant memory retention of JS objects (native heap still recycled via reinitialize/close).
 
 ## Stress testing
 

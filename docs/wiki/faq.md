@@ -14,7 +14,9 @@ There is no built-in network stack. Provide a polyfill or a Dart bridge.
 
 ### What is the default memory limit?
 
-**64 MiB** (`kDefaultJsMemoryLimit`). Pass `memoryLimit: 0` for unlimited (not recommended for untrusted multi-engine use).
+**64 MiB per QuickJS runtime** (`kDefaultJsMemoryLimit`). Pass `memoryLimit: 0`
+for an unlimited QuickJS heap (not recommended for untrusted or multi-engine
+use). This does not cap Dart/Flutter/native memory or process RSS.
 
 ### Should I create a runtime per call?
 

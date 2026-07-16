@@ -15,6 +15,11 @@ class JsEnginePoolConfig {
 
 When **`resetOnRelease`** is true, `release` calls `reinitialize()` so the next tenant does not see prior `globalThis` / channel state. On reinitialize failure the engine is destroyed.
 
+`memoryLimit` is per engine, not a pool-wide or process-wide limit. With
+`maxSize: 4` and a 64 MiB limit, the pool may reserve up to roughly 256 MiB of
+QuickJS heap before Dart, Flutter and native overhead. Use a conservative
+`maxSize`; the pool currently does not enforce an aggregate RSS budget.
+
 ## Usage
 
 ```dart

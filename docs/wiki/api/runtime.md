@@ -24,13 +24,30 @@ QuickJsRuntime2({
   String Function(String name)? moduleHandler,
   int stackSize = 1024 * 1024,
   int? timeout,
-  int? memoryLimit,
+  int? memoryLimit = kDefaultJsMemoryLimit,
   void Function(dynamic reason)? hostPromiseRejectionHandler,
   bool autoExecutePendingJobs = true,
 });
 ```
 
 Calls `init()` (channels, console, setTimeout).
+
+### Memory-limit semantics
+
+`memoryLimit` is a **per-runtime QuickJS heap limit**, not a limit for the
+whole Flutter process. The contract is:
+
+| Value | Meaning |
+|-------|---------|
+| positive integer | QuickJS heap limit in bytes |
+| `0` | Unlimited QuickJS heap (not recommended for untrusted code) |
+| `null` or negative | Falls back to `kDefaultJsMemoryLimit` (64 MiB) |
+
+The limit does not include the Dart heap, Flutter allocations, process RSS, or
+all native/plugin allocations. A single `TypedData` or `ByteBuffer` bridge
+payload larger than the runtime limit is rejected, but this is not a complete
+process-memory quota. Use `getMemoryUsage()` for QuickJS metrics and bound pool
+size when multiple runtimes are live.
 
 ## Evaluate
 

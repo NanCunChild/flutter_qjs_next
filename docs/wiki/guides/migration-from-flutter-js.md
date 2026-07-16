@@ -33,7 +33,7 @@ Still work in the common case:
 |-------|------------------|
 | Engine on Android | **Always QuickJS** (`forceJavascriptCoreOnAndroid` ignored) |
 | XHR / fetch | **Not** installed (`xhr` ignored). Polyfill or bridge yourself |
-| Default heap | **64 MiB** unless you set `memoryLimit` |
+| Default QuickJS heap | **64 MiB per runtime** unless you set `memoryLimit` |
 | Promise jobs | `autoExecutePendingJobs: true` by default |
 | Promise helper | Lightweight `handlePromise` (no 20 ms query poll registry) |
 | Multi-engine | Prefer `JsEnginePool` + `reinitialize` |
@@ -54,3 +54,7 @@ If you load a custom dynamic library path for tooling, see package FFI loader / 
 3. Add `timeout` / keep default `memoryLimit` for untrusted scripts.  
 4. Re-test Promise and bridge flows with `handlePromise`.  
 5. Replace any XHR-dependent scripts with host bridges or an explicit polyfill.  
+
+The default heap limit is not a process-memory limit. If the migrated app uses
+large Dart buffers, many runtimes, or untrusted bridge payloads, add explicit
+payload validation and keep the pool size bounded.

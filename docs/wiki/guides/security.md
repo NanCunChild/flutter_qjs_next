@@ -23,6 +23,9 @@ final js = getJavascriptRuntime(
 
 - Prefer a **positive `timeout`** for third-party or user-edited scripts.  
 - Keep the **default `memoryLimit`** unless you have a measured reason to raise it.  
+- Treat `memoryLimit` as a per-runtime QuickJS heap budget, not a process RSS
+  limit. For multiple engines, account for the aggregate budget and pool
+  overhead separately.
 - Prefer **`JsEnginePool` with `resetOnRelease: true`** between tenants.
 
 ## Capability control
@@ -37,7 +40,7 @@ final js = getJavascriptRuntime(
 | Control | Does **not** mean |
 |---------|-------------------|
 | `timeout` | Full fairness under all native callbacks |
-| `memoryLimit` | Cap on Dart heap / your bridge allocations |
+| `memoryLimit` | A cap on Dart heap, Flutter memory, process RSS, or all bridge allocations |
 | Bytecode | Integrity or authenticity of code |
 | Separate runtimes | Isolation of host process or OS credentials |
 
@@ -51,6 +54,11 @@ final js = getJavascriptRuntime(
 ## Eval safety
 
 Avoid building JS source from untrusted strings when a bridge can pass data instead. The Dart-side `sendMessage(... evaluate ...)` helper is **deprecated** for this reason.
+
+For a hard process-level memory boundary, an in-process runtime or Dart
+isolate is insufficient: use a separately managed helper process with an
+OS-level memory policy. This is substantially more complex and is not provided
+by `memoryLimit`.
 
 ## Report issues
 

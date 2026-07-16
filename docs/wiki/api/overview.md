@@ -11,7 +11,7 @@ import 'package:flutter_qjs_next/flutter_qjs.dart';
 | Symbol | Role |
 |--------|------|
 | `getJavascriptRuntime(...)` | Create a configured `JavascriptRuntime` (QuickJS) + enable promise helpers |
-| `kDefaultJsMemoryLimit` | Default heap cap: **64 MiB** |
+| `kDefaultJsMemoryLimit` | Default per-runtime QuickJS heap cap: **64 MiB**; not a process RSS cap |
 | `QuickJsRuntime2` | Concrete engine (cast when you need QuickJS-only APIs) |
 | `JavascriptRuntime` | Abstract API shared with flutter_js-style call sites |
 | `JsEvalResult` | Evaluate result wrapper |
