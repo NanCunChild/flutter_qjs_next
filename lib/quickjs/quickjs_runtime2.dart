@@ -41,6 +41,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   late String _engineInstanceId = _newEngineInstanceId();
 
   bool _disposed = false;
+  bool _needsInitialization = false;
 
   /// When true (default), [evaluate] / [evaluateJson] / [callFunction] drain
   /// Promise microtasks via [executePendingJobs] after the call.
@@ -148,6 +149,10 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     if (memoryLimit > 0) jsSetMemoryLimit(rt, memoryLimit);
     _rt = rt;
     _ctx = jsNewContext(rt);
+    if (_needsInitialization) {
+      _needsInitialization = false;
+      init();
+    }
   }
 
   /// Free Runtime and Context. After [dispose], the engine cannot be reopened.
@@ -176,6 +181,9 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     }
     _rt = null;
     _ctx = null;
+    localContext.clear();
+    dartContext.clear();
+    _needsInitialization = true;
     try {
       jsFreeRuntime(rt);
     } on String catch (e) {
@@ -199,6 +207,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     localContext.clear();
     dartContext.clear();
     _engineInstanceId = _newEngineInstanceId();
+    _needsInitialization = false;
     init();
   }
 

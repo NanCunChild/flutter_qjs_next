@@ -142,6 +142,16 @@ void main() {
   });
 
   group('create/dispose stress', () {
+    test('close recreates the standard JavaScript environment', () {
+      final js = getJavascriptRuntime() as QuickJsRuntime2;
+      addTearDown(js.dispose);
+
+      js.close();
+      expect(js.evaluate('typeof console').rawResult, 'object');
+      expect(js.evaluate('typeof setTimeout').rawResult, 'function');
+      expect(js.evaluate('typeof sendMessage').rawResult, 'function');
+    });
+
     test('many short-lived engines', () {
       for (var i = 0; i < 32; i++) {
         final js = getJavascriptRuntime(timeout: 2000);
