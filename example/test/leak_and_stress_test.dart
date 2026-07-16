@@ -64,6 +64,20 @@ void main() {
       });
     });
 
+    test('resetOnRelease cancels old setTimeout callbacks', () async {
+      final js = getJavascriptRuntime();
+      addTearDown(js.dispose);
+
+      js.evaluate('setTimeout(() => { globalThis.old = true }, 20)');
+      (js as QuickJsRuntime2).reinitialize();
+      js.evaluate('globalThis.count = 0');
+      js.evaluate('setTimeout(() => { globalThis.count += 1 }, 60)');
+
+      await Future.delayed(const Duration(milliseconds: 100));
+      expect(js.evaluate('globalThis.old').rawResult, isNull);
+      expect(js.evaluate('globalThis.count').rawResult, 1);
+    });
+
     test('acquire timeout and withEngine', () async {
       final pool = JsEnginePool(maxSize: 1);
       addTearDown(pool.dispose);

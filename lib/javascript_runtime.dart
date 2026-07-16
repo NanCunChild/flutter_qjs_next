@@ -147,10 +147,17 @@ abstract class JavascriptRuntime {
   /// Free Dart-side JS refs that must not outlive [close]/call before native free.
   @protected
   void releaseHostCaches() {
+    _setTimeoutGeneration++;
+    for (final timer in _setTimeoutTimers) {
+      timer.cancel();
+    }
+    _setTimeoutTimers.clear();
     _releaseSetTimeoutRunner();
   }
 
   static const _setTimeoutRunnerKey = '__setTimeoutRunner';
+  final Set<Timer> _setTimeoutTimers = <Timer>{};
+  int _setTimeoutGeneration = 0;
 
   void _releaseSetTimeoutRunner() {
     final runner = localContext.remove(_setTimeoutRunnerKey);
@@ -245,7 +252,11 @@ abstract class JavascriptRuntime {
             : int.tryParse('$idxRaw');
         if (idx == null) return;
 
-        Timer(Duration(milliseconds: duration < 0 ? 0 : duration), () {
+        final generation = _setTimeoutGeneration;
+        late final Timer timer;
+        timer = Timer(Duration(milliseconds: duration < 0 ? 0 : duration), () {
+          _setTimeoutTimers.remove(timer);
+          if (generation != _setTimeoutGeneration) return;
           // Cached invokable (see _getSetTimeoutRunner); never free per-fire.
           try {
             final runner = _getSetTimeoutRunner();
@@ -255,6 +266,7 @@ abstract class JavascriptRuntime {
             // Engine disposed/reinitialized, or invoke failed.
           }
         });
+        _setTimeoutTimers.add(timer);
       } on Exception catch (e) {
         FlutterQjsLogger.error('Exception in setTimeout callback', e);
       } on Error catch (e) {
