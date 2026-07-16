@@ -17,7 +17,7 @@ on:
       - main
       - master
     paths:
-      - 'docs/wiki/**'
+      - 'doc/wiki/**'
       - 'scripts/sync-wiki.sh'
       - '.github/workflows/sync-wiki.yml'
   workflow_dispatch:
@@ -34,9 +34,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Sync docs/wiki to GitHub Wiki
+      - name: Sync doc/wiki to GitHub Wiki
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}

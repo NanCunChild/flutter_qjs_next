@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Mirror docs/wiki/ (source of truth) to the GitHub Wiki repository.
+# Mirror doc/wiki/ (source of truth) to the GitHub Wiki repository.
 # Usage:
 #   bash scripts/sync-wiki.sh
 # Env:
@@ -10,7 +10,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SRC="${ROOT}/docs/wiki"
+SRC="${ROOT}/doc/wiki"
 
 if [[ ! -d "${SRC}" ]]; then
   echo "error: missing wiki source: ${SRC}" >&2
@@ -65,10 +65,10 @@ if ! git clone --depth 1 "${clone_url}" "${WORKDIR}" 2>/tmp/wiki-clone.err; then
     commit -m "Initialize wiki"
 fi
 
-# Replace tracked wiki content with docs/wiki mirror (keep .git).
+# Replace tracked wiki content with doc/wiki mirror (keep .git).
 find "${WORKDIR}" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
 
-# Copy tree; map docs/wiki/README.md -> Home.md (GitHub Wiki home).
+# Copy tree; map doc/wiki/README.md -> Home.md (GitHub Wiki home).
 rsync -a --exclude '.git' "${SRC}/" "${WORKDIR}/"
 if [[ -f "${WORKDIR}/README.md" ]]; then
   mv -f "${WORKDIR}/README.md" "${WORKDIR}/Home.md"
@@ -81,7 +81,7 @@ if [[ ! -f "${WORKDIR}/Home.md" ]]; then
   exit 1
 fi
 
-# Rewrite repo-root relative links used in docs (e.g. ../../CHANGELOG.md).
+# Rewrite repo-root relative links used in doc (e.g. ../../CHANGELOG.md).
 # Point them at the default branch blob URL.
 DEFAULT_BRANCH="${DEFAULT_BRANCH:-main}"
 BLOB="https://github.com/${GITHUB_REPOSITORY}/blob/${DEFAULT_BRANCH}"
@@ -109,7 +109,7 @@ if git -C "${WORKDIR}" diff --cached --quiet; then
 fi
 
 git -C "${WORKDIR}" -c commit.gpgsign=false \
-  commit -m "docs: sync wiki from docs/wiki ($(date -u +%Y-%m-%dT%H:%MZ))"
+  commit -m "docs: sync wiki from doc/wiki ($(date -u +%Y-%m-%dT%H:%MZ))"
 
 if [[ "${WIKI_DRY_RUN:-0}" == "1" ]]; then
   echo "WIKI_DRY_RUN=1: skip push"
