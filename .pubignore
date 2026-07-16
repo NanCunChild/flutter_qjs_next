@@ -11,6 +11,4 @@ example/linux/flutter/ephemeral/
 *.iml
 android/src/main/java/soko/
 ios/flutter_qjs_next.podspec
-linux/include/flutter_qjs_next/
 macos/flutter_qjs_next.podspec
-windows/include/flutter_qjs_next/
