@@ -7,9 +7,8 @@
 | `flutter_js` | `flutter_qjs_next` |
 | Older `flutter_qjs` forks | `package:flutter_qjs_next/flutter_qjs.dart` |
 
-```yaml
-dependencies:
-  flutter_qjs_next: ^0.0.1
+```bash
+flutter pub add flutter_qjs_next
 ```
 
 ```dart

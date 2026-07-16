@@ -12,14 +12,10 @@ Integrate **flutter_qjs_next** into a Flutter app, run a one-liner evaluate, the
 
 ## 1. Add the dependency
 
-### From pub.dev (when published)
+### From pub.dev
 
-```yaml
-# pubspec.yaml
-dependencies:
-  flutter:
-    sdk: flutter
-  flutter_qjs_next: ^0.0.1
+```bash
+flutter pub add flutter_qjs_next
 ```
 
 ### From a local path (development)

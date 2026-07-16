@@ -9,7 +9,7 @@ part of 'quickjs_runtime2.dart';
 
 dynamic _parseJSException(Pointer<JSContext> ctx, [Pointer<JSValue>? perr]) {
   final e = perr ?? jsGetException(ctx);
-  var err;
+  dynamic err;
   try {
     err = _jsToDart(ctx, e);
   } catch (exception) {
@@ -58,30 +58,31 @@ Pointer<JSValue> _jsGetPropertyValue(
 /// kinds without a matching JS TypedArray (falls back to the generic path).
 Pointer<JSValue>? _typedDataToJs(Pointer<JSContext> ctx, TypedData val) {
   final int type;
-  if (val is Int8List)
+  if (val is Int8List) {
     type = JSTypedArrayType.INT8;
-  else if (val is Uint8ClampedList)
+  } else if (val is Uint8ClampedList) {
     type = JSTypedArrayType.UINT8C;
-  else if (val is Uint8List)
+  } else if (val is Uint8List) {
     type = JSTypedArrayType.UINT8;
-  else if (val is Int16List)
+  } else if (val is Int16List) {
     type = JSTypedArrayType.INT16;
-  else if (val is Uint16List)
+  } else if (val is Uint16List) {
     type = JSTypedArrayType.UINT16;
-  else if (val is Int32List)
+  } else if (val is Int32List) {
     type = JSTypedArrayType.INT32;
-  else if (val is Uint32List)
+  } else if (val is Uint32List) {
     type = JSTypedArrayType.UINT32;
-  else if (val is Int64List)
+  } else if (val is Int64List) {
     type = JSTypedArrayType.BIG_INT64;
-  else if (val is Uint64List)
+  } else if (val is Uint64List) {
     type = JSTypedArrayType.BIG_UINT64;
-  else if (val is Float32List)
+  } else if (val is Float32List) {
     type = JSTypedArrayType.FLOAT32;
-  else if (val is Float64List)
+  } else if (val is Float64List) {
     type = JSTypedArrayType.FLOAT64;
-  else
+  } else {
     return null;
+  }
   final byteLength = val.lengthInBytes;
   _checkBridgeBufferLimit(ctx, byteLength);
   final ptr = jsAllocBuffer(byteLength);

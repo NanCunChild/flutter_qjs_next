@@ -76,7 +76,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     this.init();
   }
 
-  _ensureEngine() {
+  void _ensureEngine() {
     if (_disposed) {
       throw StateError('QuickJsRuntime2 is disposed');
     }
@@ -160,7 +160,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
 
   /// Free Runtime and Context. After [dispose], the engine cannot be reopened.
   /// After [close] without [dispose], the next [evaluate] recreates the engine.
-  close() {
+  void close() {
     try {
       releaseHostCaches();
     } catch (_) {}

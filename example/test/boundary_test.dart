@@ -1,8 +1,6 @@
-import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_qjs_next/flutter_qjs.dart';
-import 'package:flutter_qjs_next/quickjs/quickjs_runtime2.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -112,7 +110,9 @@ void main() {
           as JSInvokable;
       setter.invoke(['busy', () {
         var x = 0;
-        for (var i = 0; i < 5000000; i++) x += i;
+        for (var i = 0; i < 5000000; i++) {
+          x += i;
+        }
         return x;
       }]);
       setter.free();

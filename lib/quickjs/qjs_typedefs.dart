@@ -126,13 +126,13 @@ typedef JSIsArrayNative =
 typedef JSIsArray =
     int Function(Pointer<JSContext> ctx, Pointer<JSValueConst> jsValue);
 
-typedef int JSJSONStringify(
+typedef JSJSONStringify = int Function(
   Pointer<JSContext> ctx,
   Pointer<JSValueConst> obj,
   Pointer<JSValueConst> res,
   Pointer<Pointer<Utf8NullTerminated>> stringResult,
 );
-typedef Int32 JSJSONStringifyNative(
+typedef JSJSONStringifyNative = Int32 Function(
   Pointer<JSContext> ctx,
   Pointer<JSValueConst> obj,
   Pointer<JSValueConst> res,

@@ -104,8 +104,9 @@ void main() {
     // complete after dispose
     if (!c.isCompleted) c.complete(1);
     await Future.delayed(const Duration(milliseconds: 20));
-    // just record
-    print('early dispose err=$err');
+    if (err != null) {
+      expect(err, isA<Object>());
+    }
   });
 
   test('setTimeout pending then dispose', () async {

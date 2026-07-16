@@ -7,7 +7,7 @@
  */
 part of 'quickjs_runtime2.dart';
 
-typedef dynamic _Decode(Map obj);
+typedef _Decode = dynamic Function(Map obj);
 List<_Decode> _decoders = [JSError._decode, IsolateFunction._decode];
 
 abstract class _IsolateEncodable {
@@ -17,8 +17,9 @@ abstract class _IsolateEncodable {
 dynamic _encodeData(dynamic data, {Map<dynamic, dynamic>? cache}) {
   if (cache == null) cache = Map();
   if (cache.containsKey(data)) return cache[data];
-  if (data is Error || data is Exception)
+  if (data is Error || data is Exception) {
     return _encodeData(JSError(data), cache: cache);
+  }
   if (data is _IsolateEncodable) return data._encode();
   if (data is List) {
     final ret = [];
@@ -139,7 +140,7 @@ void _runJsIsolate(Map spawnMessage) async {
     },
   );
   port.listen((msg) async {
-    var data;
+    dynamic data;
     SendPort? msgPort = msg[#port];
     try {
       switch (msg[#type]) {
@@ -248,7 +249,7 @@ class IsolateQjs {
     });
   }
 
-  _ensureEngine() {
+  void _ensureEngine() {
     if (_sendPort != null) return;
     ReceivePort port = ReceivePort();
     Isolate.spawn(_runJsIsolate, {
@@ -294,15 +295,16 @@ class IsolateQjs {
       },
       onDone: () {
         close();
-        if (!completer.isCompleted)
+        if (!completer.isCompleted) {
           completer.completeError(JSError('isolate close'));
+        }
       },
     );
     _sendPort = completer.future;
   }
 
   /// Free Runtime and close isolate thread that can be recreate when evaluate again.
-  close() {
+  Future<dynamic>? close() {
     // Host-function handlers are reclaimed by the existing IsolateFunction
     // refcount path: when the worker frees its runtime on #close, the bound
     // globalThis functions are GC'd, and their cross-isolate #free messages
@@ -312,14 +314,15 @@ class IsolateQjs {
     _hostFunctionsBound = false;
     final sendPort = _sendPort;
     _sendPort = null;
-    if (sendPort == null) return;
+    if (sendPort == null) return null;
     final ret = sendPort.then((sendPort) async {
       final closePort = ReceivePort();
       sendPort.send({#type: #close, #port: closePort.sendPort});
       final result = await closePort.first;
       closePort.close();
-      if (result is Map && result.containsKey(#error))
+      if (result is Map && result.containsKey(#error)) {
         throw _decodeData(result[#error]);
+      }
       return _decodeData(result);
     });
     return ret;
@@ -350,8 +353,9 @@ class IsolateQjs {
     sendPort.send(msg);
     final result = await evaluatePort.first;
     evaluatePort.close();
-    if (result is Map && result.containsKey(#error))
+    if (result is Map && result.containsKey(#error)) {
       throw _decodeData(result[#error]);
+    }
     return _decodeData(result);
   }
 }

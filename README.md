@@ -8,9 +8,8 @@ Flutter / Dart bindings for [QuickJS](https://github.com/bellard/quickjs) via `d
 
 ## Install
 
-```yaml
-dependencies:
-  flutter_qjs_next: ^0.0.1
+```bash
+flutter pub add flutter_qjs_next
 ```
 
 ```dart

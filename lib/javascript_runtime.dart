@@ -289,7 +289,7 @@ abstract class JavascriptRuntime {
   /// Dart → JS message helper. Prefer not to inject untrusted strings into
   /// [evaluate]; use registered bridges + `sendMessage` from JS instead.
   @Deprecated('Prefer JS-side sendMessage bridges; string eval is unsafe')
-  sendMessage({
+  void sendMessage({
     required String channelName,
     required List<String> args,
     String? uuid,
@@ -308,7 +308,7 @@ abstract class JavascriptRuntime {
     }
   }
 
-  onMessage(String channelName, dynamic Function(dynamic args) fn) {
+  void onMessage(String channelName, dynamic Function(dynamic args) fn) {
     setupBridge(channelName, fn);
   }
 

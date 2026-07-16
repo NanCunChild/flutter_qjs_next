@@ -408,7 +408,7 @@ void jsFreeRuntime(Pointer<JSRuntime> rt) {
     while (opaque._ref.isNotEmpty) {
       final ref = opaque._ref.first;
       final objStrs = ref.toString().split('\n');
-      final objStr = objStrs.length > 0 ? objStrs[0] + " ..." : objStrs[0];
+      final objStr = objStrs.isNotEmpty ? objStrs[0] + " ..." : objStrs[0];
       referenceleak.add(
         "  ${identityHashCode(ref)}\t${ref._refCount + 1}\t${ref.runtimeType.toString()}\t$objStr",
       );
@@ -418,7 +418,7 @@ void jsFreeRuntime(Pointer<JSRuntime> rt) {
     runtimeOpaques.remove(rt);
   }
   _jsFreeRuntime(rt);
-  if (referenceleak.length > 0) {
+  if (referenceleak.isNotEmpty) {
     throw ('reference leak:\n    ADDR\tREF\tTYPE\tPROP\n' +
         referenceleak.join('\n'));
   }
@@ -1068,7 +1068,7 @@ Pointer<JSValue> jsCall(
   List<Pointer<JSValue>> argv,
 ) {
   final jsArgs = calloc<Uint8>(
-    argv.length > 0 ? sizeOfJSValue * argv.length : 1,
+    argv.isNotEmpty ? sizeOfJSValue * argv.length : 1,
   ).cast<JSValue>();
   for (int i = 0; i < argv.length; ++i) {
     Pointer<JSValue> jsArg = argv[i];

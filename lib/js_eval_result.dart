@@ -11,5 +11,5 @@ class JsEvalResult {
     this.isPromise = false,
   });
 
-  toString() => stringResult;
+  String toString() => stringResult;
 }

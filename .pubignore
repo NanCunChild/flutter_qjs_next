@@ -1,7 +1,6 @@
 .dart_tool/
 .pub/
 build/
-example/
 android/.cxx/
 example/build/
 example/.dart_tool/
