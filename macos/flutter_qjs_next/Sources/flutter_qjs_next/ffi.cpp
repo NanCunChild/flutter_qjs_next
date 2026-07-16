@@ -19,7 +19,6 @@
 extern "C"
 {
 
-
   /* Wall-clock ms for interrupt timeout (not process CPU time). */
   static int64_t js_monotonic_ms(void)
   {

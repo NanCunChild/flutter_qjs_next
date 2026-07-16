@@ -588,7 +588,7 @@ jsNewArrayBufferCopy = _qjsLib
     .asFunction();
 
 /// uint8_t *jsAllocBuffer(size_t len)
-final Pointer<Uint8> Function(int) jsAllocBuffer = _qjsLib
+final Pointer<Uint8> Function(int len) jsAllocBuffer = _qjsLib
     .lookup<NativeFunction<Pointer<Uint8> Function(IntPtr)>>('jsAllocBuffer')
     .asFunction();
 
