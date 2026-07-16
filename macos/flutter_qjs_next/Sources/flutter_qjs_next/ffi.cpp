@@ -315,6 +315,11 @@ extern "C"
     return (uint8_t *)malloc(len == 0 ? 1 : len);
   }
 
+  DLLEXPORT void jsMemcpy(uint8_t *dst, const uint8_t *src, size_t len)
+  {
+    memcpy(dst, src, len);
+  }
+
   static void js_free_owned_buffer(JSRuntime *rt, void *opaque, void *ptr)
   {
     free(ptr);

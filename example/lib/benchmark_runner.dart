@@ -1,8 +1,11 @@
+import 'dart:ffi';
 import 'dart:io' show Platform;
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:ffi/ffi.dart';
 import 'package:flutter_qjs_next/flutter_qjs.dart';
+import 'package:flutter_qjs_next/quickjs/ffi.dart' show jsAllocBuffer, jsMemcpy;
 
 /// Micro-benchmarks for evaluate / marshalling / TypedArray paths.
 /// Run via [example/test/benchmark_test.dart] or the example app UI — not `dart run`.
@@ -22,8 +25,7 @@ class BenchmarkResult {
   @override
   String toString() {
     final thr = mbPerSec;
-    final thrStr =
-        thr == null ? '' : '  ${thr.toStringAsFixed(1)} MiB/s';
+    final thrStr = thr == null ? '' : '  ${thr.toStringAsFixed(1)} MiB/s';
     return '$name: ${avgUsPerOp.toStringAsFixed(1)} us/op '
         '($iterations iters)$thrStr';
   }
@@ -55,10 +57,8 @@ class AggregatedBenchmarkResult {
   @override
   String toString() {
     final thr = mbPerSec;
-    final thrStr =
-        thr == null ? '' : '  ${thr.toStringAsFixed(1)} MiB/s';
-    final sigma =
-        runs > 1 ? ' σ=${stdevUsPerOp.toStringAsFixed(1)}' : '';
+    final thrStr = thr == null ? '' : '  ${thr.toStringAsFixed(1)} MiB/s';
+    final sigma = runs > 1 ? ' σ=${stdevUsPerOp.toStringAsFixed(1)}' : '';
     return '$name: ${meanUsPerOp.toStringAsFixed(1)} us/op '
         '(n=$runs$sigma, $iterationsPerRun iters/run)$thrStr';
   }
@@ -253,7 +253,7 @@ List<BenchmarkResult> runFlutterQjsBenchmarks({
 
   emit(_machineBanner(seed: seed, length: length, iterations: iterations));
 
-  final runtime = getJavascriptRuntime();
+  final runtime = getJavascriptRuntime() as QuickJsRuntime2;
   final results = <BenchmarkResult>[];
   final rng = Random(seed);
 
@@ -278,13 +278,17 @@ List<BenchmarkResult> runFlutterQjsBenchmarks({
   }
 
   try {
-    // --- 1) Hot path: tiny evaluate + cached invoke ---
-    bench('evaluate tiny (1+1)', () {
+    // --- 1) Evaluate and automatic job-drain controls ---
+    bench('evaluate tiny (auto jobs on)', () {
       runtime.evaluate('1+1');
     }, iters: iterations * 5);
+    runtime.autoExecutePendingJobs = false;
+    bench('evaluate tiny (auto jobs off)', () {
+      runtime.evaluate('1+1');
+    }, iters: iterations * 5);
+    runtime.autoExecutePendingJobs = true;
 
-    final addFn =
-        runtime.evaluate('(a,b)=>a+b').rawResult as JSInvokable;
+    final addFn = runtime.evaluate('(a,b)=>a+b').rawResult as JSInvokable;
     try {
       bench('invoke host (a,b)=>a+b', () {
         addFn.invoke([1, 2]);
@@ -297,8 +301,7 @@ List<BenchmarkResult> runFlutterQjsBenchmarks({
     final lenFn = runtime.evaluate('(v)=>v.length').rawResult as JSInvokable;
     try {
       // --- 2) String / small Map marshalling ---
-      const s =
-          'hello-flutter-qjs-next-benchmark-string-payload-0123456789';
+      const s = 'hello-flutter-qjs-next-benchmark-string-payload-0123456789';
       bench('string Dart→JS→Dart (identity)', () {
         idFn.invoke([s]);
       });
@@ -357,20 +360,64 @@ List<BenchmarkResult> runFlutterQjsBenchmarks({
       runtime.evaluateJson(objectSrc);
     });
 
-    // JS → Dart typed arrays (always one memcpy today)
+    // --- 5) JS allocation + JS → Dart conversion ---
     for (final size in const [1024, 64 * 1024, 1024 * 1024]) {
+      final allocateAndReturn =
+          runtime.evaluate('(n) => new Uint8Array(n)').rawResult as JSInvokable;
       bench(
-        'JS Uint8Array→Dart ($size B)',
+        'JS allocate Uint8Array→Dart ($size B)',
         () {
-          runtime.evaluate('new Uint8Array($size)');
+          allocateAndReturn.invoke([size]);
         },
         bytes: size,
         iters: size >= 1024 * 1024 ? (iterations ~/ 2).clamp(4, 20) : null,
       );
+      allocateAndReturn.free();
+
+      // The same JS TypedArray is returned repeatedly, so this excludes JS
+      // allocation and measures the bridge conversion plus its Dart copy.
+      final fixed = runtime.evaluate('''
+        (() => {
+          const value = new Uint8Array($size);
+          return () => value;
+        })()
+      ''').rawResult as JSInvokable;
+      bench(
+        'fixed JS Uint8Array→Dart ($size B)',
+        () => fixed.invoke(const []),
+        bytes: size,
+        iters: size >= 1024 * 1024 ? (iterations ~/ 2).clamp(4, 20) : null,
+      );
+      fixed.free();
     }
     bench('JS Float64Array→Dart ($length)', () {
       runtime.evaluate('new Float64Array($length)');
     }, bytes: length * 8);
+
+    // --- 6) Native memcpy only ---
+    for (final size in const [1024, 64 * 1024, 1024 * 1024]) {
+      final src = jsAllocBuffer(size);
+      final dst = jsAllocBuffer(size);
+      if (src.address == 0 || dst.address == 0) {
+        if (src.address != 0) malloc.free(src);
+        if (dst.address != 0) malloc.free(dst);
+        throw StateError('Unable to allocate memcpy benchmark buffers');
+      }
+      src.asTypedList(size).fillRange(0, size, 0xA5);
+      try {
+        bench(
+          'native memcpy ($size B)',
+          () => jsMemcpy(dst, src, size),
+          bytes: size,
+          iters: size >= 1024 * 1024
+              ? (iterations ~/ 2).clamp(4, 20)
+              : iterations * 20,
+        );
+      } finally {
+        malloc.free(src);
+        malloc.free(dst);
+      }
+    }
   } finally {
     runtime.dispose();
   }

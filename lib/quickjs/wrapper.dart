@@ -83,10 +83,7 @@ Pointer<JSValue>? _typedDataToJs(Pointer<JSContext> ctx, TypedData val) {
   else
     return null;
   final byteLength = val.lengthInBytes;
-  final limit = runtimeOpaques[jsGetRuntime(ctx)]?.memoryLimit;
-  if (limit != null && limit > 0 && byteLength > limit) {
-    throw JSError('TypedData exceeds the runtime memory limit');
-  }
+  _checkBridgeBufferLimit(ctx, byteLength);
   final ptr = jsAllocBuffer(byteLength);
   if (ptr.address == 0) throw JSError('Out of memory');
   final bytes = val.buffer.asUint8List(val.offsetInBytes, byteLength);
@@ -97,18 +94,19 @@ Pointer<JSValue>? _typedDataToJs(Pointer<JSContext> ctx, TypedData val) {
 /// Fast path: convert a JS TypedArray to the matching Dart typed list via a
 /// single memcpy. Returns null when [val] is not a typed array.
 TypedData? _jsTypedArrayToDart(Pointer<JSContext> ctx, Pointer<JSValue> val) {
-  final plength = malloc<IntPtr>();
-  final ptype = malloc<Int32>();
+  // Keep both native output values in one allocation. This matters for small
+  // arrays, where the two allocator calls otherwise rival the copy itself.
+  final info = calloc<Uint64>(2);
+  final plength = info.cast<IntPtr>();
+  final ptype = (info.cast<Uint8>() + sizeOf<IntPtr>()).cast<Int32>();
   final data = jsGetTypedArrayData(ctx, val, plength, ptype);
   if (data.address == 0) {
-    malloc.free(plength);
-    malloc.free(ptype);
+    calloc.free(info);
     return null;
   }
   final byteLength = plength.value;
   final type = ptype.value;
-  malloc.free(plength);
-  malloc.free(ptype);
+  calloc.free(info);
   final bytes = data.asTypedList(byteLength);
   // Copy into a Dart-owned buffer (data is owned by the JS engine).
   final copy = Uint8List.fromList(bytes);
@@ -138,6 +136,13 @@ TypedData? _jsTypedArrayToDart(Pointer<JSContext> ctx, Pointer<JSValue> val) {
       return bd.asFloat64List();
     default:
       return copy;
+  }
+}
+
+void _checkBridgeBufferLimit(Pointer<JSContext> ctx, int byteLength) {
+  final limit = runtimeOpaques[jsGetRuntime(ctx)]?.memoryLimit;
+  if (limit != null && limit > 0 && byteLength > limit) {
+    throw JSError('Bridge buffer exceeds the runtime memory limit');
   }
 }
 
@@ -216,10 +221,7 @@ Pointer<JSValue> _dartToJs(
   // ByteBuffer without a TypedArray view → ArrayBuffer.
   if (val is ByteBuffer) {
     final bytes = val.asUint8List();
-    final limit = runtimeOpaques[jsGetRuntime(ctx)]?.memoryLimit;
-    if (limit != null && limit > 0 && bytes.length > limit) {
-      throw JSError('ByteBuffer exceeds the runtime memory limit');
-    }
+    _checkBridgeBufferLimit(ctx, bytes.length);
     final ptr = jsAllocBuffer(bytes.length);
     if (ptr.address == 0) throw JSError('Out of memory');
     ptr.asTypedList(bytes.length).setAll(0, bytes);

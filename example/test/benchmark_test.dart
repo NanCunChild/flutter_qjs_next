@@ -42,7 +42,9 @@ void main() {
     expect(names, contains('small Map'));
     expect(names, contains('1024 B'));
     expect(names, contains('evaluateJson'));
-    expect(names, contains('JS Uint8Array'));
+    expect(names, contains('JS allocate Uint8Array'));
+    expect(names, contains('fixed JS Uint8Array'));
+    expect(names, contains('native memcpy'));
     for (final r in suite.results) {
       expect(r.meanUsPerOp, greaterThanOrEqualTo(0));
       expect(r.runs, runs);

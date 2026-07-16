@@ -117,7 +117,8 @@ final DynamicLibrary _qjsLib = _openQuickJsLibrary();
 
 DynamicLibrary _openQuickJsLibrary() {
   // Prefer FLUTTER_QJS_NEXT_LIBRARY; legacy FLUTTER_QJS_ES2023_LIBRARY still accepted.
-  final explicitPath = Platform.environment['FLUTTER_QJS_NEXT_LIBRARY'] ??
+  final explicitPath =
+      Platform.environment['FLUTTER_QJS_NEXT_LIBRARY'] ??
       Platform.environment['FLUTTER_QJS_ES2023_LIBRARY'];
   if (explicitPath != null && explicitPath.isNotEmpty) {
     return DynamicLibrary.open(explicitPath);
@@ -284,9 +285,9 @@ Pointer<JSValue> channelDispacher(
 Pointer<JSRuntime> jsNewRuntime(
   _JSChannel callback,
   int timeout,
-  ReceivePort port,
-  {int? memoryLimit}
-) {
+  ReceivePort port, {
+  int? memoryLimit,
+}) {
   final rt = _jsNewRuntime(Pointer.fromFunction(channelDispacher), timeout);
   runtimeOpaques[rt] = _RuntimeOpaque(callback, port, memoryLimit);
   return rt;
@@ -320,13 +321,11 @@ final void Function(Pointer<JSRuntime>) jsRunGC = _qjsLib
 
 /// DLLEXPORT void jsComputeMemoryUsage(JSRuntime *rt, int64_t *out, int32_t n)
 final void Function(Pointer<JSRuntime>, Pointer<Int64>, int)
-    _jsComputeMemoryUsage = _qjsLib
-        .lookup<
-            NativeFunction<
-                Void Function(Pointer<JSRuntime>, Pointer<Int64>, Int32)>>(
-          'jsComputeMemoryUsage',
-        )
-        .asFunction();
+_jsComputeMemoryUsage = _qjsLib
+    .lookup<
+      NativeFunction<Void Function(Pointer<JSRuntime>, Pointer<Int64>, Int32)>
+    >('jsComputeMemoryUsage')
+    .asFunction();
 
 /// Snapshot of QuickJS [JSMemoryUsage] fields used for monitoring.
 class JsMemoryUsage {
@@ -590,6 +589,13 @@ jsNewArrayBufferCopy = _qjsLib
 /// uint8_t *jsAllocBuffer(size_t len)
 final Pointer<Uint8> Function(int len) jsAllocBuffer = _qjsLib
     .lookup<NativeFunction<Pointer<Uint8> Function(IntPtr)>>('jsAllocBuffer')
+    .asFunction();
+
+/// void jsMemcpy(uint8_t *dst, const uint8_t *src, size_t len)
+final void Function(Pointer<Uint8>, Pointer<Uint8>, int) jsMemcpy = _qjsLib
+    .lookup<
+      NativeFunction<Void Function(Pointer<Uint8>, Pointer<Uint8>, IntPtr)>
+    >('jsMemcpy')
     .asFunction();
 
 /// JSValue *jsNewArrayBufferOwned(JSContext *ctx, uint8_t *buf, size_t len)
