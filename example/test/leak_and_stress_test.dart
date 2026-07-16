@@ -206,6 +206,18 @@ void main() {
       expect(unlimitedRuntime.memoryLimit, 0);
     });
 
+    test('bridge rejects a TypedData payload larger than its limit', () {
+      final js = QuickJsRuntime2(memoryLimit: 1024 * 1024);
+      addTearDown(js.dispose);
+      final identity = js.evaluate('(x) => x').rawResult as JSInvokable;
+
+      expect(
+        () => identity.invoke([Uint8List(2 * 1024 * 1024)]),
+        throwsA(isA<JSError>()),
+      );
+      identity.free();
+    });
+
     test('timeout interrupts busy loop', () {
       final js = getJavascriptRuntime(timeout: 50);
       addTearDown(js.dispose);

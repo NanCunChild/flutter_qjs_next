@@ -213,8 +213,9 @@ class _RuntimeOpaque {
   final _JSChannel _channel;
   List<JSRef> _ref = [];
   final ReceivePort _port;
+  final int? memoryLimit;
   int? _dartObjectClassId;
-  _RuntimeOpaque(this._channel, this._port);
+  _RuntimeOpaque(this._channel, this._port, this.memoryLimit);
 
   int? get dartObjectClassId => _dartObjectClassId;
 
@@ -284,9 +285,10 @@ Pointer<JSRuntime> jsNewRuntime(
   _JSChannel callback,
   int timeout,
   ReceivePort port,
+  {int? memoryLimit}
 ) {
   final rt = _jsNewRuntime(Pointer.fromFunction(channelDispacher), timeout);
-  runtimeOpaques[rt] = _RuntimeOpaque(callback, port);
+  runtimeOpaques[rt] = _RuntimeOpaque(callback, port, memoryLimit);
   return rt;
 }
 
@@ -586,7 +588,7 @@ jsNewArrayBufferCopy = _qjsLib
     .asFunction();
 
 /// uint8_t *jsAllocBuffer(size_t len)
-final Pointer<Uint8> Function(int len) jsAllocBuffer = _qjsLib
+final Pointer<Uint8> Function(int) jsAllocBuffer = _qjsLib
     .lookup<NativeFunction<Pointer<Uint8> Function(IntPtr)>>('jsAllocBuffer')
     .asFunction();
 

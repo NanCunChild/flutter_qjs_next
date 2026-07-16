@@ -81,6 +81,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
       throw StateError('QuickJsRuntime2 is disposed');
     }
     if (_rt != null) return;
+    final resolvedMemoryLimit = this.memoryLimit ?? 0;
     final rt = jsNewRuntime(
       (ctx, type, ptr) {
         try {
@@ -142,11 +143,13 @@ class QuickJsRuntime2 extends JavascriptRuntime {
       },
       timeout ?? 0,
       port,
+      memoryLimit: resolvedMemoryLimit,
     );
     final stackSize = this.stackSize;
     if (stackSize > 0) jsSetMaxStackSize(rt, stackSize);
-    final memoryLimit = this.memoryLimit ?? 0;
-    if (memoryLimit > 0) jsSetMemoryLimit(rt, memoryLimit);
+    if (resolvedMemoryLimit > 0) {
+      jsSetMemoryLimit(rt, resolvedMemoryLimit);
+    }
     _rt = rt;
     _ctx = jsNewContext(rt);
     if (_needsInitialization) {

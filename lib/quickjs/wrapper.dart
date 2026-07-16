@@ -83,6 +83,10 @@ Pointer<JSValue>? _typedDataToJs(Pointer<JSContext> ctx, TypedData val) {
   else
     return null;
   final byteLength = val.lengthInBytes;
+  final limit = runtimeOpaques[jsGetRuntime(ctx)]?.memoryLimit;
+  if (limit != null && limit > 0 && byteLength > limit) {
+    throw JSError('TypedData exceeds the runtime memory limit');
+  }
   final ptr = jsAllocBuffer(byteLength);
   if (ptr.address == 0) throw JSError('Out of memory');
   final bytes = val.buffer.asUint8List(val.offsetInBytes, byteLength);
@@ -212,6 +216,10 @@ Pointer<JSValue> _dartToJs(
   // ByteBuffer without a TypedArray view → ArrayBuffer.
   if (val is ByteBuffer) {
     final bytes = val.asUint8List();
+    final limit = runtimeOpaques[jsGetRuntime(ctx)]?.memoryLimit;
+    if (limit != null && limit > 0 && bytes.length > limit) {
+      throw JSError('ByteBuffer exceeds the runtime memory limit');
+    }
     final ptr = jsAllocBuffer(bytes.length);
     if (ptr.address == 0) throw JSError('Out of memory');
     ptr.asTypedList(bytes.length).setAll(0, bytes);
