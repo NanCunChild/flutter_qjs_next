@@ -10,6 +10,17 @@ import 'quickjs/ffi.dart' show JsMemoryUsage;
 
 export 'quickjs/ffi.dart' show JsMemoryUsage;
 
+/// Default QuickJS heap limit for all runtime construction paths.
+const int kDefaultJsMemoryLimit = 64 * 1024 * 1024;
+
+/// Resolves the public memory-limit contract: zero is unlimited, while null
+/// and negative values fall back to the safe default.
+int normalizeJsMemoryLimit(int? value) {
+  if (value == 0) return 0;
+  if (value == null || value < 0) return kDefaultJsMemoryLimit;
+  return value;
+}
+
 class FlutterJsPlatformEmpty extends JavascriptRuntime {
   @override
   JsEvalResult callFunction(Pointer<NativeType> fn, Pointer<NativeType> obj) {

@@ -189,6 +189,23 @@ void main() {
       expect(js.evaluate('2*21').rawResult, 42);
     });
 
+    test('all runtime constructors normalize memory limits consistently', () {
+      final factoryRuntime = getJavascriptRuntime(memoryLimit: null);
+      final directRuntime = QuickJsRuntime2(memoryLimit: null);
+      final negativeRuntime = QuickJsRuntime2(memoryLimit: -1);
+      final unlimitedRuntime = QuickJsRuntime2(memoryLimit: 0);
+      addTearDown(factoryRuntime.dispose);
+      addTearDown(directRuntime.dispose);
+      addTearDown(negativeRuntime.dispose);
+      addTearDown(unlimitedRuntime.dispose);
+
+      expect((factoryRuntime as QuickJsRuntime2).memoryLimit,
+          kDefaultJsMemoryLimit);
+      expect(directRuntime.memoryLimit, kDefaultJsMemoryLimit);
+      expect(negativeRuntime.memoryLimit, kDefaultJsMemoryLimit);
+      expect(unlimitedRuntime.memoryLimit, 0);
+    });
+
     test('timeout interrupts busy loop', () {
       final js = getJavascriptRuntime(timeout: 50);
       addTearDown(js.dispose);

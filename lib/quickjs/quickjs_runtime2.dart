@@ -69,10 +69,10 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     this.moduleHandler,
     this.stackSize = 1024 * 1024,
     this.timeout,
-    this.memoryLimit,
+    int? memoryLimit = kDefaultJsMemoryLimit,
     this.hostPromiseRejectionHandler,
     this.autoExecutePendingJobs = true,
-  }) {
+  }) : memoryLimit = normalizeJsMemoryLimit(memoryLimit) {
     this.init();
   }
 

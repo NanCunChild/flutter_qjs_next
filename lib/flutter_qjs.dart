@@ -9,9 +9,6 @@ export 'javascript_runtime.dart';
 export 'js_engine_pool.dart';
 export 'js_eval_result.dart';
 
-/// Default JS heap limit (64 MiB). Pass `memoryLimit: 0` for unlimited.
-const int kDefaultJsMemoryLimit = 64 * 1024 * 1024;
-
 /// Creates a [JavascriptRuntime] backed by QuickJS.
 ///
 /// **Limits** (also via [extraArgs] keys `stackSize`, `timeout`, `memoryLimit`):
@@ -19,7 +16,7 @@ const int kDefaultJsMemoryLimit = 64 * 1024 * 1024;
 /// - [timeout]: interrupt after this many ms of wall-clock JS work
 ///   (`null` / `0` = off). Prefer a positive value for untrusted scripts.
 /// - [memoryLimit]: heap limit bytes (default [kDefaultJsMemoryLimit];
-///   `0` = unlimited — not recommended for multi-engine / untrusted JS).
+///   `0` = unlimited; null and negative values use the default).
 ///
 /// Each runtime is a separate QuickJS engine (own heap, channels, port).
 /// Prefer [JsEnginePool] when many short-lived scripts run in parallel.
