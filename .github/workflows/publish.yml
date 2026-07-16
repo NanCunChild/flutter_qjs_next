@@ -1,92 +1,25 @@
-name: Publish package
+name: Publish to pub.dev
 
 on:
   push:
     tags:
-      - 'v*'
-
-permissions:
-  contents: write
-
-concurrency:
-  group: publish-package
-  cancel-in-progress: false
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   publish:
-    name: Publish ${{ github.ref_name }}
+    permissions:
+      id-token: write
+      contents: read
     runs-on: ubuntu-latest
     steps:
-      - name: Check out source
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
+      - name: Setup Dart/Flutter
+        uses: dart-lang/setup-dart@v1
+
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Validate version and release order
-        id: version
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG_NAME: ${{ github.ref_name }}
-          REPOSITORY: ${{ github.repository }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          tag_version="${TAG_NAME#v}"
-          if [[ ! "$tag_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Unsupported release tag: $TAG_NAME" >&2
-            exit 1
-          fi
-
-          package_version="$(sed -nE 's/^version:[[:space:]]*([^[:space:]]+).*$/\1/p' pubspec.yaml | head -n 1)"
-          if [[ "$package_version" != "$tag_version" ]]; then
-            echo "Tag version $tag_version does not match pubspec version $package_version" >&2
-            exit 1
-          fi
-
-          latest_version="$(
-            gh api "repos/$REPOSITORY/releases" --paginate --jq '.[].tag_name' 2>/dev/null \
-              | sed -nE 's/^v([0-9]+\.[0-9]+\.[0-9]+)$/\1/p' \
-              | sort -V \
-              | tail -n 1 || true
-          )"
-          latest_version="${latest_version:-0.0.0}"
-          latest_tag="v$latest_version"
-
-          if [[ "$latest_version" == "$tag_version" ]] ||
-             [[ "$(printf '%s\n' "$latest_version" "$tag_version" | sort -V | tail -n 1)" != "$tag_version" ]]; then
-            echo "Skipping $TAG_NAME: latest release is $latest_tag"
-            echo "should_publish=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "Publishing $TAG_NAME; latest release is ${latest_tag:-none}"
-          echo "should_publish=true" >> "$GITHUB_OUTPUT"
-
-      - name: Install dependencies
-        if: steps.version.outputs.should_publish == 'true'
-        run: flutter pub get
-
-      - name: Validate package
-        if: steps.version.outputs.should_publish == 'true'
-        run: flutter pub publish --dry-run
-
-      - name: Configure pub.dev credentials
-        if: steps.version.outputs.should_publish == 'true'
-        env:
-          PUB_DEV_TOKEN: ${{ secrets.PUB_DEV_TOKEN }}
-        run: dart pub token add https://pub.dev --env-var PUB_DEV_TOKEN
 
       - name: Publish to pub.dev
-        if: steps.version.outputs.should_publish == 'true'
-        run: flutter pub publish --force
-
-      - name: Create GitHub release
-        if: steps.version.outputs.should_publish == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+        run: dart pub publish --force
