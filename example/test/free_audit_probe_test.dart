@@ -15,12 +15,12 @@ void main() {
     expect(() => js.dispose(), returnsNormally);
   });
 
-  test('unevaluated function rawResult must be freed or dispose reports', () {
+  test('unevaluated function rawResult auto-cleaned on dispose', () {
     final js = getJavascriptRuntime();
     final fn = js.evaluate('(x)=>x').rawResult;
     expect(fn, isA<JSInvokable>());
-    // intentionally not free — dispose should throw reference leak
-    expect(() => js.dispose(), throwsA(anything));
+    // _JSFunction is JSRefLeakable → auto-freed during dispose.
+    expect(() => js.dispose(), returnsNormally);
   });
 
   test('freed function rawResult dispose clean', () {
@@ -41,16 +41,18 @@ void main() {
     expect(() => js.dispose(), returnsNormally);
   });
 
-  test('object with method not freed — dispose throws', () {
+  test('object with method not freed — auto-cleaned on dispose', () {
     final js = getJavascriptRuntime();
     js.evaluate('({a:1, f:function(){return 2}})');
-    expect(() => js.dispose(), throwsA(anything));
+    // _JSFunction refs are JSRefLeakable → auto-freed.
+    expect(() => js.dispose(), returnsNormally);
   });
 
-  test('array of functions not freed — dispose throws', () {
+  test('array of functions not freed — auto-cleaned on dispose', () {
     final js = getJavascriptRuntime();
     js.evaluate('[function(){return 1}, function(){return 2}]');
-    expect(() => js.dispose(), throwsA(anything));
+    // _JSFunction refs are JSRefLeakable → auto-freed.
+    expect(() => js.dispose(), returnsNormally);
   });
 
   test('promise future value with function needs free', () async {
@@ -62,11 +64,12 @@ void main() {
     expect(() => js.dispose(), returnsNormally);
   });
 
-  test('promise future value function not free — dispose throws', () async {
+  test('promise future value function not freed — auto-cleaned on dispose', () async {
     final js = getJavascriptRuntime();
     final r = js.evaluate('Promise.resolve(() => 1)');
     await (r.rawResult as Future);
-    expect(() => js.dispose(), throwsA(anything));
+    // _JSFunction from resolved promise is JSRefLeakable → auto-freed.
+    expect(() => js.dispose(), returnsNormally);
   });
 
   test('dart Future to JS then dispose after settle', () async {

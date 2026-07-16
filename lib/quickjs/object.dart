@@ -116,7 +116,7 @@ class JSError extends _IsolateEncodable {
 
 /// JS Object reference
 /// call [release] to release js object.
-class _JSObject extends JSRef {
+class _JSObject extends JSRef implements JSRefLeakable {
   Pointer<JSValue>? _val;
   Pointer<JSContext>? _ctx;
 
