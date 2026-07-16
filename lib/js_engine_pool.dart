@@ -36,6 +36,7 @@ class JsEnginePool {
 
   final ListQueue<JavascriptRuntime> _idle = ListQueue();
   final Set<JavascriptRuntime> _all = {};
+  final Set<JavascriptRuntime> _leased = {};
   final ListQueue<Completer<JavascriptRuntime>> _waiters = ListQueue();
   bool _disposed = false;
 
@@ -48,7 +49,7 @@ class JsEnginePool {
 
   int get size => _all.length;
   int get idleCount => _idle.length;
-  int get inUseCount => _all.length - _idle.length;
+  int get inUseCount => _leased.length;
 
   JavascriptRuntime _create() {
     if (_factory != null) return _factory();
@@ -65,11 +66,14 @@ class JsEnginePool {
     if (_disposed) throw StateError('JsEnginePool is disposed');
 
     if (_idle.isNotEmpty) {
-      return _idle.removeFirst();
+      final engine = _idle.removeFirst();
+      _leased.add(engine);
+      return engine;
     }
     if (_all.length < maxSize) {
       final eng = _create();
       _all.add(eng);
+      _leased.add(eng);
       return eng;
     }
 
@@ -102,12 +106,16 @@ class JsEnginePool {
     if (!_all.contains(engine)) {
       throw ArgumentError('Engine not owned by this pool');
     }
+    if (!_leased.remove(engine)) {
+      throw StateError('Engine is not currently leased');
+    }
     _prepareForReuse(engine);
     if (!_all.contains(engine)) {
       // reinitialize failed and engine was destroyed; try to fill a waiter with a new one
       if (_waiters.isNotEmpty && _all.length < maxSize) {
         final eng = _create();
         _all.add(eng);
+        _leased.add(eng);
         final w = _waiters.removeFirst();
         if (!w.isCompleted) {
           w.complete(eng);
@@ -120,6 +128,7 @@ class JsEnginePool {
     while (_waiters.isNotEmpty) {
       final w = _waiters.removeFirst();
       if (!w.isCompleted) {
+        _leased.add(engine);
         w.complete(engine);
         return;
       }
@@ -161,6 +170,7 @@ class JsEnginePool {
     final engines = List<JavascriptRuntime>.from(_all);
     _idle.clear();
     _all.clear();
+    _leased.clear();
     for (final e in engines) {
       try {
         e.dispose();

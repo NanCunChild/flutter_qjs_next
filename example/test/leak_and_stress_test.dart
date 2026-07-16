@@ -93,6 +93,17 @@ void main() {
       expect(v, 3);
     });
 
+    test('release rejects an engine more than once', () async {
+      final pool = JsEnginePool(maxSize: 1);
+      addTearDown(pool.dispose);
+      final engine = await pool.acquire();
+
+      pool.release(engine);
+      expect(() => pool.release(engine), throwsStateError);
+      expect(pool.idleCount, 1);
+      expect(pool.inUseCount, 0);
+    });
+
     test('parallel multi-engine', () async {
       final pool = JsEnginePool(maxSize: 4);
       addTearDown(pool.dispose);
