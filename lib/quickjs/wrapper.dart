@@ -191,6 +191,18 @@ Pointer<JSValue> _dartToJs(
   if (cache == null) cache = Map();
   if (val is bool) return jsNewBool(ctx, val ? 1 : 0);
   if (val is int) return jsNewInt64(ctx, val);
+  if (val is BigInt) {
+    if (val.bitLength <= 63) {
+      return jsNewBigInt64(ctx, val.toInt());
+    }
+    final code = 'BigInt("${val.toString()}")';
+    final jsVal = jsEval(ctx, code, '<bigint>', JSEvalFlag.GLOBAL);
+    if (jsIsException(jsVal) != 0) {
+      jsFreeValue(ctx, jsVal);
+      throw JSError('Failed to create BigInt from Dart value');
+    }
+    return jsVal;
+  }
   if (val is double) return jsNewFloat64(ctx, val);
   if (val is String) return jsNewString(ctx, val);
   if (val is TypedData) {
@@ -258,6 +270,10 @@ dynamic _jsToDart(
       return jsToBool(ctx, val) != 0;
     case JSTag.INT:
       return jsToInt64(ctx, val);
+    case JSTag.SHORT_BIG_INT:
+    case JSTag.BIG_INT:
+      final bigIntStr = jsToCString(ctx, val);
+      return BigInt.parse(bigIntStr);
     case JSTag.STRING:
       return jsToCString(ctx, val);
     case JSTag.OBJECT:

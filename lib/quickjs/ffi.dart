@@ -85,12 +85,11 @@ class JSProp {
 }
 
 class JSTag {
-  static const FIRST = -11; /* first negative tag */
-  static const BIG_DECIMAL = -11;
-  static const BIG_INT = -10;
-  static const BIG_FLOAT = -9;
+  static const FIRST = -9; /* first negative tag */
+  static const BIG_INT = -9;
   static const SYMBOL = -8;
   static const STRING = -7;
+  static const STRING_ROPE = -6; /* used internally */
   static const MODULE = -3; /* used internally */
   static const FUNCTION_BYTECODE = -2; /* used internally */
   static const OBJECT = -1;
@@ -102,7 +101,8 @@ class JSTag {
   static const UNINITIALIZED = 4;
   static const CATCH_OFFSET = 5;
   static const EXCEPTION = 6;
-  static const FLOAT64 = 7;
+  static const SHORT_BIG_INT = 7;
+  static const FLOAT64 = 8;
 }
 
 abstract base class JSValue extends Opaque {}
@@ -536,6 +536,14 @@ final Pointer<JSValue> Function(Pointer<JSContext> ctx, int val) jsNewInt64 =
         .lookup<
           NativeFunction<Pointer<JSValue> Function(Pointer<JSContext>, Int64)>
         >('jsNewInt64')
+        .asFunction();
+
+/// JSValue *jsNewBigInt64(JSContext *ctx, int64_t v)
+final Pointer<JSValue> Function(Pointer<JSContext> ctx, int val) jsNewBigInt64 =
+    _qjsLib
+        .lookup<
+          NativeFunction<Pointer<JSValue> Function(Pointer<JSContext>, Int64)>
+        >('jsNewBigInt64')
         .asFunction();
 
 /// JSValue *jsNewFloat64(JSContext *ctx, double val)

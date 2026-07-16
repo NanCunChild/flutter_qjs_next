@@ -68,6 +68,8 @@ extern "C" {
 
   DLLEXPORT JSValue *jsNewInt64(JSContext *ctx, int64_t val);
 
+  DLLEXPORT JSValue *jsNewBigInt64(JSContext *ctx, int64_t v);
+
   DLLEXPORT JSValue *jsNewFloat64(JSContext *ctx, double val);
 
   DLLEXPORT JSValue *jsNewString(JSContext *ctx, const char *str);

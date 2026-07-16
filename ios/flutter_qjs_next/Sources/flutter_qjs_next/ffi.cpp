@@ -290,6 +290,11 @@ extern "C"
     return new JSValue(JS_NewInt64(ctx, val));
   }
 
+  DLLEXPORT JSValue *jsNewBigInt64(JSContext *ctx, int64_t v)
+  {
+    return new JSValue(JS_NewBigInt64(ctx, v));
+  }
+
   DLLEXPORT JSValue *jsNewFloat64(JSContext *ctx, double val)
   {
     return new JSValue(JS_NewFloat64(ctx, val));
