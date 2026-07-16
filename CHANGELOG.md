@@ -16,3 +16,7 @@
 * Isolate module load: 1ms wait on `IntPtr` slot instead of 1µs pointer spin.
 * Dispose hardening: idempotent `dispose`, `runtimeOpaques` entry removed on free, disposed engines refuse re-init.
 * Rename residues: `FLUTTER_QJS_NEXT_LIBRARY` (legacy `FLUTTER_QJS_ES2023_LIBRARY` still accepted).
+
+## 1.0.1
+* Publish automatically from Github Action
+* Fix Non Linux and Windows head file problem
