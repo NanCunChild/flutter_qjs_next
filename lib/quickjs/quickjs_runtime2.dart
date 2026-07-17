@@ -168,6 +168,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     final rt = _rt;
     final ctx = _ctx;
     if (rt == null) return;
+    String? referenceLeak;
     try {
       _executePendingJob();
     } catch (_) {}
@@ -179,6 +180,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
           jsFreeValue(ctx, jsonStringifyFn);
         } catch (_) {}
       }
+      referenceLeak = jsReleaseRuntimeRefs(rt, ctx);
       try {
         jsFreeContext(ctx);
       } catch (_) {}
@@ -193,6 +195,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     } on String catch (e) {
       throw JSError(e);
     }
+    if (referenceLeak != null) throw JSError(referenceLeak);
   }
 
   /// Drop native heap + channels and re-run [init] (console, setTimeout, bridges).

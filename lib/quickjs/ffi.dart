@@ -413,6 +413,44 @@ final void Function(Pointer<JSRuntime>) _jsFreeRuntime = _qjsLib
     .lookup<NativeFunction<Void Function(Pointer<JSRuntime>)>>('jsFreeRuntime')
     .asFunction();
 
+/// Release Dart-side references while [ctx] is still valid.
+///
+/// QuickJS contexts must be released before the runtime, but JSRef cleanup
+/// needs the context to free JSValues. Returning the leak report lets callers
+/// finish native teardown before surfacing the diagnostic.
+String? jsReleaseRuntimeRefs(
+  Pointer<JSRuntime> rt,
+  Pointer<JSContext> ctx,
+) {
+  final referenceleak = <String>[];
+  final opaque = runtimeOpaques[rt];
+  if (opaque == null) return null;
+
+  while (true) {
+    JSRef? ref;
+    for (final candidate in opaque._ref.values) {
+      if (candidate is JSRefLeakable) {
+        ref = candidate;
+        break;
+      }
+    }
+    if (ref == null) break;
+    ref.destroy();
+  }
+  while (opaque._ref.isNotEmpty) {
+    final ref = opaque._ref.values.first;
+    final objStrs = ref.toString().split('\n');
+    final objStr = objStrs.isNotEmpty ? objStrs[0] + " ..." : objStrs[0];
+    referenceleak.add(
+      "  ${identityHashCode(ref)}\t${ref._refCount + 1}\t${ref.runtimeType.toString()}\t$objStr",
+    );
+    ref.destroy();
+  }
+  return referenceleak.isEmpty
+      ? null
+      : 'reference leak:\n    ADDR\tREF\tTYPE\tPROP\n${referenceleak.join('\n')}';
+}
+
 void jsFreeRuntime(Pointer<JSRuntime> rt) {
   final referenceleak = <String>[];
   // Keep [runtimeOpaques] until after ref cleanup so nested [destroy]/[free]
