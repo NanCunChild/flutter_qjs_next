@@ -181,9 +181,10 @@ Coverage:
 
 1. Hot path: tiny `evaluate` and cached `JSInvokable.invoke`
 2. String / small `Map` Dart↔JS identity round-trips
-3. Buffer size ladder (1 KiB / 64 KiB / 1 MiB) for owned TypedArray path
-4. `evaluateJson` vs full `evaluate` (deep jsToDart) on array and object payloads
-5. Multi-seed mean ± σ (`kBenchmarkDefaultSeeds`, default **8** runs) plus OS /
+3. Buffer size ladder (1 KiB / 64 KiB / 1 MiB / 16 MiB) for owned TypedArray paths
+4. TypedArray variants and non-zero-offset views in both directions
+5. `evaluateJson` vs full `evaluate` (deep jsToDart) on array and object payloads
+6. Multi-seed mean ± σ (`kBenchmarkDefaultSeeds`, default **8** runs) plus OS /
    CPU / executable banner for cross-commit comparison
 
 Interactive option:
@@ -198,33 +199,28 @@ with `dart run` by mistake.
 
 ### Performance vs pre-optimization baseline
 
-Compared **`main`** to git commit **`3261eb4`** (pre bulk-buffer / marshalling work)
-on the same machine, same seeds, **`BENCH_RUNS=32`**, via
-`flutter test test/benchmark_test.dart`.
+Compared the current revision to git commit **`3261eb4`** (pre bulk-buffer /
+marshalling work) on the same machine and seeds with **`BENCH_RUNS=32`**.
+The old commit uses a compatibility runner: its 16 MiB JS→Dart case is omitted
+because it cannot complete a practical multi-seed run, and its 1 MiB JS→Dart
+steady cases use two iterations instead of twenty. Large-path ratios are
+therefore directional, not exact apples-to-apples results.
 
-| Scenario | Baseline (us/op) | main (us/op) | Speedup |
-|----------|-----------------:|-------------:|--------:|
-| evaluate tiny (`1+1`) | 4.7 | 3.6 | **1.3×** |
-| host invoke `(a,b)=>a+b` | 3.0 | 2.1 | **1.4×** |
-| string Dart→JS→Dart | 9.2 | 2.7 | **3.4×** |
-| small Map Dart→JS→Dart | 23.5 | 16.9 | **1.4×** |
-| Dart `Uint8List`→JS (1 MiB) | 110 | 36 | **3.1×** |
-| Dart `Float64List`→JS (10k) | 1567 | 4.0 | **~392×** |
-| evaluate large array (full jsToDart) | 2571 | 1648 | **1.6×** |
-| evaluate large object (full jsToDart) | 4983 | 4431 | **1.1×** |
-| JS `Uint8Array`→Dart (1 KiB) | 568 | 38 | **15×** |
-| JS `Uint8Array`→Dart (64 KiB) | 43341 | 1467 | **30×** |
-| JS `Uint8Array`→Dart (1 MiB) | 931803 | 25239 | **37×** |
-| JS `Float64Array`→Dart (10k) | 6779 | 712 | **9.5×** |
-
-Approximate throughput on the same run:
-
-| Path | Baseline | main |
-|------|---------:|-----:|
-| Dart `Uint8List`→JS 1 MiB | ~9 GiB/s | ~27 GiB/s |
-| Dart `Float64List`→JS 10k | ~49 MiB/s | ~19 GiB/s |
-| JS `Uint8Array`→Dart 1 MiB | ~1.1 MiB/s | ~40 MiB/s |
-| JS `Float64Array`→Dart 10k | ~11 MiB/s | ~107 MiB/s |
+| Scenario | 3261eb4 (us/op) | current (us/op) | Speedup |
+|----------|----------------:|----------------:|--------:|
+| evaluate tiny (`1+1`) | 4.1 | 3.5 | **1.2×** |
+| host invoke `(a,b)=>a+b` | 2.4 | 2.2 | **1.1×** |
+| string Dart→JS→Dart | 3.2 | 3.1 | **1.0×** |
+| small Map Dart→JS→Dart | 21.1 | 18.1 | **1.2×** |
+| Dart `Uint8List`→JS (1 MiB) | 141.6 | 49.3 | **2.9×** |
+| Dart `Float64List`→JS (10k) | 1863.5 | 4.6 | **405×** |
+| evaluate large array (full jsToDart) | 3004.1 | 1877.5 | **1.6×** |
+| evaluate large object (full jsToDart) | 5934.5 | 4916.3 | **1.2×** |
+| JS `Uint8Array`→Dart (1 KiB) | 602.7 | 5.9 | **102×** |
+| JS `Uint8Array`→Dart (64 KiB) | 47392.2 | 21.9 | **2164×** |
+| JS `Uint8Array`→Dart (1 MiB) | 975550.7 | 421.5 | **2314×** |
+| JS `Float64Array`→Dart (10k) | 7844.7 | 623.1 | **12.6×** |
+| JS `Uint8ClampedArray`→Dart (offset) | 22206.8 | 9.3 | **2388×** |
 
 **What improved most**
 
@@ -235,8 +231,8 @@ Approximate throughput on the same run:
   when you only need a JSON-like tree (avoids deep object graph conversion).
 
 Raw logs (full suite output + aggregated means):  
-`benchmark_results/baseline_3261eb4_BENCH_RUNS32.txt`,  
-`benchmark_results/main_BENCH_RUNS32.txt`.
+`benchmark_results/3261eb4/3261eb4_BENCH_RUNS32.txt`,
+`benchmark_results/1c9561d/optimized_BENCH_RUNS32_clamped.txt`.
 
 Numbers are single-host microbenchmarks (Linux `flutter_tester`); treat them as
 relative, not absolute product SLOs.

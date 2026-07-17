@@ -356,6 +356,9 @@ List<BenchmarkResult> runFlutterQjsBenchmarks({
 
       final typedPayloads = <String, TypedData>{
         'Int16': Int16List.fromList(List<int>.generate(32 * 1024, (i) => i)),
+        'Uint8Clamped': Uint8ClampedList.fromList(
+          List<int>.generate(32 * 1024, (i) => i & 0xff),
+        ),
         'Float32': Float32List.fromList(
           List<double>.generate(32 * 1024, (i) => i / 10),
         ),
@@ -446,6 +449,7 @@ List<BenchmarkResult> runFlutterQjsBenchmarks({
 
     final jsTypedArrays = <String, String>{
       'Int16': 'new Int16Array(new ArrayBuffer(2 * 16384), 2, 16383)',
+      'Uint8Clamped': 'new Uint8ClampedArray(new ArrayBuffer(32769), 1, 32768)',
       'Float32': 'new Float32Array(new ArrayBuffer(4 * 16384 + 4), 4, 16384)',
       'Float64': 'new Float64Array(new ArrayBuffer(8 * 8192 + 8), 8, 8192)',
       'Uint8 offset': 'new Uint8Array(new ArrayBuffer(32771), 3, 32768)',

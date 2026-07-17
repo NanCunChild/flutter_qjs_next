@@ -1,0 +1,1869 @@
+Plugin flutter_qjs does not have Swift Package Manager support for ios. Consider adding Swift Package Manager compatibility to your plugin. See https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-plugin-authors for more information.
+Plugin flutter_qjs does not have Swift Package Manager support for macos. Consider adding Swift Package Manager compatibility to your plugin. See https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-plugin-authors for more information.
+00:00 +0: loading /tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart
+00:00 +0: flutter_qjs_next micro-benchmarks
+benchmark suite: runs=32 seeds=[464037, 1118481, 2236962, 3355443, 11259375, 5613141, 14593470, 12648430, 461712677, 454274810, 1443749035, 1952792328, 813725345, 1818083526, 332109959, 898843572, 1066195933, 602219346, 1019164195, 1643833120, 218126553, 1963860638, 163910015, 2071418188, 848603541, 1396034218, 992167579, 1684699704, 1910721041, 1484646262, 90550647, 1097400804] length=10000 iterations=40
+--- run 1/32 seed=464037 ---
+benchmark env: os=linux processors=22 seed=464037 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 10.2 us/op (200 iters)
+invoke host (a,b)=>a+b: 5.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 8.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 56.4 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 341.0 us/op (1 iters)  2.9 MiB/s
+Dart Uint8List→JS length steady (1024 B): 6.0 us/op (40 iters)  163.4 MiB/s
+Dart Uint8List→JS length first (65536 B): 53.0 us/op (1 iters)  1179.2 MiB/s
+Dart Uint8List→JS length steady (65536 B): 9.1 us/op (40 iters)  6906.1 MiB/s
+Dart Uint8List→JS length first (1048576 B): 1059.0 us/op (1 iters)  944.3 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 528.2 us/op (10 iters)  1893.2 MiB/s
+Dart Uint8List→JS length first (16777216 B): 15316.0 us/op (1 iters)  1044.7 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 14064.7 us/op (10 iters)  1137.6 MiB/s
+Dart Int16→JS length: 5002.6 us/op (40 iters)  12.5 MiB/s
+Dart Uint8Clamped→JS length: 4815.7 us/op (40 iters)  6.5 MiB/s
+Dart Float32→JS length: 5018.0 us/op (40 iters)  24.9 MiB/s
+Dart Float64→JS length: 2550.2 us/op (40 iters)  49.0 MiB/s
+Dart Uint8 offset→JS length: 8.3 us/op (40 iters)  3776.4 MiB/s
+Dart Float64List→JS length (10000): 1703.4 us/op (40 iters)  44.8 MiB/s
+evaluate large array (full jsToDart): 2620.3 us/op (40 iters)
+evaluate large object (full jsToDart): 5199.3 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 657.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 524.7 us/op (40 iters)  1.9 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 532.7 us/op (40 iters)  1.8 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 39692.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 40252.4 us/op (40 iters)  1.6 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 40238.3 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 894841.0 us/op (1 iters)  1.1 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 933110.5 us/op (2 iters)  1.1 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 1020186.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 8625.3 us/op (40 iters)  8.8 MiB/s
+fixed JS Int16→Dart (nonzero offset): 11657.4 us/op (40 iters)  2.7 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 23430.5 us/op (40 iters)  1.3 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11047.6 us/op (40 iters)  5.7 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4949.5 us/op (40 iters)  12.6 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 22581.0 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  467986295	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  273989044	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 2/32 seed=1118481 ---
+benchmark env: os=linux processors=22 seed=1118481 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 5.2 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.7 us/op (200 iters)
+string Dart→JS→Dart (identity): 5.2 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 32.1 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 93.0 us/op (1 iters)  10.5 MiB/s
+Dart Uint8List→JS length steady (1024 B): 4.6 us/op (40 iters)  212.3 MiB/s
+Dart Uint8List→JS length first (65536 B): 33.0 us/op (1 iters)  1893.9 MiB/s
+Dart Uint8List→JS length steady (65536 B): 9.2 us/op (40 iters)  6830.6 MiB/s
+Dart Uint8List→JS length first (1048576 B): 445.0 us/op (1 iters)  2247.2 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 197.2 us/op (10 iters)  5071.0 MiB/s
+Dart Uint8List→JS length first (16777216 B): 14509.0 us/op (1 iters)  1102.8 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 15784.9 us/op (10 iters)  1013.6 MiB/s
+Dart Int16→JS length: 5676.0 us/op (40 iters)  11.0 MiB/s
+Dart Uint8Clamped→JS length: 5581.5 us/op (40 iters)  5.6 MiB/s
+Dart Float32→JS length: 5928.9 us/op (40 iters)  21.1 MiB/s
+Dart Float64→JS length: 3021.2 us/op (40 iters)  41.4 MiB/s
+Dart Uint8 offset→JS length: 5.7 us/op (40 iters)  5531.0 MiB/s
+Dart Float64List→JS length (10000): 1852.5 us/op (40 iters)  41.2 MiB/s
+evaluate large array (full jsToDart): 2922.3 us/op (40 iters)
+evaluate large object (full jsToDart): 5863.0 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 605.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 684.8 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 607.6 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 41738.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 47592.1 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 47611.9 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 990986.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 1003124.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 1105327.5 us/op (2 iters)  0.9 MiB/s
+JS Float64Array→Dart (10000): 8756.9 us/op (40 iters)  8.7 MiB/s
+fixed JS Int16→Dart (nonzero offset): 11862.8 us/op (40 iters)  2.6 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 24873.7 us/op (40 iters)  1.3 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11998.5 us/op (40 iters)  5.2 MiB/s
+fixed JS Float64→Dart (nonzero offset): 5139.9 us/op (40 iters)  12.2 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 23754.8 us/op (40 iters)  1.3 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  315243253	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  976124278	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 3/32 seed=2236962 ---
+benchmark env: os=linux processors=22 seed=2236962 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 7.9 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.5 us/op (200 iters)
+string Dart→JS→Dart (identity): 6.4 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 53.2 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 75.0 us/op (1 iters)  13.0 MiB/s
+Dart Uint8List→JS length steady (1024 B): 3.8 us/op (40 iters)  255.3 MiB/s
+Dart Uint8List→JS length first (65536 B): 152.0 us/op (1 iters)  411.2 MiB/s
+Dart Uint8List→JS length steady (65536 B): 7.8 us/op (40 iters)  8064.5 MiB/s
+Dart Uint8List→JS length first (1048576 B): 405.0 us/op (1 iters)  2469.1 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 135.7 us/op (10 iters)  7369.2 MiB/s
+Dart Uint8List→JS length first (16777216 B): 15190.0 us/op (1 iters)  1053.3 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 16528.7 us/op (10 iters)  968.0 MiB/s
+Dart Int16→JS length: 6000.3 us/op (40 iters)  10.4 MiB/s
+Dart Uint8Clamped→JS length: 6034.6 us/op (40 iters)  5.2 MiB/s
+Dart Float32→JS length: 6374.5 us/op (40 iters)  19.6 MiB/s
+Dart Float64→JS length: 3082.6 us/op (40 iters)  40.6 MiB/s
+Dart Uint8 offset→JS length: 5.2 us/op (40 iters)  5980.9 MiB/s
+Dart Float64List→JS length (10000): 1892.0 us/op (40 iters)  40.3 MiB/s
+evaluate large array (full jsToDart): 3183.7 us/op (40 iters)
+evaluate large object (full jsToDart): 6740.3 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 656.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 645.0 us/op (40 iters)  1.5 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 629.7 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 50458.0 us/op (1 iters)  1.2 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 52778.7 us/op (40 iters)  1.2 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 47056.3 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 927690.0 us/op (1 iters)  1.1 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 954022.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 948692.5 us/op (2 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 7265.2 us/op (40 iters)  10.5 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10450.8 us/op (40 iters)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 21378.9 us/op (40 iters)  1.5 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10426.5 us/op (40 iters)  6.0 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4684.0 us/op (40 iters)  13.3 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 21815.3 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  825816821	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  554720767	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 4/32 seed=3355443 ---
+benchmark env: os=linux processors=22 seed=3355443 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 4.2 us/op (200 iters)
+invoke host (a,b)=>a+b: 3.1 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 19.1 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 17.0 us/op (1 iters)  57.4 MiB/s
+Dart Uint8List→JS length steady (1024 B): 3.5 us/op (40 iters)  279.0 MiB/s
+Dart Uint8List→JS length first (65536 B): 29.0 us/op (1 iters)  2155.2 MiB/s
+Dart Uint8List→JS length steady (65536 B): 7.5 us/op (40 iters)  8361.2 MiB/s
+Dart Uint8List→JS length first (1048576 B): 375.0 us/op (1 iters)  2666.7 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 118.3 us/op (10 iters)  8453.1 MiB/s
+Dart Uint8List→JS length first (16777216 B): 15232.0 us/op (1 iters)  1050.4 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 15394.1 us/op (10 iters)  1039.4 MiB/s
+Dart Int16→JS length: 5534.6 us/op (40 iters)  11.3 MiB/s
+Dart Uint8Clamped→JS length: 6010.6 us/op (40 iters)  5.2 MiB/s
+Dart Float32→JS length: 5896.6 us/op (40 iters)  21.2 MiB/s
+Dart Float64→JS length: 3032.4 us/op (40 iters)  41.2 MiB/s
+Dart Uint8 offset→JS length: 4.6 us/op (40 iters)  6793.5 MiB/s
+Dart Float64List→JS length (10000): 1769.0 us/op (40 iters)  43.1 MiB/s
+evaluate large array (full jsToDart): 2913.6 us/op (40 iters)
+evaluate large object (full jsToDart): 5631.4 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 599.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 579.8 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 594.0 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 46202.0 us/op (1 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 46960.0 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 46361.8 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 979909.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 972342.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 967361.0 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7782.4 us/op (40 iters)  9.8 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10322.9 us/op (40 iters)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 22457.4 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11322.5 us/op (40 iters)  5.5 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4686.3 us/op (40 iters)  13.3 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 21924.9 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  747349819	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  763332959	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 5/32 seed=11259375 ---
+benchmark env: os=linux processors=22 seed=11259375 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 4.5 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.3 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 22.3 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 16.0 us/op (1 iters)  61.0 MiB/s
+Dart Uint8List→JS length steady (1024 B): 3.1 us/op (40 iters)  315.0 MiB/s
+Dart Uint8List→JS length first (65536 B): 31.0 us/op (1 iters)  2016.1 MiB/s
+Dart Uint8List→JS length steady (65536 B): 9.7 us/op (40 iters)  6459.9 MiB/s
+Dart Uint8List→JS length first (1048576 B): 324.0 us/op (1 iters)  3086.4 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 116.8 us/op (10 iters)  8561.6 MiB/s
+Dart Uint8List→JS length first (16777216 B): 14313.0 us/op (1 iters)  1117.9 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 16513.5 us/op (10 iters)  968.9 MiB/s
+Dart Int16→JS length: 5449.0 us/op (40 iters)  11.5 MiB/s
+Dart Uint8Clamped→JS length: 5735.7 us/op (40 iters)  5.4 MiB/s
+Dart Float32→JS length: 6786.4 us/op (40 iters)  18.4 MiB/s
+Dart Float64→JS length: 3244.7 us/op (40 iters)  38.5 MiB/s
+Dart Uint8 offset→JS length: 4.9 us/op (40 iters)  6410.3 MiB/s
+Dart Float64List→JS length (10000): 2148.5 us/op (40 iters)  35.5 MiB/s
+evaluate large array (full jsToDart): 3007.4 us/op (40 iters)
+evaluate large object (full jsToDart): 5946.1 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 604.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 622.6 us/op (40 iters)  1.6 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 620.3 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 43901.0 us/op (1 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 46150.5 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 47579.8 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 1010303.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 999847.5 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 994706.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 8674.7 us/op (40 iters)  8.8 MiB/s
+fixed JS Int16→Dart (nonzero offset): 11568.4 us/op (40 iters)  2.7 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 24009.0 us/op (40 iters)  1.3 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11404.1 us/op (40 iters)  5.5 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4769.3 us/op (40 iters)  13.1 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 22383.5 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  553102678	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  426798293	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 6/32 seed=5613141 ---
+benchmark env: os=linux processors=22 seed=5613141 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 4.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.3 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 18.6 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 18.0 us/op (1 iters)  54.3 MiB/s
+Dart Uint8List→JS length steady (1024 B): 3.0 us/op (40 iters)  325.5 MiB/s
+Dart Uint8List→JS length first (65536 B): 34.0 us/op (1 iters)  1838.2 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.9 us/op (40 iters)  9090.9 MiB/s
+Dart Uint8List→JS length first (1048576 B): 327.0 us/op (1 iters)  3058.1 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 137.1 us/op (10 iters)  7293.9 MiB/s
+Dart Uint8List→JS length first (16777216 B): 14099.0 us/op (1 iters)  1134.8 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 16437.8 us/op (10 iters)  973.4 MiB/s
+Dart Int16→JS length: 5685.9 us/op (40 iters)  11.0 MiB/s
+Dart Uint8Clamped→JS length: 5623.1 us/op (40 iters)  5.6 MiB/s
+Dart Float32→JS length: 5918.1 us/op (40 iters)  21.1 MiB/s
+Dart Float64→JS length: 2885.4 us/op (40 iters)  43.3 MiB/s
+Dart Uint8 offset→JS length: 4.1 us/op (40 iters)  7668.7 MiB/s
+Dart Float64List→JS length (10000): 1803.8 us/op (40 iters)  42.3 MiB/s
+evaluate large array (full jsToDart): 2874.0 us/op (40 iters)
+evaluate large object (full jsToDart): 5885.6 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 607.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 586.1 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 587.4 us/op (40 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 43825.0 us/op (1 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 46935.3 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 46726.4 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 936007.0 us/op (1 iters)  1.1 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 981376.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 1010957.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 8322.9 us/op (40 iters)  9.2 MiB/s
+fixed JS Int16→Dart (nonzero offset): 11370.6 us/op (40 iters)  2.7 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 22118.6 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11465.4 us/op (40 iters)  5.5 MiB/s
+fixed JS Float64→Dart (nonzero offset): 5158.6 us/op (40 iters)  12.1 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 22627.0 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  105739683	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  417294022	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 7/32 seed=14593470 ---
+benchmark env: os=linux processors=22 seed=14593470 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 4.1 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.4 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 19.8 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 10.0 us/op (1 iters)  97.7 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.5 us/op (40 iters)  394.6 MiB/s
+Dart Uint8List→JS length first (65536 B): 31.0 us/op (1 iters)  2016.1 MiB/s
+Dart Uint8List→JS length steady (65536 B): 12.0 us/op (40 iters)  5197.5 MiB/s
+Dart Uint8List→JS length first (1048576 B): 355.0 us/op (1 iters)  2816.9 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 136.3 us/op (10 iters)  7336.8 MiB/s
+Dart Uint8List→JS length first (16777216 B): 15392.0 us/op (1 iters)  1039.5 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 15617.6 us/op (10 iters)  1024.5 MiB/s
+Dart Int16→JS length: 5607.2 us/op (40 iters)  11.1 MiB/s
+Dart Uint8Clamped→JS length: 5483.7 us/op (40 iters)  5.7 MiB/s
+Dart Float32→JS length: 5966.2 us/op (40 iters)  21.0 MiB/s
+Dart Float64→JS length: 2916.1 us/op (40 iters)  42.9 MiB/s
+Dart Uint8 offset→JS length: 4.1 us/op (40 iters)  7575.8 MiB/s
+Dart Float64List→JS length (10000): 1793.4 us/op (40 iters)  42.5 MiB/s
+evaluate large array (full jsToDart): 2885.0 us/op (40 iters)
+evaluate large object (full jsToDart): 5831.9 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 600.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 565.7 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 624.3 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 45234.0 us/op (1 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 44003.0 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 41916.4 us/op (40 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 947462.0 us/op (1 iters)  1.1 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 965943.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 964083.0 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7506.1 us/op (40 iters)  10.2 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10465.1 us/op (40 iters)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 21747.8 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10693.2 us/op (40 iters)  5.8 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4580.0 us/op (40 iters)  13.6 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 21318.5 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  454363827	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  362208103	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 8/32 seed=12648430 ---
+benchmark env: os=linux processors=22 seed=12648430 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.7 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.1 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.7 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 18.9 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 10.0 us/op (1 iters)  97.7 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.4 us/op (40 iters)  415.6 MiB/s
+Dart Uint8List→JS length first (65536 B): 19.0 us/op (1 iters)  3289.5 MiB/s
+Dart Uint8List→JS length steady (65536 B): 8.6 us/op (40 iters)  7267.4 MiB/s
+Dart Uint8List→JS length first (1048576 B): 352.0 us/op (1 iters)  2840.9 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 109.6 us/op (10 iters)  9124.1 MiB/s
+Dart Uint8List→JS length first (16777216 B): 13373.0 us/op (1 iters)  1196.4 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 14992.7 us/op (10 iters)  1067.2 MiB/s
+Dart Int16→JS length: 5681.2 us/op (40 iters)  11.0 MiB/s
+Dart Uint8Clamped→JS length: 5508.2 us/op (40 iters)  5.7 MiB/s
+Dart Float32→JS length: 5771.5 us/op (40 iters)  21.7 MiB/s
+Dart Float64→JS length: 2858.8 us/op (40 iters)  43.7 MiB/s
+Dart Uint8 offset→JS length: 3.9 us/op (40 iters)  8012.8 MiB/s
+Dart Float64List→JS length (10000): 1710.0 us/op (40 iters)  44.6 MiB/s
+evaluate large array (full jsToDart): 2959.4 us/op (40 iters)
+evaluate large object (full jsToDart): 5558.9 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 581.0 us/op (1 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 578.4 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 609.2 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 44474.0 us/op (1 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 51823.1 us/op (40 iters)  1.2 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 52362.4 us/op (40 iters)  1.2 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 1049406.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 985932.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 996054.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7975.8 us/op (40 iters)  9.6 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10443.0 us/op (40 iters)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 23036.0 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11324.1 us/op (40 iters)  5.5 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4748.8 us/op (40 iters)  13.2 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 21728.2 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  660345520	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  144172037	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 9/32 seed=461712677 ---
+benchmark env: os=linux processors=22 seed=461712677 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.6 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.1 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 18.5 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 10.0 us/op (1 iters)  97.7 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.4 us/op (40 iters)  411.2 MiB/s
+Dart Uint8List→JS length first (65536 B): 23.0 us/op (1 iters)  2717.4 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.4 us/op (40 iters)  9803.9 MiB/s
+Dart Uint8List→JS length first (1048576 B): 322.0 us/op (1 iters)  3105.6 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 103.2 us/op (10 iters)  9689.9 MiB/s
+Dart Uint8List→JS length first (16777216 B): 14358.0 us/op (1 iters)  1114.4 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 15247.1 us/op (10 iters)  1049.4 MiB/s
+Dart Int16→JS length: 5569.6 us/op (40 iters)  11.2 MiB/s
+Dart Uint8Clamped→JS length: 5428.8 us/op (40 iters)  5.8 MiB/s
+Dart Float32→JS length: 5651.8 us/op (40 iters)  22.1 MiB/s
+Dart Float64→JS length: 2774.8 us/op (40 iters)  45.0 MiB/s
+Dart Uint8 offset→JS length: 3.8 us/op (40 iters)  8223.7 MiB/s
+Dart Float64List→JS length (10000): 1691.8 us/op (40 iters)  45.1 MiB/s
+evaluate large array (full jsToDart): 2902.4 us/op (40 iters)
+evaluate large object (full jsToDart): 5368.7 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 559.0 us/op (1 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 559.8 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 546.0 us/op (40 iters)  1.8 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 45070.0 us/op (1 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 45594.8 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 46644.0 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 969372.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 954230.5 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 949557.5 us/op (2 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 7595.4 us/op (40 iters)  10.0 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10336.4 us/op (40 iters)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 21232.0 us/op (40 iters)  1.5 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10587.7 us/op (40 iters)  5.9 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4527.0 us/op (40 iters)  13.8 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 22126.1 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  22896933	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  1023408760	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 10/32 seed=454274810 ---
+benchmark env: os=linux processors=22 seed=454274810 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 4.4 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.2 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.2 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 23.3 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 13.0 us/op (1 iters)  75.1 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.5 us/op (40 iters)  398.6 MiB/s
+Dart Uint8List→JS length first (65536 B): 27.0 us/op (1 iters)  2314.8 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.7 us/op (40 iters)  9328.4 MiB/s
+Dart Uint8List→JS length first (1048576 B): 334.0 us/op (1 iters)  2994.0 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 115.6 us/op (10 iters)  8650.5 MiB/s
+Dart Uint8List→JS length first (16777216 B): 13534.0 us/op (1 iters)  1182.2 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 15975.3 us/op (10 iters)  1001.5 MiB/s
+Dart Int16→JS length: 5989.1 us/op (40 iters)  10.4 MiB/s
+Dart Uint8Clamped→JS length: 6048.6 us/op (40 iters)  5.2 MiB/s
+Dart Float32→JS length: 6590.0 us/op (40 iters)  19.0 MiB/s
+Dart Float64→JS length: 3231.6 us/op (40 iters)  38.7 MiB/s
+Dart Uint8 offset→JS length: 5.0 us/op (40 iters)  6218.9 MiB/s
+Dart Float64List→JS length (10000): 2045.8 us/op (40 iters)  37.3 MiB/s
+evaluate large array (full jsToDart): 3158.1 us/op (40 iters)
+evaluate large object (full jsToDart): 5666.1 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 580.0 us/op (1 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 568.3 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 565.5 us/op (40 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 46401.0 us/op (1 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 45808.6 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 45205.2 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 958531.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 952856.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 956702.0 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7278.0 us/op (40 iters)  10.5 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10350.9 us/op (40 iters)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 23020.8 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 12276.5 us/op (40 iters)  5.1 MiB/s
+fixed JS Float64→Dart (nonzero offset): 5265.1 us/op (40 iters)  11.9 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 25470.5 us/op (40 iters)  1.2 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  338757722	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  393735180	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 11/32 seed=1443749035 ---
+benchmark env: os=linux processors=22 seed=1443749035 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 4.2 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.4 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 19.4 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 12.0 us/op (1 iters)  81.4 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.6 us/op (40 iters)  379.2 MiB/s
+Dart Uint8List→JS length first (65536 B): 24.0 us/op (1 iters)  2604.2 MiB/s
+Dart Uint8List→JS length steady (65536 B): 7.0 us/op (40 iters)  8928.6 MiB/s
+Dart Uint8List→JS length first (1048576 B): 315.0 us/op (1 iters)  3174.6 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 110.4 us/op (10 iters)  9058.0 MiB/s
+Dart Uint8List→JS length first (16777216 B): 15160.0 us/op (1 iters)  1055.4 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 18545.2 us/op (10 iters)  862.8 MiB/s
+Dart Int16→JS length: 6434.1 us/op (40 iters)  9.7 MiB/s
+Dart Uint8Clamped→JS length: 6431.8 us/op (40 iters)  4.9 MiB/s
+Dart Float32→JS length: 6346.4 us/op (40 iters)  19.7 MiB/s
+Dart Float64→JS length: 3047.1 us/op (40 iters)  41.0 MiB/s
+Dart Uint8 offset→JS length: 4.2 us/op (40 iters)  7485.0 MiB/s
+Dart Float64List→JS length (10000): 2226.0 us/op (40 iters)  34.3 MiB/s
+evaluate large array (full jsToDart): 3101.3 us/op (40 iters)
+evaluate large object (full jsToDart): 6425.3 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 647.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 654.5 us/op (40 iters)  1.5 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 646.8 us/op (40 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 49997.0 us/op (1 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 53040.8 us/op (40 iters)  1.2 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 49432.9 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 958854.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 954403.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 999116.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7553.6 us/op (40 iters)  10.1 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10593.8 us/op (40 iters)  2.9 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 22675.5 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11224.6 us/op (40 iters)  5.6 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4737.9 us/op (40 iters)  13.2 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 21218.4 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  169824460	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  164428509	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 12/32 seed=1952792328 ---
+benchmark env: os=linux processors=22 seed=1952792328 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.4 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.6 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.6 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 10.0 us/op (1 iters)  97.7 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.3 us/op (40 iters)  434.0 MiB/s
+Dart Uint8List→JS length first (65536 B): 22.0 us/op (1 iters)  2840.9 MiB/s
+Dart Uint8List→JS length steady (65536 B): 5.9 us/op (40 iters)  10548.5 MiB/s
+Dart Uint8List→JS length first (1048576 B): 334.0 us/op (1 iters)  2994.0 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 108.7 us/op (10 iters)  9199.6 MiB/s
+Dart Uint8List→JS length first (16777216 B): 14420.0 us/op (1 iters)  1109.6 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 17572.5 us/op (10 iters)  910.5 MiB/s
+Dart Int16→JS length: 5948.7 us/op (40 iters)  10.5 MiB/s
+Dart Uint8Clamped→JS length: 5527.3 us/op (40 iters)  5.7 MiB/s
+Dart Float32→JS length: 5790.1 us/op (40 iters)  21.6 MiB/s
+Dart Float64→JS length: 2878.8 us/op (40 iters)  43.4 MiB/s
+Dart Uint8 offset→JS length: 4.0 us/op (40 iters)  7812.5 MiB/s
+Dart Float64List→JS length (10000): 1880.9 us/op (40 iters)  40.6 MiB/s
+evaluate large array (full jsToDart): 2935.4 us/op (40 iters)
+evaluate large object (full jsToDart): 5738.8 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 586.0 us/op (1 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 585.5 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 579.7 us/op (40 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 42457.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 46498.5 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 45971.0 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 1003070.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 976742.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 1027555.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7535.1 us/op (40 iters)  10.1 MiB/s
+fixed JS Int16→Dart (nonzero offset): 9938.8 us/op (40 iters)  3.1 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 21691.9 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11037.1 us/op (40 iters)  5.7 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4860.7 us/op (40 iters)  12.9 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 21830.4 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  67487413	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  737594937	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 13/32 seed=813725345 ---
+benchmark env: os=linux processors=22 seed=813725345 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.8 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.3 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 19.5 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 12.0 us/op (1 iters)  81.4 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.5 us/op (40 iters)  398.6 MiB/s
+Dart Uint8List→JS length first (65536 B): 26.0 us/op (1 iters)  2403.8 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.3 us/op (40 iters)  9881.4 MiB/s
+Dart Uint8List→JS length first (1048576 B): 361.0 us/op (1 iters)  2770.1 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 117.8 us/op (10 iters)  8489.0 MiB/s
+Dart Uint8List→JS length first (16777216 B): 12176.0 us/op (1 iters)  1314.1 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 14549.6 us/op (10 iters)  1099.7 MiB/s
+Dart Int16→JS length: 5441.1 us/op (40 iters)  11.5 MiB/s
+Dart Uint8Clamped→JS length: 5662.9 us/op (40 iters)  5.5 MiB/s
+Dart Float32→JS length: 5678.9 us/op (40 iters)  22.0 MiB/s
+Dart Float64→JS length: 2856.2 us/op (40 iters)  43.8 MiB/s
+Dart Uint8 offset→JS length: 4.0 us/op (40 iters)  7911.4 MiB/s
+Dart Float64List→JS length (10000): 1688.0 us/op (40 iters)  45.2 MiB/s
+evaluate large array (full jsToDart): 2743.5 us/op (40 iters)
+evaluate large object (full jsToDart): 5913.0 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 600.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 603.5 us/op (40 iters)  1.6 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 609.2 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 46665.0 us/op (1 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 50391.3 us/op (40 iters)  1.2 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 48457.6 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 981993.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 1064549.5 us/op (2 iters)  0.9 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 1072093.0 us/op (2 iters)  0.9 MiB/s
+JS Float64Array→Dart (10000): 8514.6 us/op (40 iters)  9.0 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10996.1 us/op (40 iters)  2.8 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 23580.0 us/op (40 iters)  1.3 MiB/s
+fixed JS Float32→Dart (nonzero offset): 12043.4 us/op (40 iters)  5.2 MiB/s
+fixed JS Float64→Dart (nonzero offset): 5229.6 us/op (40 iters)  12.0 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 25056.2 us/op (40 iters)  1.2 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  400610445	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  244491865	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 14/32 seed=1818083526 ---
+benchmark env: os=linux processors=22 seed=1818083526 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 4.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.4 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 19.4 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 11.0 us/op (1 iters)  88.8 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.6 us/op (40 iters)  379.2 MiB/s
+Dart Uint8List→JS length first (65536 B): 22.0 us/op (1 iters)  2840.9 MiB/s
+Dart Uint8List→JS length steady (65536 B): 7.0 us/op (40 iters)  8992.8 MiB/s
+Dart Uint8List→JS length first (1048576 B): 317.0 us/op (1 iters)  3154.6 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 115.5 us/op (10 iters)  8658.0 MiB/s
+Dart Uint8List→JS length first (16777216 B): 16699.0 us/op (1 iters)  958.1 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 17947.8 us/op (10 iters)  891.5 MiB/s
+Dart Int16→JS length: 5890.5 us/op (40 iters)  10.6 MiB/s
+Dart Uint8Clamped→JS length: 5752.6 us/op (40 iters)  5.4 MiB/s
+Dart Float32→JS length: 5964.4 us/op (40 iters)  21.0 MiB/s
+Dart Float64→JS length: 3072.6 us/op (40 iters)  40.7 MiB/s
+Dart Uint8 offset→JS length: 4.5 us/op (40 iters)  6983.2 MiB/s
+Dart Float64List→JS length (10000): 1889.9 us/op (40 iters)  40.4 MiB/s
+evaluate large array (full jsToDart): 3032.4 us/op (40 iters)
+evaluate large object (full jsToDart): 6770.1 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 727.0 us/op (1 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 707.1 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 703.1 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 55053.0 us/op (1 iters)  1.1 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 48300.1 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 50611.3 us/op (40 iters)  1.2 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 968700.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 930538.0 us/op (2 iters)  1.1 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 920933.5 us/op (2 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 7419.4 us/op (40 iters)  10.3 MiB/s
+fixed JS Int16→Dart (nonzero offset): 9496.3 us/op (40 iters)  3.3 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 19753.2 us/op (40 iters)  1.6 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10637.7 us/op (40 iters)  5.9 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4694.3 us/op (40 iters)  13.3 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 20546.5 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  29628037	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  820368969	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 15/32 seed=332109959 ---
+benchmark env: os=linux processors=22 seed=332109959 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.5 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.9 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.5 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 18.3 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 12.0 us/op (1 iters)  81.4 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.4 us/op (40 iters)  402.7 MiB/s
+Dart Uint8List→JS length first (65536 B): 32.0 us/op (1 iters)  1953.1 MiB/s
+Dart Uint8List→JS length steady (65536 B): 5.8 us/op (40 iters)  10869.6 MiB/s
+Dart Uint8List→JS length first (1048576 B): 298.0 us/op (1 iters)  3355.7 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 97.1 us/op (10 iters)  10298.7 MiB/s
+Dart Uint8List→JS length first (16777216 B): 12930.0 us/op (1 iters)  1237.4 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 14792.3 us/op (10 iters)  1081.6 MiB/s
+Dart Int16→JS length: 5431.9 us/op (40 iters)  11.5 MiB/s
+Dart Uint8Clamped→JS length: 5314.1 us/op (40 iters)  5.9 MiB/s
+Dart Float32→JS length: 5831.1 us/op (40 iters)  21.4 MiB/s
+Dart Float64→JS length: 2658.0 us/op (40 iters)  47.0 MiB/s
+Dart Uint8 offset→JS length: 4.2 us/op (40 iters)  7440.5 MiB/s
+Dart Float64List→JS length (10000): 1695.7 us/op (40 iters)  45.0 MiB/s
+evaluate large array (full jsToDart): 2724.7 us/op (40 iters)
+evaluate large object (full jsToDart): 5591.2 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 580.0 us/op (1 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 571.7 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 591.0 us/op (40 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 39618.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 42189.8 us/op (40 iters)  1.5 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 43625.3 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 922474.0 us/op (1 iters)  1.1 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 922742.0 us/op (2 iters)  1.1 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 933124.0 us/op (2 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 7330.0 us/op (40 iters)  10.4 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10429.9 us/op (40 iters)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 20239.9 us/op (40 iters)  1.5 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10588.8 us/op (40 iters)  5.9 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4569.3 us/op (40 iters)  13.7 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 20955.8 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  17998040	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  835872082	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 16/32 seed=898843572 ---
+benchmark env: os=linux processors=22 seed=898843572 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.3 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.5 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 21.4 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 11.0 us/op (1 iters)  88.8 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.2 us/op (40 iters)  449.0 MiB/s
+Dart Uint8List→JS length first (65536 B): 21.0 us/op (1 iters)  2976.2 MiB/s
+Dart Uint8List→JS length steady (65536 B): 7.2 us/op (40 iters)  8680.6 MiB/s
+Dart Uint8List→JS length first (1048576 B): 362.0 us/op (1 iters)  2762.4 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 109.6 us/op (10 iters)  9124.1 MiB/s
+Dart Uint8List→JS length first (16777216 B): 13908.0 us/op (1 iters)  1150.4 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 15373.0 us/op (10 iters)  1040.8 MiB/s
+Dart Int16→JS length: 5337.4 us/op (40 iters)  11.7 MiB/s
+Dart Uint8Clamped→JS length: 5256.7 us/op (40 iters)  5.9 MiB/s
+Dart Float32→JS length: 5929.2 us/op (40 iters)  21.1 MiB/s
+Dart Float64→JS length: 4707.4 us/op (40 iters)  26.6 MiB/s
+Dart Uint8 offset→JS length: 4.1 us/op (40 iters)  7622.0 MiB/s
+Dart Float64List→JS length (10000): 1759.0 us/op (40 iters)  43.4 MiB/s
+evaluate large array (full jsToDart): 2896.0 us/op (40 iters)
+evaluate large object (full jsToDart): 5954.7 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 545.0 us/op (1 iters)  1.8 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 559.6 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 633.6 us/op (40 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 39817.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 44536.0 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 45537.2 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 947568.0 us/op (1 iters)  1.1 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 937458.5 us/op (2 iters)  1.1 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 907775.5 us/op (2 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 7855.1 us/op (40 iters)  9.7 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10207.0 us/op (40 iters)  3.1 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 20967.0 us/op (40 iters)  1.5 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10320.8 us/op (40 iters)  6.1 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4576.2 us/op (40 iters)  13.7 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 20569.8 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  1071457347	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  638936806	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 17/32 seed=1066195933 ---
+benchmark env: os=linux processors=22 seed=1066195933 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.5 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.5 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 19.1 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 11.0 us/op (1 iters)  88.8 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.3 us/op (40 iters)  434.0 MiB/s
+Dart Uint8List→JS length first (65536 B): 30.0 us/op (1 iters)  2083.3 MiB/s
+Dart Uint8List→JS length steady (65536 B): 5.9 us/op (40 iters)  10548.5 MiB/s
+Dart Uint8List→JS length first (1048576 B): 290.0 us/op (1 iters)  3448.3 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 95.0 us/op (10 iters)  10526.3 MiB/s
+Dart Uint8List→JS length first (16777216 B): 12587.0 us/op (1 iters)  1271.2 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 13927.1 us/op (10 iters)  1148.8 MiB/s
+Dart Int16→JS length: 5173.8 us/op (40 iters)  12.1 MiB/s
+Dart Uint8Clamped→JS length: 5726.1 us/op (40 iters)  5.5 MiB/s
+Dart Float32→JS length: 5459.0 us/op (40 iters)  22.9 MiB/s
+Dart Float64→JS length: 2706.7 us/op (40 iters)  46.2 MiB/s
+Dart Uint8 offset→JS length: 3.7 us/op (40 iters)  8445.9 MiB/s
+Dart Float64List→JS length (10000): 1692.3 us/op (40 iters)  45.1 MiB/s
+evaluate large array (full jsToDart): 2763.9 us/op (40 iters)
+evaluate large object (full jsToDart): 5406.3 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 561.0 us/op (1 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 554.8 us/op (40 iters)  1.8 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 545.8 us/op (40 iters)  1.8 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 42378.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 44652.8 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 45068.3 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 998126.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 986045.5 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 998136.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 8018.4 us/op (40 iters)  9.5 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10689.0 us/op (40 iters)  2.9 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 22015.5 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11570.3 us/op (40 iters)  5.4 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4847.7 us/op (40 iters)  12.9 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 22330.3 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  447726280	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  912855872	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 18/32 seed=602219346 ---
+benchmark env: os=linux processors=22 seed=602219346 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.6 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.2 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 17.9 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 11.0 us/op (1 iters)  88.8 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.6 us/op (40 iters)  375.6 MiB/s
+Dart Uint8List→JS length first (65536 B): 28.0 us/op (1 iters)  2232.1 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.5 us/op (40 iters)  9615.4 MiB/s
+Dart Uint8List→JS length first (1048576 B): 294.0 us/op (1 iters)  3401.4 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 110.9 us/op (10 iters)  9017.1 MiB/s
+Dart Uint8List→JS length first (16777216 B): 13169.0 us/op (1 iters)  1215.0 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 18356.6 us/op (10 iters)  871.6 MiB/s
+Dart Int16→JS length: 5956.9 us/op (40 iters)  10.5 MiB/s
+Dart Uint8Clamped→JS length: 5785.1 us/op (40 iters)  5.4 MiB/s
+Dart Float32→JS length: 5910.9 us/op (40 iters)  21.1 MiB/s
+Dart Float64→JS length: 2981.0 us/op (40 iters)  41.9 MiB/s
+Dart Uint8 offset→JS length: 4.2 us/op (40 iters)  7396.4 MiB/s
+Dart Float64List→JS length (10000): 1968.9 us/op (40 iters)  38.7 MiB/s
+evaluate large array (full jsToDart): 3031.0 us/op (40 iters)
+evaluate large object (full jsToDart): 5986.6 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 610.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 628.1 us/op (40 iters)  1.6 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 600.6 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 45809.0 us/op (1 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 48721.9 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 46764.5 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 969251.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 956736.5 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 992592.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7438.4 us/op (40 iters)  10.3 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10802.6 us/op (40 iters)  2.9 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 23611.8 us/op (40 iters)  1.3 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11653.1 us/op (40 iters)  5.4 MiB/s
+fixed JS Float64→Dart (nonzero offset): 5057.5 us/op (40 iters)  12.4 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 23767.2 us/op (40 iters)  1.3 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  734356817	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  261381099	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 19/32 seed=1019164195 ---
+benchmark env: os=linux processors=22 seed=1019164195 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 4.2 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.6 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.3 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 25.4 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 14.0 us/op (1 iters)  69.8 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.5 us/op (40 iters)  390.6 MiB/s
+Dart Uint8List→JS length first (65536 B): 26.0 us/op (1 iters)  2403.8 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.5 us/op (40 iters)  9542.0 MiB/s
+Dart Uint8List→JS length first (1048576 B): 359.0 us/op (1 iters)  2785.5 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 117.8 us/op (10 iters)  8489.0 MiB/s
+Dart Uint8List→JS length first (16777216 B): 13871.0 us/op (1 iters)  1153.5 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 16328.4 us/op (10 iters)  979.9 MiB/s
+Dart Int16→JS length: 6068.6 us/op (40 iters)  10.3 MiB/s
+Dart Uint8Clamped→JS length: 6182.7 us/op (40 iters)  5.1 MiB/s
+Dart Float32→JS length: 6062.2 us/op (40 iters)  20.6 MiB/s
+Dart Float64→JS length: 3014.1 us/op (40 iters)  41.5 MiB/s
+Dart Uint8 offset→JS length: 4.3 us/op (40 iters)  7225.4 MiB/s
+Dart Float64List→JS length (10000): 1750.2 us/op (40 iters)  43.6 MiB/s
+evaluate large array (full jsToDart): 2962.9 us/op (40 iters)
+evaluate large object (full jsToDart): 5563.3 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 569.0 us/op (1 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 598.1 us/op (40 iters)  1.6 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 572.2 us/op (40 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 41088.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 45979.9 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 46617.8 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 1015798.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 1016997.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 972892.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7593.9 us/op (40 iters)  10.0 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10202.0 us/op (40 iters)  3.1 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 21857.0 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10635.9 us/op (40 iters)  5.9 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4575.7 us/op (40 iters)  13.7 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 20518.7 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  137294554	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  662948711	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 20/32 seed=1643833120 ---
+benchmark env: os=linux processors=22 seed=1643833120 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.4 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.6 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.2 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 11.0 us/op (1 iters)  88.8 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.4 us/op (40 iters)  406.9 MiB/s
+Dart Uint8List→JS length first (65536 B): 19.0 us/op (1 iters)  3289.5 MiB/s
+Dart Uint8List→JS length steady (65536 B): 5.8 us/op (40 iters)  10729.6 MiB/s
+Dart Uint8List→JS length first (1048576 B): 278.0 us/op (1 iters)  3597.1 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 94.8 us/op (10 iters)  10548.5 MiB/s
+Dart Uint8List→JS length first (16777216 B): 12663.0 us/op (1 iters)  1263.5 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 14640.9 us/op (10 iters)  1092.8 MiB/s
+Dart Int16→JS length: 5286.5 us/op (40 iters)  11.8 MiB/s
+Dart Uint8Clamped→JS length: 5609.1 us/op (40 iters)  5.6 MiB/s
+Dart Float32→JS length: 6249.6 us/op (40 iters)  20.0 MiB/s
+Dart Float64→JS length: 3083.2 us/op (40 iters)  40.5 MiB/s
+Dart Uint8 offset→JS length: 4.3 us/op (40 iters)  7183.9 MiB/s
+Dart Float64List→JS length (10000): 2006.9 us/op (40 iters)  38.0 MiB/s
+evaluate large array (full jsToDart): 2960.1 us/op (40 iters)
+evaluate large object (full jsToDart): 5711.5 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 583.0 us/op (1 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 569.3 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 564.6 us/op (40 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 41680.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 47138.7 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 45673.1 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 990305.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 977415.5 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 993883.0 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7963.6 us/op (40 iters)  9.6 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10351.4 us/op (40 iters)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 22513.6 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11162.3 us/op (40 iters)  5.6 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4915.3 us/op (40 iters)  12.7 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 21309.2 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  671476870	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  121692811	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 21/32 seed=218126553 ---
+benchmark env: os=linux processors=22 seed=218126553 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.4 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.7 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 10.0 us/op (1 iters)  97.7 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.3 us/op (40 iters)  424.6 MiB/s
+Dart Uint8List→JS length first (65536 B): 24.0 us/op (1 iters)  2604.2 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.1 us/op (40 iters)  10204.1 MiB/s
+Dart Uint8List→JS length first (1048576 B): 315.0 us/op (1 iters)  3174.6 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 106.2 us/op (10 iters)  9416.2 MiB/s
+Dart Uint8List→JS length first (16777216 B): 13846.0 us/op (1 iters)  1155.6 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 15448.9 us/op (10 iters)  1035.7 MiB/s
+Dart Int16→JS length: 5768.9 us/op (40 iters)  10.8 MiB/s
+Dart Uint8Clamped→JS length: 5695.6 us/op (40 iters)  5.5 MiB/s
+Dart Float32→JS length: 5853.7 us/op (40 iters)  21.4 MiB/s
+Dart Float64→JS length: 2875.8 us/op (40 iters)  43.5 MiB/s
+Dart Uint8 offset→JS length: 3.9 us/op (40 iters)  8012.8 MiB/s
+Dart Float64List→JS length (10000): 1776.2 us/op (40 iters)  43.0 MiB/s
+evaluate large array (full jsToDart): 2943.3 us/op (40 iters)
+evaluate large object (full jsToDart): 6061.2 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 579.0 us/op (1 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 600.9 us/op (40 iters)  1.6 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 593.3 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 47277.0 us/op (1 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 46852.6 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 44492.4 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 987329.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 1001766.5 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 1058699.5 us/op (2 iters)  0.9 MiB/s
+JS Float64Array→Dart (10000): 8330.5 us/op (40 iters)  9.2 MiB/s
+fixed JS Int16→Dart (nonzero offset): 11392.9 us/op (40 iters)  2.7 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 23579.3 us/op (40 iters)  1.3 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11874.0 us/op (40 iters)  5.3 MiB/s
+fixed JS Float64→Dart (nonzero offset): 5340.5 us/op (40 iters)  11.7 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 25064.9 us/op (40 iters)  1.2 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  942159290	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  1058648826	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 22/32 seed=1963860638 ---
+benchmark env: os=linux processors=22 seed=1963860638 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 4.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.3 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.0 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 19.3 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 16.0 us/op (1 iters)  61.0 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.6 us/op (40 iters)  379.2 MiB/s
+Dart Uint8List→JS length first (65536 B): 25.0 us/op (1 iters)  2500.0 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.9 us/op (40 iters)  9025.3 MiB/s
+Dart Uint8List→JS length first (1048576 B): 328.0 us/op (1 iters)  3048.8 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 130.2 us/op (10 iters)  7680.5 MiB/s
+Dart Uint8List→JS length first (16777216 B): 13514.0 us/op (1 iters)  1184.0 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 16337.8 us/op (10 iters)  979.3 MiB/s
+Dart Int16→JS length: 5800.9 us/op (40 iters)  10.8 MiB/s
+Dart Uint8Clamped→JS length: 5777.6 us/op (40 iters)  5.4 MiB/s
+Dart Float32→JS length: 6182.4 us/op (40 iters)  20.2 MiB/s
+Dart Float64→JS length: 3104.1 us/op (40 iters)  40.3 MiB/s
+Dart Uint8 offset→JS length: 4.3 us/op (40 iters)  7183.9 MiB/s
+Dart Float64List→JS length (10000): 1876.4 us/op (40 iters)  40.7 MiB/s
+evaluate large array (full jsToDart): 3330.8 us/op (40 iters)
+evaluate large object (full jsToDart): 6289.6 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 672.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 643.8 us/op (40 iters)  1.5 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 708.2 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 51188.0 us/op (1 iters)  1.2 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 51302.4 us/op (40 iters)  1.2 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 51845.2 us/op (40 iters)  1.2 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 1040850.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 992664.5 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 1007655.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 8073.8 us/op (40 iters)  9.4 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10433.8 us/op (40 iters)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 22254.0 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10961.9 us/op (40 iters)  5.7 MiB/s
+fixed JS Float64→Dart (nonzero offset): 5240.0 us/op (40 iters)  11.9 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 22406.4 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  689189735	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  35091937	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 23/32 seed=163910015 ---
+benchmark env: os=linux processors=22 seed=163910015 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.6 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.2 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.7 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.5 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 12.0 us/op (1 iters)  81.4 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.3 us/op (40 iters)  420.0 MiB/s
+Dart Uint8List→JS length first (65536 B): 23.0 us/op (1 iters)  2717.4 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.4 us/op (40 iters)  9727.6 MiB/s
+Dart Uint8List→JS length first (1048576 B): 395.0 us/op (1 iters)  2531.6 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 171.0 us/op (10 iters)  5848.0 MiB/s
+Dart Uint8List→JS length first (16777216 B): 14210.0 us/op (1 iters)  1126.0 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 15760.3 us/op (10 iters)  1015.2 MiB/s
+Dart Int16→JS length: 5839.9 us/op (40 iters)  10.7 MiB/s
+Dart Uint8Clamped→JS length: 5566.8 us/op (40 iters)  5.6 MiB/s
+Dart Float32→JS length: 5992.3 us/op (40 iters)  20.9 MiB/s
+Dart Float64→JS length: 3065.7 us/op (40 iters)  40.8 MiB/s
+Dart Uint8 offset→JS length: 4.0 us/op (40 iters)  7911.4 MiB/s
+Dart Float64List→JS length (10000): 1836.0 us/op (40 iters)  41.6 MiB/s
+evaluate large array (full jsToDart): 3054.4 us/op (40 iters)
+evaluate large object (full jsToDart): 5984.5 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 634.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 605.6 us/op (40 iters)  1.6 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 587.6 us/op (40 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 50581.0 us/op (1 iters)  1.2 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 48920.9 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 47163.6 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 1001795.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 986533.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 968876.0 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 8411.0 us/op (40 iters)  9.1 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10605.8 us/op (40 iters)  2.9 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 21540.2 us/op (40 iters)  1.5 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10549.0 us/op (40 iters)  5.9 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4545.5 us/op (40 iters)  13.7 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 21260.1 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  95924071	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  366748284	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 24/32 seed=2071418188 ---
+benchmark env: os=linux processors=22 seed=2071418188 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.6 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.2 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.7 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 17.9 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 11.0 us/op (1 iters)  88.8 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.4 us/op (40 iters)  411.2 MiB/s
+Dart Uint8List→JS length first (65536 B): 34.0 us/op (1 iters)  1838.2 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.2 us/op (40 iters)  10040.2 MiB/s
+Dart Uint8List→JS length first (1048576 B): 377.0 us/op (1 iters)  2652.5 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 344.7 us/op (10 iters)  2901.1 MiB/s
+Dart Uint8List→JS length first (16777216 B): 13228.0 us/op (1 iters)  1209.6 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 14445.1 us/op (10 iters)  1107.6 MiB/s
+Dart Int16→JS length: 5619.3 us/op (40 iters)  11.1 MiB/s
+Dart Uint8Clamped→JS length: 5961.5 us/op (40 iters)  5.2 MiB/s
+Dart Float32→JS length: 6257.2 us/op (40 iters)  20.0 MiB/s
+Dart Float64→JS length: 3181.3 us/op (40 iters)  39.3 MiB/s
+Dart Uint8 offset→JS length: 5.1 us/op (40 iters)  6127.5 MiB/s
+Dart Float64List→JS length (10000): 1946.0 us/op (40 iters)  39.2 MiB/s
+evaluate large array (full jsToDart): 3190.5 us/op (40 iters)
+evaluate large object (full jsToDart): 6364.2 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 646.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 638.3 us/op (40 iters)  1.5 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 636.7 us/op (40 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 47077.0 us/op (1 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 47906.3 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 47792.6 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 1007449.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 969490.5 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 963435.0 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7796.4 us/op (40 iters)  9.8 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10501.3 us/op (40 iters)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 22263.5 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10866.9 us/op (40 iters)  5.8 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4977.7 us/op (40 iters)  12.6 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 21548.8 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  2011142	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  619138530	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 25/32 seed=848603541 ---
+benchmark env: os=linux processors=22 seed=848603541 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.5 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.7 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.8 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 11.0 us/op (1 iters)  88.8 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.3 us/op (40 iters)  420.0 MiB/s
+Dart Uint8List→JS length first (65536 B): 21.0 us/op (1 iters)  2976.2 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.0 us/op (40 iters)  10373.4 MiB/s
+Dart Uint8List→JS length first (1048576 B): 321.0 us/op (1 iters)  3115.3 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 105.3 us/op (10 iters)  9496.7 MiB/s
+Dart Uint8List→JS length first (16777216 B): 12989.0 us/op (1 iters)  1231.8 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 15212.8 us/op (10 iters)  1051.7 MiB/s
+Dart Int16→JS length: 5528.7 us/op (40 iters)  11.3 MiB/s
+Dart Uint8Clamped→JS length: 5481.1 us/op (40 iters)  5.7 MiB/s
+Dart Float32→JS length: 5989.6 us/op (40 iters)  20.9 MiB/s
+Dart Float64→JS length: 2892.3 us/op (40 iters)  43.2 MiB/s
+Dart Uint8 offset→JS length: 3.9 us/op (40 iters)  8116.9 MiB/s
+Dart Float64List→JS length (10000): 1788.8 us/op (40 iters)  42.7 MiB/s
+evaluate large array (full jsToDart): 2901.4 us/op (40 iters)
+evaluate large object (full jsToDart): 6216.7 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 1445.0 us/op (1 iters)  0.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 574.9 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 677.8 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 42807.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 46989.3 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 46306.0 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 995881.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 1061632.5 us/op (2 iters)  0.9 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 1076021.0 us/op (2 iters)  0.9 MiB/s
+JS Float64Array→Dart (10000): 8637.6 us/op (40 iters)  8.8 MiB/s
+fixed JS Int16→Dart (nonzero offset): 11757.1 us/op (40 iters)  2.7 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 24694.4 us/op (40 iters)  1.3 MiB/s
+fixed JS Float32→Dart (nonzero offset): 12050.8 us/op (40 iters)  5.2 MiB/s
+fixed JS Float64→Dart (nonzero offset): 5650.4 us/op (40 iters)  11.1 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 24362.5 us/op (40 iters)  1.3 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  667160835	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  515433736	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 26/32 seed=1396034218 ---
+benchmark env: os=linux processors=22 seed=1396034218 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 4.0 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.2 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 17.3 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 19.0 us/op (1 iters)  51.4 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.5 us/op (40 iters)  398.6 MiB/s
+Dart Uint8List→JS length first (65536 B): 27.0 us/op (1 iters)  2314.8 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.5 us/op (40 iters)  9689.9 MiB/s
+Dart Uint8List→JS length first (1048576 B): 417.0 us/op (1 iters)  2398.1 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 157.4 us/op (10 iters)  6353.2 MiB/s
+Dart Uint8List→JS length first (16777216 B): 14857.0 us/op (1 iters)  1076.9 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 17692.5 us/op (10 iters)  904.3 MiB/s
+Dart Int16→JS length: 5955.0 us/op (40 iters)  10.5 MiB/s
+Dart Uint8Clamped→JS length: 5828.3 us/op (40 iters)  5.4 MiB/s
+Dart Float32→JS length: 6379.0 us/op (40 iters)  19.6 MiB/s
+Dart Float64→JS length: 3099.1 us/op (40 iters)  40.3 MiB/s
+Dart Uint8 offset→JS length: 4.0 us/op (40 iters)  7716.0 MiB/s
+Dart Float64List→JS length (10000): 1919.0 us/op (40 iters)  39.8 MiB/s
+evaluate large array (full jsToDart): 3183.7 us/op (40 iters)
+evaluate large object (full jsToDart): 5809.2 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 1498.0 us/op (1 iters)  0.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 599.5 us/op (40 iters)  1.6 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 604.8 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 50537.0 us/op (1 iters)  1.2 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 49856.5 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 48813.8 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 1067042.0 us/op (1 iters)  0.9 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 954604.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 952789.0 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7659.3 us/op (40 iters)  10.0 MiB/s
+fixed JS Int16→Dart (nonzero offset): 9892.9 us/op (40 iters)  3.2 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 21313.7 us/op (40 iters)  1.5 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10938.6 us/op (40 iters)  5.7 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4873.1 us/op (40 iters)  12.8 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 22368.1 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  867894453	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  649734700	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 27/32 seed=992167579 ---
+benchmark env: os=linux processors=22 seed=992167579 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.6 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.8 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 15.4 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 9.0 us/op (1 iters)  108.5 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.4 us/op (40 iters)  402.7 MiB/s
+Dart Uint8List→JS length first (65536 B): 26.0 us/op (1 iters)  2403.8 MiB/s
+Dart Uint8List→JS length steady (65536 B): 5.9 us/op (40 iters)  10593.2 MiB/s
+Dart Uint8List→JS length first (1048576 B): 316.0 us/op (1 iters)  3164.6 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 136.7 us/op (10 iters)  7315.3 MiB/s
+Dart Uint8List→JS length first (16777216 B): 13368.0 us/op (1 iters)  1196.9 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 16074.4 us/op (10 iters)  995.4 MiB/s
+Dart Int16→JS length: 5489.7 us/op (40 iters)  11.4 MiB/s
+Dart Uint8Clamped→JS length: 5270.0 us/op (40 iters)  5.9 MiB/s
+Dart Float32→JS length: 5554.8 us/op (40 iters)  22.5 MiB/s
+Dart Float64→JS length: 2826.3 us/op (40 iters)  44.2 MiB/s
+Dart Uint8 offset→JS length: 3.9 us/op (40 iters)  8064.5 MiB/s
+Dart Float64List→JS length (10000): 1769.3 us/op (40 iters)  43.1 MiB/s
+evaluate large array (full jsToDart): 3031.7 us/op (40 iters)
+evaluate large object (full jsToDart): 5469.8 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 554.0 us/op (1 iters)  1.8 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 567.6 us/op (40 iters)  1.7 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 561.9 us/op (40 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 42421.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 43991.2 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 44385.6 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 982408.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 958059.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 962399.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7872.0 us/op (40 iters)  9.7 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10218.6 us/op (40 iters)  3.1 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 21997.4 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10523.1 us/op (40 iters)  5.9 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4829.5 us/op (40 iters)  12.9 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 22645.8 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  365836987	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  81187608	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 28/32 seed=1684699704 ---
+benchmark env: os=linux processors=22 seed=1684699704 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.7 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.7 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.3 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 18.2 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 15.0 us/op (1 iters)  65.1 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.7 us/op (40 iters)  358.4 MiB/s
+Dart Uint8List→JS length first (65536 B): 27.0 us/op (1 iters)  2314.8 MiB/s
+Dart Uint8List→JS length steady (65536 B): 7.3 us/op (40 iters)  8620.7 MiB/s
+Dart Uint8List→JS length first (1048576 B): 351.0 us/op (1 iters)  2849.0 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 125.4 us/op (10 iters)  7974.5 MiB/s
+Dart Uint8List→JS length first (16777216 B): 18102.0 us/op (1 iters)  883.9 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 21571.3 us/op (10 iters)  741.7 MiB/s
+Dart Int16→JS length: 7451.2 us/op (40 iters)  8.4 MiB/s
+Dart Uint8Clamped→JS length: 10780.8 us/op (40 iters)  2.9 MiB/s
+Dart Float32→JS length: 9294.7 us/op (40 iters)  13.4 MiB/s
+Dart Float64→JS length: 3972.3 us/op (40 iters)  31.5 MiB/s
+Dart Uint8 offset→JS length: 4.8 us/op (40 iters)  6476.7 MiB/s
+Dart Float64List→JS length (10000): 2400.3 us/op (40 iters)  31.8 MiB/s
+evaluate large array (full jsToDart): 3649.2 us/op (40 iters)
+evaluate large object (full jsToDart): 7128.6 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 675.0 us/op (1 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 708.4 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 686.7 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 50910.0 us/op (1 iters)  1.2 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 53014.1 us/op (40 iters)  1.2 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 47530.2 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 1007270.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 983469.5 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 981054.0 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7894.3 us/op (40 iters)  9.7 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10644.6 us/op (40 iters)  2.9 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 22712.9 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10831.1 us/op (40 iters)  5.8 MiB/s
+fixed JS Float64→Dart (nonzero offset): 5082.9 us/op (40 iters)  12.3 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 22725.3 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  138097625	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  752607538	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 29/32 seed=1910721041 ---
+benchmark env: os=linux processors=22 seed=1910721041 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.9 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.3 us/op (200 iters)
+string Dart→JS→Dart (identity): 3.1 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 18.1 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 10.0 us/op (1 iters)  97.7 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.6 us/op (40 iters)  368.5 MiB/s
+Dart Uint8List→JS length first (65536 B): 22.0 us/op (1 iters)  2840.9 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.7 us/op (40 iters)  9363.3 MiB/s
+Dart Uint8List→JS length first (1048576 B): 340.0 us/op (1 iters)  2941.2 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 113.4 us/op (10 iters)  8818.3 MiB/s
+Dart Uint8List→JS length first (16777216 B): 14131.0 us/op (1 iters)  1132.3 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 17117.3 us/op (10 iters)  934.7 MiB/s
+Dart Int16→JS length: 6219.1 us/op (40 iters)  10.0 MiB/s
+Dart Uint8Clamped→JS length: 6137.2 us/op (40 iters)  5.1 MiB/s
+Dart Float32→JS length: 6516.6 us/op (40 iters)  19.2 MiB/s
+Dart Float64→JS length: 3273.2 us/op (40 iters)  38.2 MiB/s
+Dart Uint8 offset→JS length: 27.9 us/op (40 iters)  1121.1 MiB/s
+Dart Float64List→JS length (10000): 1971.5 us/op (40 iters)  38.7 MiB/s
+evaluate large array (full jsToDart): 3335.6 us/op (40 iters)
+evaluate large object (full jsToDart): 6853.2 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 611.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 650.3 us/op (40 iters)  1.5 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 637.2 us/op (40 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 49479.0 us/op (1 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 50929.6 us/op (40 iters)  1.2 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 47362.0 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 959920.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 974628.5 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 956099.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7478.7 us/op (40 iters)  10.2 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10101.7 us/op (40 iters)  3.1 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 21642.3 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11001.3 us/op (40 iters)  5.7 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4739.9 us/op (40 iters)  13.2 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 21064.0 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  357007967	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  199934901	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 30/32 seed=1484646262 ---
+benchmark env: os=linux processors=22 seed=1484646262 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.4 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.0 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.6 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.4 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 12.0 us/op (1 iters)  81.4 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.3 us/op (40 iters)  429.3 MiB/s
+Dart Uint8List→JS length first (65536 B): 26.0 us/op (1 iters)  2403.8 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.1 us/op (40 iters)  10288.1 MiB/s
+Dart Uint8List→JS length first (1048576 B): 331.0 us/op (1 iters)  3021.1 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 147.2 us/op (10 iters)  6793.5 MiB/s
+Dart Uint8List→JS length first (16777216 B): 18927.0 us/op (1 iters)  845.4 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 16068.1 us/op (10 iters)  995.8 MiB/s
+Dart Int16→JS length: 5336.4 us/op (40 iters)  11.7 MiB/s
+Dart Uint8Clamped→JS length: 5260.9 us/op (40 iters)  5.9 MiB/s
+Dart Float32→JS length: 6049.4 us/op (40 iters)  20.7 MiB/s
+Dart Float64→JS length: 3016.9 us/op (40 iters)  41.4 MiB/s
+Dart Uint8 offset→JS length: 4.0 us/op (40 iters)  7911.4 MiB/s
+Dart Float64List→JS length (10000): 1745.0 us/op (40 iters)  43.7 MiB/s
+evaluate large array (full jsToDart): 2987.5 us/op (40 iters)
+evaluate large object (full jsToDart): 5755.9 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 571.0 us/op (1 iters)  1.7 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 601.0 us/op (40 iters)  1.6 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 630.1 us/op (40 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 41168.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 45818.9 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 46655.0 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 1038311.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 992069.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 974845.5 us/op (2 iters)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7621.9 us/op (40 iters)  10.0 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10642.0 us/op (40 iters)  2.9 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 21643.8 us/op (40 iters)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10900.8 us/op (40 iters)  5.7 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4596.4 us/op (40 iters)  13.6 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 21728.8 us/op (40 iters)  1.4 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  412108289	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  807204566	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 31/32 seed=90550647 ---
+benchmark env: os=linux processors=22 seed=90550647 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.6 us/op (200 iters)
+invoke host (a,b)=>a+b: 2.1 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.9 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 16.0 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 11.0 us/op (1 iters)  88.8 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.3 us/op (40 iters)  429.3 MiB/s
+Dart Uint8List→JS length first (65536 B): 23.0 us/op (1 iters)  2717.4 MiB/s
+Dart Uint8List→JS length steady (65536 B): 6.1 us/op (40 iters)  10245.9 MiB/s
+Dart Uint8List→JS length first (1048576 B): 307.0 us/op (1 iters)  3257.3 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 122.3 us/op (10 iters)  8176.6 MiB/s
+Dart Uint8List→JS length first (16777216 B): 13113.0 us/op (1 iters)  1220.2 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 15414.4 us/op (10 iters)  1038.0 MiB/s
+Dart Int16→JS length: 5644.4 us/op (40 iters)  11.1 MiB/s
+Dart Uint8Clamped→JS length: 5544.6 us/op (40 iters)  5.6 MiB/s
+Dart Float32→JS length: 6615.7 us/op (40 iters)  18.9 MiB/s
+Dart Float64→JS length: 3042.7 us/op (40 iters)  41.1 MiB/s
+Dart Uint8 offset→JS length: 4.1 us/op (40 iters)  7575.8 MiB/s
+Dart Float64List→JS length (10000): 1837.7 us/op (40 iters)  41.5 MiB/s
+evaluate large array (full jsToDart): 3029.2 us/op (40 iters)
+evaluate large object (full jsToDart): 5776.9 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 652.0 us/op (1 iters)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 592.9 us/op (40 iters)  1.6 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 596.1 us/op (40 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 48065.0 us/op (1 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 48093.3 us/op (40 iters)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 48077.4 us/op (40 iters)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 1049870.0 us/op (1 iters)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 953273.5 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 950123.5 us/op (2 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 7122.8 us/op (40 iters)  10.7 MiB/s
+fixed JS Int16→Dart (nonzero offset): 9719.6 us/op (40 iters)  3.2 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 20381.0 us/op (40 iters)  1.5 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10233.9 us/op (40 iters)  6.1 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4312.4 us/op (40 iters)  14.5 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 20575.0 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  474725159	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  482001931	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+--- run 32/32 seed=1097400804 ---
+benchmark env: os=linux processors=22 seed=1097400804 length=10000 iterations=40
+  osVersion=Linux 7.1.3-arch1-3 #1 SMP PREEMPT_DYNAMIC Mon, 13 Jul 2026 20:15:15 +0000
+  executable=/home/nancunchild/fvm/versions/stable/bin/cache/artifacts/engine/linux-x64/flutter_tester
+evaluate tiny (auto jobs on): 3.5 us/op (200 iters)
+invoke host (a,b)=>a+b: 1.9 us/op (200 iters)
+string Dart→JS→Dart (identity): 2.6 us/op (40 iters)
+small Map Dart→JS→Dart (identity): 14.9 us/op (40 iters)
+Dart Uint8List→JS length first (1024 B): 11.0 us/op (1 iters)  88.8 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.1 us/op (40 iters)  454.2 MiB/s
+Dart Uint8List→JS length first (65536 B): 22.0 us/op (1 iters)  2840.9 MiB/s
+Dart Uint8List→JS length steady (65536 B): 5.9 us/op (40 iters)  10593.2 MiB/s
+Dart Uint8List→JS length first (1048576 B): 307.0 us/op (1 iters)  3257.3 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 96.3 us/op (10 iters)  10384.2 MiB/s
+Dart Uint8List→JS length first (16777216 B): 12773.0 us/op (1 iters)  1252.6 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 15542.8 us/op (10 iters)  1029.4 MiB/s
+Dart Int16→JS length: 5554.9 us/op (40 iters)  11.3 MiB/s
+Dart Uint8Clamped→JS length: 5363.3 us/op (40 iters)  5.8 MiB/s
+Dart Float32→JS length: 5762.8 us/op (40 iters)  21.7 MiB/s
+Dart Float64→JS length: 3124.2 us/op (40 iters)  40.0 MiB/s
+Dart Uint8 offset→JS length: 3.9 us/op (40 iters)  7961.8 MiB/s
+Dart Float64List→JS length (10000): 1797.7 us/op (40 iters)  42.4 MiB/s
+evaluate large array (full jsToDart): 2917.8 us/op (40 iters)
+evaluate large object (full jsToDart): 5442.3 us/op (40 iters)
+JS allocate Uint8Array→Dart first (1024 B): 547.0 us/op (1 iters)  1.8 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 555.8 us/op (40 iters)  1.8 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 541.8 us/op (40 iters)  1.8 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 38729.0 us/op (1 iters)  1.6 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 43527.8 us/op (40 iters)  1.4 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 44051.4 us/op (40 iters)  1.4 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 935548.0 us/op (1 iters)  1.1 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 963021.0 us/op (2 iters)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 919510.0 us/op (2 iters)  1.1 MiB/s
+JS Float64Array→Dart (10000): 7126.9 us/op (40 iters)  10.7 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10263.3 us/op (40 iters)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 20384.9 us/op (40 iters)  1.5 MiB/s
+fixed JS Float32→Dart (nonzero offset): 10159.9 us/op (40 iters)  6.2 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4553.5 us/op (40 iters)  13.7 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 20276.0 us/op (40 iters)  1.5 MiB/s
+reference leak:
+    ADDR	REF	TYPE	PROP
+  214196140	1	_JSFunction	(key, val) => { this[key] = val; } ...
+  134523869	1	_JSFunction	function FLUTTER_NATIVEJS_MakeQuerablePromise(promise) { ...
+#0      new JSError (package:flutter_qjs/quickjs/object.dart:92:41)
+#1      QuickJsRuntime2.close (package:flutter_qjs/quickjs/quickjs_runtime2.dart:149:13)
+#2      QuickJsRuntime2.dispose (package:flutter_qjs/quickjs/quickjs_runtime2.dart:261:7)
+#3      runFlutterQjsBenchmarks (package:flutter_qjs_example/benchmark_runner.dart:469:13)
+#4      runFlutterQjsBenchmarkSuite (package:flutter_qjs_example/benchmark_runner.dart:197:17)
+#5      main.<anonymous closure> (file:///tmp/opencode/flutter_qjs_3261eb4/example/test/benchmark_test.dart:28:19)
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+evaluate tiny (auto jobs on): 4.1 us/op (n=32 σ=1.4, 200 iters/run)
+invoke host (a,b)=>a+b: 2.4 us/op (n=32 σ=0.7, 200 iters/run)
+string Dart→JS→Dart (identity): 3.2 us/op (n=32 σ=1.3, 40 iters/run)
+small Map Dart→JS→Dart (identity): 21.1 us/op (n=32 σ=9.5, 40 iters/run)
+Dart Uint8List→JS length first (1024 B): 27.0 us/op (n=32 σ=60.0, 1 iters/run)  36.1 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.7 us/op (n=32 σ=0.8, 40 iters/run)  360.4 MiB/s
+Dart Uint8List→JS length first (65536 B): 30.7 us/op (n=32 σ=23.0, 1 iters/run)  2036.7 MiB/s
+Dart Uint8List→JS length steady (65536 B): 7.0 us/op (n=32 σ=1.4, 40 iters/run)  8940.5 MiB/s
+Dart Uint8List→JS length first (1048576 B): 362.8 us/op (n=32 σ=132.6, 1 iters/run)  2756.0 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 141.6 us/op (n=32 σ=83.8, 10 iters/run)  7061.4 MiB/s
+Dart Uint8List→JS length first (16777216 B): 14248.7 us/op (n=32 σ=1502.4, 1 iters/run)  1122.9 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 16102.4 us/op (n=32 σ=1545.2, 10 iters/run)  993.6 MiB/s
+Dart Int16→JS length: 5730.4 us/op (n=32 σ=439.1, 40 iters/run)  10.9 MiB/s
+Dart Uint8Clamped→JS length: 5818.3 us/op (n=32 σ=961.9, 40 iters/run)  5.4 MiB/s
+Dart Float32→JS length: 6111.6 us/op (n=32 σ=685.4, 40 iters/run)  20.5 MiB/s
+Dart Float64→JS length: 3064.9 us/op (n=32 σ=385.3, 40 iters/run)  40.8 MiB/s
+Dart Uint8 offset→JS length: 5.2 us/op (n=32 σ=4.2, 40 iters/run)  6067.0 MiB/s
+Dart Float64List→JS length (10000): 1863.5 us/op (n=32 σ=164.6, 40 iters/run)  40.9 MiB/s
+evaluate large array (full jsToDart): 3004.1 us/op (n=32 σ=198.5, 40 iters/run)
+evaluate large object (full jsToDart): 5934.5 us/op (n=32 σ=461.7, 40 iters/run)
+JS allocate Uint8Array→Dart first (1024 B): 660.6 us/op (n=32 σ=217.0, 1 iters/run)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 602.7 us/op (n=32 σ=44.8, 40 iters/run)  1.6 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 607.0 us/op (n=32 σ=45.0, 40 iters/run)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 45368.6 us/op (n=32 σ=4154.3, 1 iters/run)  1.4 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 47392.2 us/op (n=32 σ=3141.3, 40 iters/run)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 46685.5 us/op (n=32 σ=2504.7, 40 iters/run)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 984197.5 us/op (n=32 σ=40312.0, 1 iters/run)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 975550.7 us/op (n=32 σ=32094.6, 2 iters/run)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 984476.2 us/op (n=32 σ=46314.1, 2 iters/run)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7844.7 us/op (n=32 σ=477.2, 40 iters/run)  9.7 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10584.6 us/op (n=32 σ=583.8, 40 iters/run)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 22206.8 us/op (n=32 σ=1245.1, 40 iters/run)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11072.2 us/op (n=32 σ=571.1, 40 iters/run)  5.6 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4853.6 us/op (n=32 σ=296.1, 40 iters/run)  12.9 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 22183.1 us/op (n=32 σ=1386.3, 40 iters/run)  1.4 MiB/s
+benchmark suite: runs=32 seeds=[464037, 1118481, 2236962, 3355443, 11259375, 5613141, 14593470, 12648430, 461712677, 454274810, 1443749035, 1952792328, 813725345, 1818083526, 332109959, 898843572, 1066195933, 602219346, 1019164195, 1643833120, 218126553, 1963860638, 163910015, 2071418188, 848603541, 1396034218, 992167579, 1684699704, 1910721041, 1484646262, 90550647, 1097400804] length=10000 iterations=40
+evaluate tiny (auto jobs on): 4.1 us/op (n=32 σ=1.4, 200 iters/run)
+invoke host (a,b)=>a+b: 2.4 us/op (n=32 σ=0.7, 200 iters/run)
+string Dart→JS→Dart (identity): 3.2 us/op (n=32 σ=1.3, 40 iters/run)
+small Map Dart→JS→Dart (identity): 21.1 us/op (n=32 σ=9.5, 40 iters/run)
+Dart Uint8List→JS length first (1024 B): 27.0 us/op (n=32 σ=60.0, 1 iters/run)  36.1 MiB/s
+Dart Uint8List→JS length steady (1024 B): 2.7 us/op (n=32 σ=0.8, 40 iters/run)  360.4 MiB/s
+Dart Uint8List→JS length first (65536 B): 30.7 us/op (n=32 σ=23.0, 1 iters/run)  2036.7 MiB/s
+Dart Uint8List→JS length steady (65536 B): 7.0 us/op (n=32 σ=1.4, 40 iters/run)  8940.5 MiB/s
+Dart Uint8List→JS length first (1048576 B): 362.8 us/op (n=32 σ=132.6, 1 iters/run)  2756.0 MiB/s
+Dart Uint8List→JS length steady (1048576 B): 141.6 us/op (n=32 σ=83.8, 10 iters/run)  7061.4 MiB/s
+Dart Uint8List→JS length first (16777216 B): 14248.7 us/op (n=32 σ=1502.4, 1 iters/run)  1122.9 MiB/s
+Dart Uint8List→JS length steady (16777216 B): 16102.4 us/op (n=32 σ=1545.2, 10 iters/run)  993.6 MiB/s
+Dart Int16→JS length: 5730.4 us/op (n=32 σ=439.1, 40 iters/run)  10.9 MiB/s
+Dart Uint8Clamped→JS length: 5818.3 us/op (n=32 σ=961.9, 40 iters/run)  5.4 MiB/s
+Dart Float32→JS length: 6111.6 us/op (n=32 σ=685.4, 40 iters/run)  20.5 MiB/s
+Dart Float64→JS length: 3064.9 us/op (n=32 σ=385.3, 40 iters/run)  40.8 MiB/s
+Dart Uint8 offset→JS length: 5.2 us/op (n=32 σ=4.2, 40 iters/run)  6067.0 MiB/s
+Dart Float64List→JS length (10000): 1863.5 us/op (n=32 σ=164.6, 40 iters/run)  40.9 MiB/s
+evaluate large array (full jsToDart): 3004.1 us/op (n=32 σ=198.5, 40 iters/run)
+evaluate large object (full jsToDart): 5934.5 us/op (n=32 σ=461.7, 40 iters/run)
+JS allocate Uint8Array→Dart first (1024 B): 660.6 us/op (n=32 σ=217.0, 1 iters/run)  1.5 MiB/s
+JS allocate Uint8Array→Dart steady (1024 B): 602.7 us/op (n=32 σ=44.8, 40 iters/run)  1.6 MiB/s
+fixed JS Uint8Array→Dart (1024 B): 607.0 us/op (n=32 σ=45.0, 40 iters/run)  1.6 MiB/s
+JS allocate Uint8Array→Dart first (65536 B): 45368.6 us/op (n=32 σ=4154.3, 1 iters/run)  1.4 MiB/s
+JS allocate Uint8Array→Dart steady (65536 B): 47392.2 us/op (n=32 σ=3141.3, 40 iters/run)  1.3 MiB/s
+fixed JS Uint8Array→Dart (65536 B): 46685.5 us/op (n=32 σ=2504.7, 40 iters/run)  1.3 MiB/s
+JS allocate Uint8Array→Dart first (1048576 B): 984197.5 us/op (n=32 σ=40312.0, 1 iters/run)  1.0 MiB/s
+JS allocate Uint8Array→Dart steady (1048576 B): 975550.7 us/op (n=32 σ=32094.6, 2 iters/run)  1.0 MiB/s
+fixed JS Uint8Array→Dart (1048576 B): 984476.2 us/op (n=32 σ=46314.1, 2 iters/run)  1.0 MiB/s
+JS Float64Array→Dart (10000): 7844.7 us/op (n=32 σ=477.2, 40 iters/run)  9.7 MiB/s
+fixed JS Int16→Dart (nonzero offset): 10584.6 us/op (n=32 σ=583.8, 40 iters/run)  3.0 MiB/s
+fixed JS Uint8Clamped→Dart (nonzero offset): 22206.8 us/op (n=32 σ=1245.1, 40 iters/run)  1.4 MiB/s
+fixed JS Float32→Dart (nonzero offset): 11072.2 us/op (n=32 σ=571.1, 40 iters/run)  5.6 MiB/s
+fixed JS Float64→Dart (nonzero offset): 4853.6 us/op (n=32 σ=296.1, 40 iters/run)  12.9 MiB/s
+fixed JS Uint8 offset→Dart (nonzero offset): 22183.1 us/op (n=32 σ=1386.3, 40 iters/run)  1.4 MiB/s
+08:22 +1: All tests passed!
