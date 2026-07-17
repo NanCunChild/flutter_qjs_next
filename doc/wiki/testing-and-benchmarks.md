@@ -12,12 +12,14 @@ flutter pub get
 | File | Focus |
 |------|--------|
 | `test/typed_array_test.dart` | TypedArray / ArrayBuffer marshalling |
+| `test/bridge_diagnostics_test.dart` | Native bridge allocation/copy counters |
 | `test/leak_and_stress_test.dart` | Jobs, pool, dispose, stress |
 | `test/benchmark_test.dart` | Micro-benchmarks |
 | `test/soak_stress_test.dart` | Short soak (~30 s smoke) |
 
 ```bash
 flutter test test/typed_array_test.dart
+flutter test test/bridge_diagnostics_test.dart
 flutter test test/leak_and_stress_test.dart
 flutter test test/benchmark_test.dart --dart-define=BENCH_RUNS=1
 flutter test test/soak_stress_test.dart
