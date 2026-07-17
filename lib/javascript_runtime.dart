@@ -122,6 +122,20 @@ abstract class JavascriptRuntime {
 
   dynamic evaluateJson(String code, {String? sourceUrl});
 
+  /// Evaluate multiple JavaScript expressions and decode the results through
+  /// one JSON round-trip. Expressions must be JSON-serializable and are
+  /// evaluated in order in the same runtime.
+  List<dynamic> evaluateJsonBatch(
+    Iterable<String> expressions, {
+    String? sourceUrl,
+  }) {
+    final items = expressions.toList(growable: false);
+    if (items.isEmpty) return const [];
+    final code = '[${items.map((expression) => '($expression)').join(',')}]';
+    final result = evaluateJson(code, sourceUrl: sourceUrl);
+    return (result as List<dynamic>?) ?? const [];
+  }
+
   JsEvalResult callFunction(Pointer fn, Pointer obj);
 
   T? convertValue<T>(JsEvalResult jsValue);
@@ -213,8 +227,8 @@ abstract class JavascriptRuntime {
     onMessage('ConsoleLog', (dynamic args) {
       if (args is! List || args.isEmpty) return;
       final level = args[0];
-      final output =
-          args.length < 2 ? '' : args.sublist(1).join(' ');
+    final output =
+        args.length < 2 ? '' : args.sublist(1).join(' ');
       switch (level) {
         case 'error':
           FlutterQjsLogger.error(output);

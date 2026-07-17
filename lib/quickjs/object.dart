@@ -61,8 +61,8 @@ class _DartObject extends JSRef implements JSRefLeakable {
   }
 
   static _DartObject? fromAddress(Pointer<JSRuntime> rt, int val) {
-    return runtimeOpaques[rt]?.getRef((e) => identityHashCode(e) == val)
-        as _DartObject?;
+    final ref = runtimeOpaques[rt]?.refById(val);
+    return ref is _DartObject ? ref : null;
   }
 
   @override

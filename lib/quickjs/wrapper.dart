@@ -218,6 +218,14 @@ Pointer<JSValue> _dartToJs(
   }
   if (val is double) return jsNewFloat64(ctx, val);
   if (val is String) return jsNewString(ctx, val);
+  if (val is JsTypedArrayTransfer) {
+    return jsNewTypedArrayOwned(
+      ctx,
+      val.takeOwnership(),
+      val.byteLength,
+      val.type,
+    );
+  }
   if (val is TypedData) {
     final ta = _typedDataToJs(ctx, val);
     if (ta != null) return ta;
@@ -256,10 +264,11 @@ Pointer<JSValue> _dartToJs(
   final dartObjectClassId =
       runtimeOpaques[jsGetRuntime(ctx)]?.dartObjectClassId ?? 0;
   if (dartObjectClassId == 0) return jsUNDEFINED();
+  final dartObjectRef = _DartObject(ctx, valWrap);
   final dartObject = jsNewObjectClass(
     ctx,
     dartObjectClassId,
-    identityHashCode(_DartObject(ctx, valWrap)),
+    dartObjectRef.runtimeRefId!,
   );
   if (valWrap is JSInvokable) {
     final ret = jsNewCFunction(ctx, dartObject);

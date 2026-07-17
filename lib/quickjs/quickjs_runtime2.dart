@@ -13,7 +13,8 @@ import 'package:flutter_qjs_next/js_eval_result.dart';
 
 import 'ffi.dart';
 
-export 'ffi.dart' show JSEvalFlag, JSRef;
+export 'ffi.dart'
+    show JSEvalFlag, JSRef, JSTypedArrayType, JsTypedArrayTransfer;
 
 part 'isolate.dart';
 part 'object.dart';

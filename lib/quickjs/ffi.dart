@@ -8,6 +8,7 @@
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 import 'package:ffi/ffi.dart';
 
 extension ListFirstWhere<T> on Iterable<T> {
@@ -22,6 +23,9 @@ extension ListFirstWhere<T> on Iterable<T> {
 
 abstract class JSRef {
   int _refCount = 0;
+  int? _runtimeRefId;
+
+  int? get runtimeRefId => _runtimeRefId;
   void dup() {
     _refCount++;
   }
@@ -212,7 +216,8 @@ _jsNewRuntime = _qjsLib
 
 class _RuntimeOpaque {
   final _JSChannel _channel;
-  List<JSRef> _ref = [];
+  final Map<int, JSRef> _ref = <int, JSRef>{};
+  int _nextRefId = 1;
   final ReceivePort _port;
   final int? memoryLimit;
   int? _dartObjectClassId;
@@ -220,13 +225,28 @@ class _RuntimeOpaque {
 
   int? get dartObjectClassId => _dartObjectClassId;
 
-  void addRef(JSRef ref) => _ref.add(ref);
+  int addRef(JSRef ref) {
+    final id = _nextRefId++;
+    ref._runtimeRefId = id;
+    _ref[id] = ref;
+    return id;
+  }
 
-  bool removeRef(JSRef ref) => _ref.remove(ref);
+  bool removeRef(JSRef ref) {
+    final id = ref._runtimeRefId;
+    if (id == null) return false;
+    ref._runtimeRefId = null;
+    return _ref.remove(id) != null;
+  }
 
   JSRef? getRef(bool Function(JSRef ref) test) {
-    return _ref.firstWhereOrNull(test);
+    for (final ref in _ref.values) {
+      if (test(ref)) return ref;
+    }
+    return null;
   }
+
+  JSRef? refById(int id) => _ref[id];
 }
 
 late final compileFn = _compile
@@ -400,20 +420,24 @@ void jsFreeRuntime(Pointer<JSRuntime> rt) {
   final opaque = runtimeOpaques[rt];
   if (opaque != null) {
     while (true) {
-      final ref = opaque._ref.firstWhereOrNull((ref) => ref is JSRefLeakable);
+      JSRef? ref;
+      for (final candidate in opaque._ref.values) {
+        if (candidate is JSRefLeakable) {
+          ref = candidate;
+          break;
+        }
+      }
       if (ref == null) break;
       ref.destroy();
-      opaque._ref.remove(ref);
     }
     while (opaque._ref.isNotEmpty) {
-      final ref = opaque._ref.first;
+      final ref = opaque._ref.values.first;
       final objStrs = ref.toString().split('\n');
       final objStr = objStrs.isNotEmpty ? objStrs[0] + " ..." : objStrs[0];
       referenceleak.add(
         "  ${identityHashCode(ref)}\t${ref._refCount + 1}\t${ref.runtimeType.toString()}\t$objStr",
       );
       ref.destroy();
-      opaque._ref.remove(ref);
     }
     runtimeOpaques.remove(rt);
   }
@@ -854,6 +878,52 @@ class JSTypedArrayType {
   static const FLOAT16 = 9;
   static const FLOAT32 = 10;
   static const FLOAT64 = 11;
+}
+
+/// A native buffer whose ownership can be transferred to a QuickJS TypedArray.
+///
+/// The buffer is allocated outside the Dart heap. Call [dispose] when it is
+/// no longer needed, unless it has been passed to [QuickJsRuntime2], in which
+/// case QuickJS owns it and will release it during garbage collection.
+class JsTypedArrayTransfer {
+  final Pointer<Uint8> pointer;
+  final int byteLength;
+  final int type;
+  bool _transferred = false;
+
+  JsTypedArrayTransfer(this.pointer, this.byteLength, this.type)
+    : assert(byteLength >= 0);
+
+  /// Allocate a buffer suitable for a zero-copy Dart-to-native handoff.
+  factory JsTypedArrayTransfer.allocate({
+    required int byteLength,
+    required int type,
+  }) {
+    if (byteLength < 0) throw ArgumentError.value(byteLength, 'byteLength');
+    final pointer = jsAllocBuffer(byteLength);
+    if (pointer.address == 0) throw StateError('Out of memory');
+    return JsTypedArrayTransfer(pointer, byteLength, type);
+  }
+
+  /// The native-owned bytes. Writes are visible to the eventual JS view.
+  Uint8List get bytes => pointer.asTypedList(byteLength);
+
+  bool get transferred => _transferred;
+
+  /// Release the buffer if ownership has not been transferred.
+  void dispose() {
+    if (_transferred) return;
+    _transferred = true;
+    malloc.free(pointer);
+  }
+
+  Pointer<Uint8> takeOwnership() {
+    if (_transferred) {
+      throw StateError('TypedArray buffer was already transferred or disposed');
+    }
+    _transferred = true;
+    return pointer;
+  }
 }
 
 /// JSValue *jsNewTypedArray(JSContext *ctx, const uint8_t *buf, size_t len, int32_t type)
