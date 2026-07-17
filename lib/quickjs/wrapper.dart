@@ -88,6 +88,7 @@ Pointer<JSValue>? _typedDataToJs(Pointer<JSContext> ctx, TypedData val) {
   final ptr = jsAllocBuffer(byteLength);
   if (ptr.address == 0) throw JSError('Out of memory');
   final bytes = val.buffer.asUint8List(val.offsetInBytes, byteLength);
+  jsBridgeStatsRecordCopy(byteLength);
   ptr.asTypedList(byteLength).setAll(0, bytes);
   return jsNewTypedArrayOwned(ctx, ptr, byteLength, type);
 }
@@ -110,6 +111,7 @@ TypedData? _jsTypedArrayToDart(Pointer<JSContext> ctx, Pointer<JSValue> val) {
   calloc.free(info);
   final bytes = data.asTypedList(byteLength);
   // Copy into a Dart-owned buffer (data is owned by the JS engine).
+  jsBridgeStatsRecordCopy(byteLength);
   final copy = Uint8List.fromList(bytes);
   final bd = copy.buffer;
   switch (type) {

@@ -598,6 +598,67 @@ final void Function(Pointer<Uint8>, Pointer<Uint8>, int) jsMemcpy = _qjsLib
     >('jsMemcpy')
     .asFunction();
 
+/// Native bridge operation counters used by diagnostic tests and profiling.
+final void Function() jsBridgeStatsReset = _qjsLib
+    .lookup<NativeFunction<Void Function()>>('jsBridgeStatsReset')
+    .asFunction();
+
+final int Function() jsBridgeStatsAllocCalls = _qjsLib
+    .lookup<NativeFunction<Uint64 Function()>>('jsBridgeStatsAllocCalls')
+    .asFunction();
+
+final int Function() jsBridgeStatsAllocBytes = _qjsLib
+    .lookup<NativeFunction<Uint64 Function()>>('jsBridgeStatsAllocBytes')
+    .asFunction();
+
+final int Function() jsBridgeStatsFreeCalls = _qjsLib
+    .lookup<NativeFunction<Uint64 Function()>>('jsBridgeStatsFreeCalls')
+    .asFunction();
+
+final int Function() jsBridgeStatsMemcpyCalls = _qjsLib
+    .lookup<NativeFunction<Uint64 Function()>>('jsBridgeStatsMemcpyCalls')
+    .asFunction();
+
+final int Function() jsBridgeStatsMemcpyBytes = _qjsLib
+    .lookup<NativeFunction<Uint64 Function()>>('jsBridgeStatsMemcpyBytes')
+    .asFunction();
+
+final void Function(int) jsBridgeStatsRecordCopy = _qjsLib
+    .lookup<NativeFunction<Void Function(IntPtr)>>('jsBridgeStatsRecordCopy')
+    .asFunction();
+
+final int Function() jsBridgeStatsCopyCalls = _qjsLib
+    .lookup<NativeFunction<Uint64 Function()>>('jsBridgeStatsCopyCalls')
+    .asFunction();
+
+final int Function() jsBridgeStatsCopyBytes = _qjsLib
+    .lookup<NativeFunction<Uint64 Function()>>('jsBridgeStatsCopyBytes')
+    .asFunction();
+
+final int Function() jsBridgeStatsOwnedTypedArrayCalls = _qjsLib
+    .lookup<NativeFunction<Uint64 Function()>>(
+      'jsBridgeStatsOwnedTypedArrayCalls',
+    )
+    .asFunction();
+
+final int Function() jsBridgeStatsTypedArrayDataCalls = _qjsLib
+    .lookup<NativeFunction<Uint64 Function()>>(
+      'jsBridgeStatsTypedArrayDataCalls',
+    )
+    .asFunction();
+
+Map<String, int> readBridgeStats() => {
+  'allocCalls': jsBridgeStatsAllocCalls(),
+  'allocBytes': jsBridgeStatsAllocBytes(),
+  'freeCalls': jsBridgeStatsFreeCalls(),
+  'memcpyCalls': jsBridgeStatsMemcpyCalls(),
+  'memcpyBytes': jsBridgeStatsMemcpyBytes(),
+  'copyCalls': jsBridgeStatsCopyCalls(),
+  'copyBytes': jsBridgeStatsCopyBytes(),
+  'ownedTypedArrayCalls': jsBridgeStatsOwnedTypedArrayCalls(),
+  'typedArrayDataCalls': jsBridgeStatsTypedArrayDataCalls(),
+};
+
 /// JSValue *jsNewArrayBufferOwned(JSContext *ctx, uint8_t *buf, size_t len)
 final Pointer<JSValue> Function(
   Pointer<JSContext> ctx,

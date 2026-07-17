@@ -80,6 +80,19 @@ extern "C" {
 
   DLLEXPORT void jsMemcpy(uint8_t *dst, const uint8_t *src, size_t len);
 
+  /* Diagnostic counters for bridge allocation and copy paths. */
+  DLLEXPORT void jsBridgeStatsReset(void);
+  DLLEXPORT uint64_t jsBridgeStatsAllocCalls(void);
+  DLLEXPORT uint64_t jsBridgeStatsAllocBytes(void);
+  DLLEXPORT uint64_t jsBridgeStatsFreeCalls(void);
+  DLLEXPORT uint64_t jsBridgeStatsMemcpyCalls(void);
+  DLLEXPORT uint64_t jsBridgeStatsMemcpyBytes(void);
+  DLLEXPORT void jsBridgeStatsRecordCopy(size_t len);
+  DLLEXPORT uint64_t jsBridgeStatsCopyCalls(void);
+  DLLEXPORT uint64_t jsBridgeStatsCopyBytes(void);
+  DLLEXPORT uint64_t jsBridgeStatsOwnedTypedArrayCalls(void);
+  DLLEXPORT uint64_t jsBridgeStatsTypedArrayDataCalls(void);
+
   DLLEXPORT JSValue *jsNewArrayBufferOwned(JSContext *ctx, uint8_t *buf, size_t len);
 
   DLLEXPORT JSValue *jsNewArray(JSContext *ctx);

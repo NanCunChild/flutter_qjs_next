@@ -6,6 +6,7 @@
  * @LastEditTime: 2020-12-02 11:11:42
  */
 #include "ffi.h"
+#include <atomic>
 #include <functional>
 #include <future>
 #include <stdlib.h>
@@ -18,6 +19,44 @@
 
 extern "C"
 {
+
+  static std::atomic<uint64_t> bridge_alloc_calls{0};
+  static std::atomic<uint64_t> bridge_alloc_bytes{0};
+  static std::atomic<uint64_t> bridge_free_calls{0};
+  static std::atomic<uint64_t> bridge_memcpy_calls{0};
+  static std::atomic<uint64_t> bridge_memcpy_bytes{0};
+  static std::atomic<uint64_t> bridge_copy_calls{0};
+  static std::atomic<uint64_t> bridge_copy_bytes{0};
+  static std::atomic<uint64_t> bridge_owned_typed_array_calls{0};
+  static std::atomic<uint64_t> bridge_typed_array_data_calls{0};
+
+  DLLEXPORT void jsBridgeStatsReset(void)
+  {
+    bridge_alloc_calls.store(0);
+    bridge_alloc_bytes.store(0);
+    bridge_free_calls.store(0);
+    bridge_memcpy_calls.store(0);
+    bridge_memcpy_bytes.store(0);
+    bridge_copy_calls.store(0);
+    bridge_copy_bytes.store(0);
+    bridge_owned_typed_array_calls.store(0);
+    bridge_typed_array_data_calls.store(0);
+  }
+
+  DLLEXPORT uint64_t jsBridgeStatsAllocCalls(void) { return bridge_alloc_calls.load(); }
+  DLLEXPORT uint64_t jsBridgeStatsAllocBytes(void) { return bridge_alloc_bytes.load(); }
+  DLLEXPORT uint64_t jsBridgeStatsFreeCalls(void) { return bridge_free_calls.load(); }
+  DLLEXPORT uint64_t jsBridgeStatsMemcpyCalls(void) { return bridge_memcpy_calls.load(); }
+  DLLEXPORT uint64_t jsBridgeStatsMemcpyBytes(void) { return bridge_memcpy_bytes.load(); }
+  DLLEXPORT void jsBridgeStatsRecordCopy(size_t len)
+  {
+    bridge_copy_calls.fetch_add(1);
+    bridge_copy_bytes.fetch_add(len);
+  }
+  DLLEXPORT uint64_t jsBridgeStatsCopyCalls(void) { return bridge_copy_calls.load(); }
+  DLLEXPORT uint64_t jsBridgeStatsCopyBytes(void) { return bridge_copy_bytes.load(); }
+  DLLEXPORT uint64_t jsBridgeStatsOwnedTypedArrayCalls(void) { return bridge_owned_typed_array_calls.load(); }
+  DLLEXPORT uint64_t jsBridgeStatsTypedArrayDataCalls(void) { return bridge_typed_array_data_calls.load(); }
 
   /* Wall-clock ms for interrupt timeout (not process CPU time). */
   static int64_t js_monotonic_ms(void)
@@ -312,16 +351,21 @@ extern "C"
 
   DLLEXPORT uint8_t *jsAllocBuffer(size_t len)
   {
+    bridge_alloc_calls.fetch_add(1);
+    bridge_alloc_bytes.fetch_add(len);
     return (uint8_t *)malloc(len == 0 ? 1 : len);
   }
 
   DLLEXPORT void jsMemcpy(uint8_t *dst, const uint8_t *src, size_t len)
   {
+    bridge_memcpy_calls.fetch_add(1);
+    bridge_memcpy_bytes.fetch_add(len);
     memcpy(dst, src, len);
   }
 
   static void js_free_owned_buffer(JSRuntime *rt, void *opaque, void *ptr)
   {
+    bridge_free_calls.fetch_add(1);
     free(ptr);
   }
 
@@ -421,6 +465,7 @@ extern "C"
 
   DLLEXPORT JSValue *jsNewTypedArrayOwned(JSContext *ctx, uint8_t *buf, size_t len, int32_t type)
   {
+    bridge_owned_typed_array_calls.fetch_add(1);
     JSValue arrayBuffer = JS_NewArrayBuffer(ctx, buf, len, js_free_owned_buffer, NULL, 0);
     if (JS_IsException(arrayBuffer))
     {
@@ -482,6 +527,7 @@ extern "C"
   DLLEXPORT uint8_t *jsGetTypedArrayData(JSContext *ctx, JSValueConst *val,
                                          size_t *plength, int32_t *ptype)
   {
+    bridge_typed_array_data_calls.fetch_add(1);
     size_t byte_offset = 0, byte_length = 0, bytes_per_element = 0;
     JSValue buffer = JS_GetTypedArrayBuffer(ctx, *val, &byte_offset, &byte_length, &bytes_per_element);
     if (JS_IsException(buffer))
