@@ -95,6 +95,19 @@ while IFS= read -r -d '' f; do
   mv "${tmp}" "${f}"
 done < <(find "${WORKDIR}" -type f -name '*.md' -print0)
 
+# GitHub Wiki pages are rendered without the .md suffix and are addressed by
+# their basename, not by the source tree path. Leaving either in an internal
+# link sends visitors to the raw file (or to a non-existent nested page).
+# Keep external links and repository blob links unchanged.
+WIKI="https://github.com/${GITHUB_REPOSITORY}/wiki"
+while IFS= read -r -d '' f; do
+  tmp="${f}.tmp"
+  perl -0pe \
+    "s{\\]\\((?![A-Za-z][A-Za-z0-9+.-]*:|/)(?:[^)]*?/)?([^/()?#]+)\\.md([?#][^)]*)?\\)}{](${WIKI}/\$1\$2)}g" \
+    "${f}" > "${tmp}"
+  mv "${tmp}" "${f}"
+done < <(find "${WORKDIR}" -type f -name '*.md' -print0)
+
 git -C "${WORKDIR}" config user.name "${GIT_AUTHOR_NAME:-github-actions[bot]}"
 git -C "${WORKDIR}" config user.email \
   "${GIT_AUTHOR_EMAIL:-github-actions[bot]@users.noreply.github.com}"
