@@ -1,0 +1,18 @@
+Plugin flutter_qjs_next has a Package.swift for ios but is missing a dependency on FlutterFramework. Add the following to your Package.swift dependencies:
+    .package(name: "FlutterFramework", path: "../FlutterFramework")
+And add FlutterFramework as a target dependency:
+    .product(name: "FlutterFramework", package: "FlutterFramework")
+See https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-plugin-authors for more information.
+Plugin flutter_qjs_next has a Package.swift for macos but is missing a dependency on FlutterFramework. Add the following to your Package.swift dependencies:
+    .package(name: "FlutterFramework", path: "../FlutterFramework")
+And add FlutterFramework as a target dependency:
+    .product(name: "FlutterFramework", package: "FlutterFramework")
+See https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-plugin-authors for more information.
+00:00 +0: loading /home/nancunchild/projects/flutter_qjs_next/example/test/bridge_counter_benchmark_test.dart
+00:00 +0: bridge operation counter benchmark
+BRIDGE_COUNTER_BENCH dart_to_js_typed_array {"allocCalls":1,"allocBytes":1048576,"freeCalls":1,"memcpyCalls":0,"memcpyBytes":0,"copyCalls":1,"copyBytes":1048576,"ownedTypedArrayCalls":1,"typedArrayDataCalls":0}
+BRIDGE_COUNTER_BENCH js_to_dart_typed_array {"allocCalls":0,"allocBytes":0,"freeCalls":0,"memcpyCalls":0,"memcpyBytes":0,"copyCalls":1,"copyBytes":1048576,"ownedTypedArrayCalls":0,"typedArrayDataCalls":1}
+BRIDGE_COUNTER_BENCH evaluate_json_large_array {"allocCalls":0,"allocBytes":0,"freeCalls":0,"memcpyCalls":0,"memcpyBytes":0,"copyCalls":0,"copyBytes":0,"ownedTypedArrayCalls":0,"typedArrayDataCalls":0}
+BRIDGE_COUNTER_BENCH native_memcpy {"allocCalls":2,"allocBytes":2097152,"freeCalls":0,"memcpyCalls":1,"memcpyBytes":1048576,"copyCalls":0,"copyBytes":0,"ownedTypedArrayCalls":0,"typedArrayDataCalls":0}
+BRIDGE_COUNTER_BENCH_SUMMARY {"dart_to_js_typed_array":{"allocCalls":1,"allocBytes":1048576,"freeCalls":1,"memcpyCalls":0,"memcpyBytes":0,"copyCalls":1,"copyBytes":1048576,"ownedTypedArrayCalls":1,"typedArrayDataCalls":0},"js_to_dart_typed_array":{"allocCalls":0,"allocBytes":0,"freeCalls":0,"memcpyCalls":0,"memcpyBytes":0,"copyCalls":1,"copyBytes":1048576,"ownedTypedArrayCalls":0,"typedArrayDataCalls":1},"evaluate_json_large_array":{"allocCalls":0,"allocBytes":0,"freeCalls":0,"memcpyCalls":0,"memcpyBytes":0,"copyCalls":0,"copyBytes":0,"ownedTypedArrayCalls":0,"typedArrayDataCalls":0},"native_memcpy":{"allocCalls":2,"allocBytes":2097152,"freeCalls":0,"memcpyCalls":1,"memcpyBytes":1048576,"copyCalls":0,"copyBytes":0,"ownedTypedArrayCalls":0,"typedArrayDataCalls":0}}
+00:00 +1: All tests passed!

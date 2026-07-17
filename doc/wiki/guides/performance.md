@@ -74,6 +74,16 @@ bytes, bridge copy calls and bytes, explicit native `memcpy` calls and bytes,
 owned-buffer release callbacks, and TypedArray creation/data-access counts. The
 counters are diagnostic only and do not prove zero-copy behavior.
 
+For a one-shot counter benchmark covering representative 1 MiB paths, run:
+
+```bash
+cd example
+flutter test test/bridge_counter_benchmark_test.dart
+```
+
+Captured results are stored under `benchmark_results/<commit-short-hash>/` so
+measurements from different revisions remain separate.
+
 ## Logging
 
 `FlutterQjsLogger` and `console.*` have cost; raise level or disable in hot production paths if needed.
