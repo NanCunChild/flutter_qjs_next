@@ -120,7 +120,8 @@ TypedData? _jsTypedArrayToDart(Pointer<JSContext> ctx, Pointer<JSValue> val) {
     case JSTypedArrayType.UINT8:
       return copy;
     case JSTypedArrayType.UINT8C:
-      return Uint8ClampedList.fromList(copy);
+      // Reuse the copied buffer; fromList would copy it a second time.
+      return bd.asUint8ClampedList();
     case JSTypedArrayType.INT16:
       return bd.asInt16List();
     case JSTypedArrayType.UINT16:

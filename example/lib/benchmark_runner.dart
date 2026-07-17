@@ -277,6 +277,21 @@ List<BenchmarkResult> runFlutterQjsBenchmarks({
     return r;
   }
 
+  BenchmarkResult benchFirst(
+    String name,
+    void Function() body, {
+    int? bytes,
+  }) {
+    final watch = Stopwatch()..start();
+    body();
+    watch.stop();
+    final r = BenchmarkResult(name, watch.elapsedMicroseconds.toDouble(), 1,
+        bytes: bytes);
+    emit(r.toString());
+    results.add(r);
+    return r;
+  }
+
   try {
     // --- 1) Evaluate and automatic job-drain controls ---
     bench('evaluate tiny (auto jobs on)', () {
@@ -317,15 +332,45 @@ List<BenchmarkResult> runFlutterQjsBenchmarks({
       });
 
       // --- 3) Buffer size ladder: Dart→JS owned path (JS only reads .length) ---
-      for (final size in const [1024, 64 * 1024, 1024 * 1024]) {
+      for (final size in const [
+        1024,
+        64 * 1024,
+        1024 * 1024,
+        16 * 1024 * 1024
+      ]) {
         final bytes = _seededUint8(size, rng);
+        benchFirst(
+          'Dart Uint8List→JS length first ($size B)',
+          () => lenFn.invoke([bytes]),
+          bytes: size,
+        );
         bench(
-          'Dart Uint8List→JS length ($size B)',
+          'Dart Uint8List→JS length steady ($size B)',
           () {
             lenFn.invoke([bytes]);
           },
           bytes: size,
-          iters: size >= 1024 * 1024 ? (iterations ~/ 2).clamp(4, 20) : null,
+          iters: size >= 1024 * 1024 ? (iterations ~/ 4).clamp(2, 10) : null,
+        );
+      }
+
+      final typedPayloads = <String, TypedData>{
+        'Int16': Int16List.fromList(List<int>.generate(32 * 1024, (i) => i)),
+        'Float32': Float32List.fromList(
+          List<double>.generate(32 * 1024, (i) => i / 10),
+        ),
+        'Float64': Float64List.fromList(
+          List<double>.generate(16 * 1024, (i) => i / 10),
+        ),
+        'Uint8 offset': Uint8List.fromList(
+          List<int>.generate(32 * 1024 + 7, (i) => i & 0xff),
+        ).buffer.asUint8List(7, 32 * 1024),
+      };
+      for (final entry in typedPayloads.entries) {
+        bench(
+          'Dart ${entry.key}→JS length',
+          () => lenFn.invoke([entry.value]),
+          bytes: entry.value.lengthInBytes,
         );
       }
 
@@ -361,16 +406,21 @@ List<BenchmarkResult> runFlutterQjsBenchmarks({
     });
 
     // --- 5) JS allocation + JS → Dart conversion ---
-    for (final size in const [1024, 64 * 1024, 1024 * 1024]) {
+    for (final size in const [1024, 64 * 1024, 1024 * 1024, 16 * 1024 * 1024]) {
       final allocateAndReturn =
           runtime.evaluate('(n) => new Uint8Array(n)').rawResult as JSInvokable;
+      benchFirst(
+        'JS allocate Uint8Array→Dart first ($size B)',
+        () => allocateAndReturn.invoke([size]),
+        bytes: size,
+      );
       bench(
-        'JS allocate Uint8Array→Dart ($size B)',
+        'JS allocate Uint8Array→Dart steady ($size B)',
         () {
           allocateAndReturn.invoke([size]);
         },
         bytes: size,
-        iters: size >= 1024 * 1024 ? (iterations ~/ 2).clamp(4, 20) : null,
+        iters: size >= 1024 * 1024 ? (iterations ~/ 4).clamp(2, 10) : null,
       );
       allocateAndReturn.free();
 
@@ -394,8 +444,39 @@ List<BenchmarkResult> runFlutterQjsBenchmarks({
       runtime.evaluate('new Float64Array($length)');
     }, bytes: length * 8);
 
+    final jsTypedArrays = <String, String>{
+      'Int16': 'new Int16Array(new ArrayBuffer(2 * 16384), 2, 16383)',
+      'Float32': 'new Float32Array(new ArrayBuffer(4 * 16384 + 4), 4, 16384)',
+      'Float64': 'new Float64Array(new ArrayBuffer(8 * 8192 + 8), 8, 8192)',
+      'Uint8 offset': 'new Uint8Array(new ArrayBuffer(32771), 3, 32768)',
+    };
+    for (final entry in jsTypedArrays.entries) {
+      final fixed = runtime.evaluate('''
+          (() => {
+            const value = ${entry.value};
+            return () => value;
+          })()
+        ''').rawResult as JSInvokable;
+      try {
+        final bytes = entry.key == 'Float64'
+            ? 8192 * 8
+            : entry.key == 'Float32'
+                ? 16384 * 4
+                : entry.key == 'Int16'
+                    ? 16383 * 2
+                    : 32768;
+        bench(
+          'fixed JS ${entry.key}→Dart (nonzero offset)',
+          () => fixed.invoke(const []),
+          bytes: bytes,
+        );
+      } finally {
+        fixed.free();
+      }
+    }
+
     // --- 6) Native memcpy only ---
-    for (final size in const [1024, 64 * 1024, 1024 * 1024]) {
+    for (final size in const [1024, 64 * 1024, 1024 * 1024, 16 * 1024 * 1024]) {
       final src = jsAllocBuffer(size);
       final dst = jsAllocBuffer(size);
       if (src.address == 0 || dst.address == 0) {
