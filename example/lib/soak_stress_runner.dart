@@ -126,8 +126,7 @@ class SoakStressConfig {
   static SoakStressConfig fromEnvironment() {
     // String.fromEnvironment only sees --dart-define when the name is a
     // compile-time constant literal (not a runtime [key] parameter).
-    int parseInt(String s, int fallback) =>
-        s.isEmpty ? fallback : int.parse(s);
+    int parseInt(String s, int fallback) => s.isEmpty ? fallback : int.parse(s);
 
     final sec = parseInt(const String.fromEnvironment('SOAK_DURATION_SEC'), 30);
     final metricsSec =
@@ -273,24 +272,44 @@ Future<SoakStressResult> runSoakStress({
   StackTrace? firstStack;
 
   final stopAt = started.add(cfg.duration);
-  final metricsTimer = Timer.periodic(cfg.metricsInterval, (_) {
+  var metricsInFlight = false;
+  Future<void> emitMetrics() async {
+    if (metricsInFlight) return;
+    metricsInFlight = true;
     final rss = _rss();
     if (rss > peakRss) peakRss = rss;
-    emit(
-      'metrics: ops=$totalOps errors=$errors pool size=${pool.size} '
-      'idle=${pool.idleCount} inUse=${pool.inUseCount} rss=$rss '
-      'peakRss=$peakRss baselineRss=$baselineRss',
-    );
-    if (cfg.maxRssGrowthFactor > 0 &&
-        baselineRss > 0 &&
-        rss > baselineRss * cfg.maxRssGrowthFactor) {
-      firstError ??= StateError(
-        'RSS growth exceeded: rss=$rss baseline=$baselineRss '
-        'factor=${cfg.maxRssGrowthFactor}',
+    try {
+      JsMemoryUsage? qjs;
+      if (pool.idleCount > 0) {
+        await pool.withEngine((js) async {
+          js.runGC();
+          qjs = js.getMemoryUsage();
+        }, acquireTimeout: const Duration(milliseconds: 500));
+      }
+      emit(
+        'metrics: ops=$totalOps errors=$errors pool size=${pool.size} '
+        'idle=${pool.idleCount} inUse=${pool.inUseCount} rss=$rss '
+        'peakRss=$peakRss baselineRss=$baselineRss qjs=$qjs '
+        'bridge=${readBridgeStats()}',
       );
-      aborted = true;
+      if (cfg.maxRssGrowthFactor > 0 &&
+          baselineRss > 0 &&
+          rss > baselineRss * cfg.maxRssGrowthFactor) {
+        firstError ??= StateError(
+          'RSS growth exceeded: rss=$rss baseline=$baselineRss '
+          'factor=${cfg.maxRssGrowthFactor}',
+        );
+        aborted = true;
+      }
+    } finally {
+      metricsInFlight = false;
     }
-  });
+  }
+
+  final metricsTimer = Timer.periodic(
+    cfg.metricsInterval,
+    (_) => unawaited(emitMetrics()),
+  );
 
   Future<void> fail(Object e, StackTrace st, String where) async {
     errors++;
@@ -537,13 +556,14 @@ Future<String> _writeDump({
   if (!dir.existsSync()) {
     dir.createSync(recursive: true);
   }
-  final stamp =
-      DateTime.now().toUtc().toIso8601String().replaceAll(':', '-');
+  final stamp = DateTime.now().toUtc().toIso8601String().replaceAll(':', '-');
   final file = File('${dir.path}/soak_dump_$stamp.txt');
 
   final memLines = <String>[];
   try {
-    if (pool.idleCount > 0 || pool.size < pool.maxSize || pool.inUseCount == 0) {
+    if (pool.idleCount > 0 ||
+        pool.size < pool.maxSize ||
+        pool.inUseCount == 0) {
       await pool.withEngine((js) async {
         js.runGC();
         memLines.add('sample engine: ${js.getEngineInstanceId()}');

@@ -14,7 +14,12 @@ import 'package:flutter_qjs_next/js_eval_result.dart';
 import 'ffi.dart';
 
 export 'ffi.dart'
-    show JSEvalFlag, JSRef, JSTypedArrayType, JsTypedArrayTransfer;
+    show
+        JSEvalFlag,
+        JSRef,
+        JSTypedArrayType,
+        JsTypedArrayTransfer,
+        readBridgeStats;
 
 part 'isolate.dart';
 part 'object.dart';
@@ -493,8 +498,8 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     (setToGlobalObject as JSInvokable).invoke([
       'sendMessage',
       (String channelName, dynamic message) {
-        final channelFunctions = JavascriptRuntime
-            .channelFunctionsRegistered[getEngineInstanceId()];
+        final channelFunctions =
+            JavascriptRuntime.channelFunctionsRegistered[getEngineInstanceId()];
 
         if (channelFunctions == null ||
             !channelFunctions.containsKey(channelName)) {
