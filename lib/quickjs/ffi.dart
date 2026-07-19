@@ -249,6 +249,9 @@ class _RuntimeOpaque {
   JSRef? refById(int id) => _ref[id];
 }
 
+int jsRuntimeReferenceCount(Pointer<JSRuntime> rt) =>
+    runtimeOpaques[rt]?._ref.length ?? 0;
+
 late final compileFn = _compile
     .asFunction<
       Pointer<Uint8> Function(
@@ -418,10 +421,7 @@ final void Function(Pointer<JSRuntime>) _jsFreeRuntime = _qjsLib
 /// QuickJS contexts must be released before the runtime, but JSRef cleanup
 /// needs the context to free JSValues. Returning the leak report lets callers
 /// finish native teardown before surfacing the diagnostic.
-String? jsReleaseRuntimeRefs(
-  Pointer<JSRuntime> rt,
-  Pointer<JSContext> ctx,
-) {
+String? jsReleaseRuntimeRefs(Pointer<JSRuntime> rt, Pointer<JSContext> ctx) {
   final referenceleak = <String>[];
   final opaque = runtimeOpaques[rt];
   if (opaque == null) return null;

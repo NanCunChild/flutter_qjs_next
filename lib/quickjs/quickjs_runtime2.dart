@@ -489,6 +489,9 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   @override
   String getEngineInstanceId() => _engineInstanceId;
 
+  int get debugReferenceCount =>
+      _rt == null ? 0 : jsRuntimeReferenceCount(_rt!);
+
   @override
   void initChannelFunctions() {
     JavascriptRuntime.channelFunctionsRegistered[getEngineInstanceId()] = {};

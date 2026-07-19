@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -268,6 +269,10 @@ Future<SoakStressResult> runSoakStress({
   final baselineRss = peakRss;
   String? dumpPath;
   var aborted = false;
+  final metricsFile = File('${cfg.dumpDir}/soak_metrics.jsonl');
+  metricsFile.parent.createSync(recursive: true);
+  final metricsSink = metricsFile.openWrite(mode: FileMode.append);
+  emit('soak diagnostics: ${metricsFile.path} (JSONL)');
   Object? firstError;
   StackTrace? firstStack;
 
@@ -279,18 +284,44 @@ Future<SoakStressResult> runSoakStress({
     final rss = _rss();
     if (rss > peakRss) peakRss = rss;
     try {
-      JsMemoryUsage? qjs;
-      if (pool.idleCount > 0) {
-        await pool.withEngine((js) async {
-          js.runGC();
-          qjs = js.getMemoryUsage();
-        }, acquireTimeout: const Duration(milliseconds: 500));
+      final engines = <Map<String, dynamic>>[];
+      for (final js in pool.idleEngines) {
+        js.runGC();
+        final qjs = js.getMemoryUsage();
+        engines.add(<String, dynamic>{
+          'id': js.getEngineInstanceId(),
+          'qjs': qjs == null ? null : _memoryUsageJson(qjs),
+          'pendingJobs': js is QuickJsRuntime2 && js.hasPendingJobs,
+          'dartRefs': js is QuickJsRuntime2 ? js.debugReferenceCount : null,
+        });
       }
+      final sample = <String, dynamic>{
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
+        'elapsedSec': DateTime.now().difference(started).inMilliseconds / 1000,
+        'opsTotal': totalOps,
+        'errors': errors,
+        'rss': rss,
+        'rssDelta': rss - baselineRss,
+        'peakRss': peakRss,
+        'baselineRss': baselineRss,
+        'procMemory': _procMemory(),
+        'pool': <String, dynamic>{
+          'size': pool.size,
+          'idle': pool.idleCount,
+          'inUse': pool.inUseCount,
+          'resetCount': pool.resetCount,
+          'disposeCount': pool.disposeCount,
+        },
+        'engines': engines,
+        'bridge': readBridgeStats(),
+      };
+      metricsSink.writeln(jsonEncode(sample));
+      await metricsSink.flush();
       emit(
         'metrics: ops=$totalOps errors=$errors pool size=${pool.size} '
         'idle=${pool.idleCount} inUse=${pool.inUseCount} rss=$rss '
-        'peakRss=$peakRss baselineRss=$baselineRss qjs=$qjs '
-        'bridge=${readBridgeStats()}',
+        'peakRss=$peakRss baselineRss=$baselineRss '
+        'engines=${engines.length} bridge=${readBridgeStats()}',
       );
       if (cfg.maxRssGrowthFactor > 0 &&
           baselineRss > 0 &&
@@ -375,6 +406,7 @@ Future<SoakStressResult> runSoakStress({
     }
   } finally {
     metricsTimer.cancel();
+    await metricsSink.close();
     try {
       pool.dispose();
     } catch (e, st) {
@@ -397,6 +429,39 @@ Future<SoakStressResult> runSoakStress({
     Error.throwWithStackTrace(firstError!, firstStack ?? StackTrace.current);
   }
   return result;
+}
+
+Map<String, int> _memoryUsageJson(JsMemoryUsage value) => <String, int>{
+      'mallocSize': value.mallocSize,
+      'mallocLimit': value.mallocLimit,
+      'memoryUsedSize': value.memoryUsedSize,
+      'mallocCount': value.mallocCount,
+      'memoryUsedCount': value.memoryUsedCount,
+      'atomCount': value.atomCount,
+      'atomSize': value.atomSize,
+      'strCount': value.strCount,
+      'strSize': value.strSize,
+      'objCount': value.objCount,
+      'objSize': value.objSize,
+      'propCount': value.propCount,
+      'propSize': value.propSize,
+    };
+
+Map<String, int> _procMemory() {
+  if (!Platform.isLinux) return <String, int>{};
+  try {
+    final values = <String, int>{};
+    for (final line in File('/proc/$pid/smaps_rollup').readAsLinesSync()) {
+      final match = RegExp(r'^(Rss|Pss|Private_Dirty|Anonymous):\s+(\d+) kB$')
+          .firstMatch(line);
+      if (match != null) {
+        values[match.group(1)!] = int.parse(match.group(2)!) * 1024;
+      }
+    }
+    return values;
+  } catch (_) {
+    return <String, int>{};
+  }
 }
 
 int _rss() {

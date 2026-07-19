@@ -39,17 +39,25 @@ class JsEnginePool {
   final Set<JavascriptRuntime> _leased = {};
   final ListQueue<Completer<JavascriptRuntime>> _waiters = ListQueue();
   bool _disposed = false;
+  int _resetCount = 0;
+  int _disposeCount = 0;
 
   JsEnginePool({
     this.maxSize = 4,
     this.config = const JsEnginePoolConfig(),
     JavascriptRuntime Function()? factory,
-  })  : assert(maxSize > 0),
-        _factory = factory;
+  }) : assert(maxSize > 0),
+       _factory = factory;
 
   int get size => _all.length;
   int get idleCount => _idle.length;
   int get inUseCount => _leased.length;
+  int get resetCount => _resetCount;
+  int get disposeCount => _disposeCount;
+
+  /// Engines that can be inspected without taking part in pool scheduling.
+  /// Diagnostic callers must only read engine state, never evaluate on them.
+  List<JavascriptRuntime> get idleEngines => List.unmodifiable(_idle);
 
   JavascriptRuntime _create() {
     if (_factory != null) return _factory();
@@ -80,16 +88,20 @@ class JsEnginePool {
     final c = Completer<JavascriptRuntime>();
     _waiters.add(c);
     if (timeout != null) {
-      return c.future.timeout(timeout, onTimeout: () {
-        _waiters.remove(c);
-        throw TimeoutException('JsEnginePool.acquire', timeout);
-      });
+      return c.future.timeout(
+        timeout,
+        onTimeout: () {
+          _waiters.remove(c);
+          throw TimeoutException('JsEnginePool.acquire', timeout);
+        },
+      );
     }
     return c.future;
   }
 
   void _prepareForReuse(JavascriptRuntime engine) {
     if (!config.resetOnRelease) return;
+    _resetCount++;
     try {
       engine.reinitialize();
     } catch (_) {
@@ -150,6 +162,7 @@ class JsEnginePool {
   }
 
   void _destroy(JavascriptRuntime eng) {
+    _disposeCount++;
     _all.remove(eng);
     _idle.remove(eng);
     try {
@@ -172,6 +185,7 @@ class JsEnginePool {
     _all.clear();
     _leased.clear();
     for (final e in engines) {
+      _disposeCount++;
       try {
         e.dispose();
       } catch (_) {}
