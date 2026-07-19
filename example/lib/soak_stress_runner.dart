@@ -70,6 +70,7 @@ import 'package:flutter_qjs_next/flutter_qjs.dart';
 //   --dart-define=SOAK_WORKERS=32
 //   --dart-define=SOAK_DUMP_DIR=soak_dumps
 //   --dart-define=SOAK_SEED=1
+//   --dart-define=SOAK_PROFILE=all
 //
 // Defaults are a short smoke (~30s). Full burn-in: SOAK_DURATION_SEC=3600.
 // =============================================================================
@@ -90,6 +91,7 @@ class SoakStressConfig {
     this.failOnFirstError = true,
     this.maxRssGrowthFactor = 0,
     this.maxLogLines = 200,
+    this.workloadProfile = 'all',
   });
 
   /// Wall-clock run length (target ≥ 1h for real burn-in).
@@ -119,6 +121,11 @@ class SoakStressConfig {
 
   final int maxLogLines;
 
+  /// Workload selector used to isolate memory-heavy operation families.
+  /// Supported values: all, tiny, no_typed_array, dart_to_js, js_to_dart,
+  /// typed_array.
+  final String workloadProfile;
+
   /// Hint printed in dumps for operators (not executed).
   String get coreDumpHint =>
       'Linux: gcore <pid> or ulimit -c unlimited before re-run; '
@@ -133,6 +140,10 @@ class SoakStressConfig {
     final metricsSec =
         parseInt(const String.fromEnvironment('SOAK_METRICS_SEC'), 5);
     final growth = const String.fromEnvironment('SOAK_MAX_RSS_GROWTH');
+    final profile = const String.fromEnvironment(
+      'SOAK_PROFILE',
+      defaultValue: 'all',
+    );
     final dumpDir = const String.fromEnvironment(
       'SOAK_DUMP_DIR',
       defaultValue: 'soak_dumps',
@@ -158,6 +169,7 @@ class SoakStressConfig {
       failOnFirstError:
           parseInt(const String.fromEnvironment('SOAK_FAIL_FAST'), 1) != 0,
       maxRssGrowthFactor: growth.isEmpty ? 0.0 : double.parse(growth),
+      workloadProfile: profile,
     );
   }
 
@@ -167,7 +179,7 @@ class SoakStressConfig {
       'opsPerBurst=$opsPerBurst seed=$seed dumpDir=$dumpDir '
       'resetOnRelease=$resetOnRelease memoryLimit=$memoryLimitBytes '
       'timeoutMs=$timeoutMs failFast=$failOnFirstError '
-      'maxRssGrowth=$maxRssGrowthFactor)';
+      'maxRssGrowth=$maxRssGrowthFactor profile=$workloadProfile)';
 }
 
 /// Outcome of a completed (or aborted) soak run.
@@ -372,7 +384,7 @@ Future<SoakStressResult> runSoakStress({
         await pool.withEngine((js) async {
           for (var i = 0; i < cfg.opsPerBurst; i++) {
             if (aborted) return;
-            final kind = _pickOp(rng);
+            final kind = _pickOp(rng, cfg.workloadProfile);
             final tag = 'w$id/${kind.name}';
             opLog.add(tag);
             await _runOp(js, kind, rng, tag);
@@ -472,7 +484,38 @@ int _rss() {
   }
 }
 
-_OpKind _pickOp(Random rng) {
+_OpKind _pickOp(Random rng, String profile) {
+  switch (profile) {
+    case 'tiny':
+      return _OpKind.evaluateTiny;
+    case 'dart_to_js':
+      return _OpKind.dartUint8ToJs;
+    case 'js_to_dart':
+      return _OpKind.jsUint8ToDart;
+    case 'typed_array':
+      return rng.nextBool() ? _OpKind.dartUint8ToJs : _OpKind.jsUint8ToDart;
+    case 'no_typed_array':
+      const nonTyped = <_OpKind>[
+        _OpKind.evaluateTiny,
+        _OpKind.invokeCached,
+        _OpKind.stringRoundTrip,
+        _OpKind.mapRoundTrip,
+        _OpKind.evaluateJsonArray,
+        _OpKind.evaluateFullArray,
+        _OpKind.promiseMicrotask,
+        _OpKind.createDisposeEngine,
+        _OpKind.runGcSample,
+      ];
+      return nonTyped[rng.nextInt(nonTyped.length)];
+    case 'all':
+      break;
+    default:
+      throw ArgumentError.value(
+        profile,
+        'SOAK_PROFILE',
+        'expected all, tiny, no_typed_array, dart_to_js, js_to_dart, or typed_array',
+      );
+  }
   final r = rng.nextInt(100);
   if (r < 20) return _OpKind.evaluateTiny;
   if (r < 35) return _OpKind.invokeCached;

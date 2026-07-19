@@ -15,6 +15,7 @@ Options:
   --workers N         Worker count (default: 32)
   --ops-per-burst N   Operations per worker burst (default: 8)
   --metrics SEC       Metrics interval (default: 5)
+  --profile NAME      Workload profile (default: all)
   --rounds N          Number of complete A/B rounds (default: 1)
   --output DIR        Log directory (default: soak_ab_logs/<timestamp>)
   --flutter CMD       Flutter executable (default: flutter)
@@ -31,6 +32,7 @@ duration_sec=3600
 workers=32
 ops_per_burst=8
 metrics_sec=5
+profile=all
 rounds=1
 flutter_cmd=flutter
 output_dir="soak_ab_logs/$(date -u +%Y%m%dT%H%M%SZ)"
@@ -65,6 +67,11 @@ while [[ $# -gt 0 ]]; do
     --metrics)
       [[ $# -ge 2 ]] || { usage >&2; exit 2; }
       metrics_sec=$2
+      shift 2
+      ;;
+    --profile)
+      [[ $# -ge 2 ]] || { usage >&2; exit 2; }
+      profile=$2
       shift 2
       ;;
     --rounds)
@@ -156,7 +163,8 @@ run_case() {
       --dart-define="SOAK_POOL_SIZE=$pool_size" \
       --dart-define="SOAK_WORKERS=$workers" \
       --dart-define="SOAK_OPS_PER_BURST=$ops_per_burst" \
-      --dart-define="SOAK_METRICS_SEC=$metrics_sec" \
+       --dart-define="SOAK_METRICS_SEC=$metrics_sec" \
+       --dart-define="SOAK_PROFILE=$profile" \
       --dart-define="SOAK_RESET_ON_RELEASE=$reset_value" \
       --dart-define="SOAK_MAX_RSS_GROWTH=$rss_factor" \
       --dart-define="SOAK_DUMP_DIR=$case_dir/${case_name}_dumps"
