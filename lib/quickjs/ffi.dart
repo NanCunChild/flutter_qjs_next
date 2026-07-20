@@ -218,6 +218,7 @@ class _RuntimeOpaque {
   final _JSChannel _channel;
   final Map<int, JSRef> _ref = <int, JSRef>{};
   int _nextRefId = 1;
+  bool eventLoopActive = false;
   final ReceivePort _port;
   final int? memoryLimit;
   int? _dartObjectClassId;
@@ -566,7 +567,10 @@ Pointer<JSValue> jsEval(
   );
   malloc.free(utf8input);
   malloc.free(utf8filename);
-  runtimeOpaques[jsGetRuntime(ctx)]?._port.sendPort.send(#eval);
+  final opaque = runtimeOpaques[jsGetRuntime(ctx)];
+  if (opaque?.eventLoopActive ?? false) {
+    opaque!._port.sendPort.send(#eval);
+  }
   return val;
 }
 

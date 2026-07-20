@@ -250,8 +250,15 @@ class QuickJsRuntime2 extends JavascriptRuntime {
 
   /// Dispatch JavaScript Event loop.
   Future<void> dispatch() async {
-    await for (final _ in port) {
-      _executePendingJob();
+    final rt = _rt;
+    final opaque = rt == null ? null : runtimeOpaques[rt];
+    if (opaque != null) opaque.eventLoopActive = true;
+    try {
+      await for (final _ in port) {
+        _executePendingJob();
+      }
+    } finally {
+      if (opaque != null) opaque.eventLoopActive = false;
     }
   }
 
