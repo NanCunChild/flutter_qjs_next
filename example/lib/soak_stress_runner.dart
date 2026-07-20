@@ -73,6 +73,11 @@ import 'package:flutter_qjs_next/flutter_qjs.dart';
 //   --dart-define=SOAK_PROFILE=all
 //
 // Defaults are a short smoke (~30s). Full burn-in: SOAK_DURATION_SEC=3600.
+//
+// Matrix + charts (repo root):
+//   scripts/run-soak-ab.sh --full-test --duration 3600
+//   scripts/run-soak-ab.sh --plot-only soak_profiles
+//   python3 scripts/plot-soak-metrics.py --root <dump-root> -o report/
 // =============================================================================
 
 /// Resolved soak parameters (CLI dart-define or programmatic).
@@ -281,6 +286,9 @@ Future<SoakStressResult> runSoakStress({
   final baselineRss = peakRss;
   String? dumpPath;
   var aborted = false;
+  final opCounts = <String, int>{
+    for (final k in _OpKind.values) k.name: 0,
+  };
   final metricsFile = File('${cfg.dumpDir}/soak_metrics.jsonl');
   metricsFile.parent.createSync(recursive: true);
   final metricsSink = metricsFile.openWrite(mode: FileMode.append);
@@ -326,6 +334,9 @@ Future<SoakStressResult> runSoakStress({
         },
         'engines': engines,
         'bridge': readBridgeStats(),
+        'opCounts': Map<String, int>.from(opCounts),
+        'profile': cfg.workloadProfile,
+        'resetOnRelease': cfg.resetOnRelease,
       };
       metricsSink.writeln(jsonEncode(sample));
       await metricsSink.flush();
@@ -389,6 +400,7 @@ Future<SoakStressResult> runSoakStress({
             opLog.add(tag);
             await _runOp(js, kind, rng, tag);
             totalOps++;
+            opCounts[kind.name] = (opCounts[kind.name] ?? 0) + 1;
           }
         }, acquireTimeout: const Duration(seconds: 30));
       } catch (e, st) {
@@ -418,7 +430,26 @@ Future<SoakStressResult> runSoakStress({
     }
   } finally {
     metricsTimer.cancel();
-    await metricsSink.close();
+    // Wait for any in-flight metrics write before closing the sink
+    // (avoids "StreamSink is bound to a stream" on concurrent flush/close).
+    final deadline = DateTime.now().add(const Duration(seconds: 5));
+    while (metricsInFlight && DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+    }
+    try {
+      await emitMetrics();
+    } catch (e) {
+      emit('final metrics emit failed: $e');
+    }
+    while (metricsInFlight && DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+    }
+    try {
+      await metricsSink.flush();
+      await metricsSink.close();
+    } catch (e) {
+      emit('metricsSink close: $e');
+    }
     try {
       pool.dispose();
     } catch (e, st) {
