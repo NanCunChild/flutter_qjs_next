@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_qjs_next/flutter_qjs.dart';
@@ -178,6 +179,38 @@ void main() {
         fn.free();
       }
       js.runGC();
+    });
+
+    // Regression: jsDefinePropertyValue / Uint32 must free the JSValue* heap box
+    // after QuickJS takes ownership of the value (map/list dartToJs path).
+    test('map and list dartToJs round-trips do not explode native RSS', () {
+      final js = getJavascriptRuntime();
+      addTearDown(js.dispose);
+      js.evaluate('globalThis.echo = (x) => x; undefined');
+      final echo = js.evaluate('echo').rawResult as JSInvokable;
+      addTearDown(echo.free);
+
+      final rss0 = ProcessInfo.currentRss;
+      for (var i = 0; i < 2000; i++) {
+        final map = <String, Object?>{
+          'i': i,
+          's': 'k$i',
+          'n': i.toDouble(),
+          'nested': {'a': 1, 'b': 2},
+        };
+        final list = <Object?>[i, 'v$i', true, null, map];
+        final outMap = echo.invoke([map]);
+        final outList = echo.invoke([list]);
+        expect(outMap, isA<Map>());
+        expect(outList, isA<List>());
+        expect((outMap as Map)['i'], i);
+        expect((outList as List).length, 5);
+      }
+      js.runGC();
+      final rss1 = ProcessInfo.currentRss;
+      // Allow some growth (isolate heap / fragmentation) but not multi-MB box leak.
+      expect(rss1 - rss0, lessThan(64 * 1024 * 1024),
+          reason: 'RSS grew by ${rss1 - rss0} bytes after 2000 map/list round-trips');
     });
   });
 
