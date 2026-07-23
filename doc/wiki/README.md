@@ -10,8 +10,8 @@ Flutter / Dart bindings for [QuickJS](https://github.com/bellard/quickjs) via `d
 | **API style** | Compatible with [flutter_js](https://github.com/abner/flutter_js) (`JavascriptRuntime`, `getJavascriptRuntime()`) |
 | **Package** | `flutter_qjs_next` |
 
-This tree under `docs/wiki/` is the **source of truth** for the project wiki.  
-On push to `main`/`master` (paths under `docs/wiki/**`), CI runs `scripts/sync-wiki.sh` and mirrors pages to the [GitHub Wiki](https://github.com/NanCunChild/flutter_qjs_next/wiki) (`README.md` → `Home.md`).
+This tree under `doc/wiki/` is the **source of truth** for the project wiki.  
+On push to `main`/`master` (paths under `doc/wiki/**`), CI runs `scripts/sync-wiki.sh` and mirrors pages to the [GitHub Wiki](https://github.com/NanCunChild/flutter_qjs_next/wiki) (`README.md` → `Home.md`).
 
 **One-time setup:** enable **Wikis** in repo settings, create any first page in the Wiki UI (creates `*.wiki.git`), and allow Actions **read/write** contents. Local dry-run: `WIKI_DRY_RUN=1 bash scripts/sync-wiki.sh`.
 
@@ -20,6 +20,7 @@ On push to `main`/`master` (paths under `docs/wiki/**`), CI runs `scripts/sync-w
 1. **[Getting Started](getting-started.md)** — install, integrate, Flutter commands, minimal test  
 2. **[Concepts](concepts.md)** — one runtime, jobs, bridges, isolation  
 3. **[Security](guides/security.md)** — defaults for untrusted scripts  
+4. **[Production checklist](guides/production-checklist.md)** — multi-tenant pool, evaluate paths, RSS  
 
 ## Documentation map
 
@@ -38,6 +39,7 @@ On push to `main`/`master` (paths under `docs/wiki/**`), CI runs `scripts/sync-w
 
 - [Security](guides/security.md)
 - [Performance](guides/performance.md)
+- [**Production integration checklist**](guides/production-checklist.md) — pool / soft / evaluateJson / TypedArray / RSS
 - [Memory & lifecycle](guides/memory-and-lifecycle.md)
 - [Soak RSS analysis](guides/soak-rss-analysis.md)
 - [ES modules](guides/modules.md)

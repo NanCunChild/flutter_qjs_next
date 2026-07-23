@@ -286,6 +286,7 @@ Use a **Flutter** project (not a pure Dart package without the Flutter plugin to
 | Channel `sendMessage` / Dart handlers | [Bridge](api/bridge.md) |
 | Promises, `setTimeout`, `handlePromise` | [Promises & event loop](api/promises-and-event-loop.md) |
 | Untrusted scripts | [Security](guides/security.md) |
+| Multi-tenant / high-churn production posture | [Production checklist](guides/production-checklist.md) · [Multi-tenant pool](recipes/multi-tenant-pool.md) |
 | Copy-paste snippets | [Recipes](recipes/hello-evaluate.md) |
 | Example UI | `cd example && flutter run` |
 

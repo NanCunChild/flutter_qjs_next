@@ -53,7 +53,9 @@ final pool = JsEnginePool(
   maxSize: 4,
   config: JsEnginePoolConfig(
     timeout: 3000,
-    // default: resetMode none (warm reuse). soft/hard or resetOnRelease:true between tenants
+    // default: resetMode none (warm reuse).
+    // multi-tenant: prefer soft; hard/resetOnRelease only when soft is not enough
+    // resetMode: EngineResetMode.soft,
   ),
 );
 final out = await pool.withEngine((js) async {
@@ -61,6 +63,10 @@ final out = await pool.withEngine((js) async {
 });
 pool.dispose();
 ```
+
+Production (pool size, soft reset, `evaluateJson` / TypedArray, process RSS):
+see **[Production checklist](doc/wiki/guides/production-checklist.md)** and
+`example/lib/production_tenant_worker.dart`.
 
 Engine ids include the isolate hash (`qjs-<isolate>-<serial>-<us>`) so parallel isolates do not collide in channel maps.
 
@@ -136,15 +142,15 @@ FlutterQjsLogger.handler = (level, message, error) { /* ... */ };
 
 ## Documentation
 
-Full package wiki: **[docs/wiki/](docs/wiki/README.md)**
+Full package wiki: **[doc/wiki/](doc/wiki/README.md)**
 
 | | |
 |--|--|
-| Start here | [Getting started](docs/wiki/getting-started.md) · [Concepts](docs/wiki/concepts.md) |
-| API | [API reference](docs/wiki/api/overview.md) · [Runtime](docs/wiki/api/runtime.md) · [Bridge](docs/wiki/api/bridge.md) |
-| Guides | [Security](docs/wiki/guides/security.md) · [Performance](docs/wiki/guides/performance.md) · [Migration](docs/wiki/guides/migration-from-flutter-js.md) |
-| Recipes | [Hello evaluate](docs/wiki/recipes/hello-evaluate.md) · [Async bridge](docs/wiki/recipes/async-bridge.md) · [Pool](docs/wiki/recipes/multi-tenant-pool.md) |
-| Ops | [FAQ](docs/wiki/faq.md) · [Troubleshooting](docs/wiki/troubleshooting.md) · [Testing](docs/wiki/testing-and-benchmarks.md) |
+| Start here | [Getting started](doc/wiki/getting-started.md) · [Concepts](doc/wiki/concepts.md) |
+| API | [API reference](doc/wiki/api/overview.md) · [Runtime](doc/wiki/api/runtime.md) · [Bridge](doc/wiki/api/bridge.md) |
+| Guides | [**Production checklist**](doc/wiki/guides/production-checklist.md) · [Security](doc/wiki/guides/security.md) · [Performance](doc/wiki/guides/performance.md) · [Migration](doc/wiki/guides/migration-from-flutter-js.md) |
+| Recipes | [Hello evaluate](doc/wiki/recipes/hello-evaluate.md) · [Async bridge](doc/wiki/recipes/async-bridge.md) · [Pool](doc/wiki/recipes/multi-tenant-pool.md) |
+| Ops | [FAQ](doc/wiki/faq.md) · [Troubleshooting](doc/wiki/troubleshooting.md) · [Testing](doc/wiki/testing-and-benchmarks.md) |
 
 ## Example app
 

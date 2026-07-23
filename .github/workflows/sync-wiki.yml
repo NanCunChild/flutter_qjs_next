@@ -1,4 +1,4 @@
-# Publish docs/wiki/ → GitHub Wiki when wiki sources change.
+# Publish doc/wiki/ → GitHub Wiki when wiki sources change.
 #
 # Prerequisites (once per repo):
 # 1. Settings → Features → Wikis: enabled

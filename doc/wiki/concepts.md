@@ -106,7 +106,9 @@ Treat channel names and payloads as **untrusted** if scripts are untrusted. Pref
 |----------|------|
 | Single long-lived runtime | One app feature, trusted or carefully gated scripts |
 | Multiple runtimes | Hard isolation between features/tenants |
-| [`JsEnginePool`](api/engine-pool.md) | Bounded concurrency; default warm reuse (`resetMode: none`); use `soft` / `hard` between tenants |
+| [`JsEnginePool`](api/engine-pool.md) | Bounded concurrency; default warm reuse (`resetMode: none`); multi-tenant prefer **`soft`** (not `hard` as RSS fix) |
+
+Ship multi-tenant / high-churn code with the [Production checklist](guides/production-checklist.md).
 
 ## Compatibility knobs
 

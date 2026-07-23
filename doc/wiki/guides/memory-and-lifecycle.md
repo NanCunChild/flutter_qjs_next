@@ -41,13 +41,15 @@ create → evaluate… → (optional close / reinitialize) → dispose
 | `reinitialize()` | close + clear maps + new id + init (pool `hard` reset) |
 | `dispose()` | Final: no reopen; port closed; channels removed |
 
-## Common leak patterns
+## Common leak / RSS patterns
 
 1. Never calling **`dispose()`** on owned runtimes  
-2. Creating engines in a loop without a pool cap  
+2. Creating engines in a loop without a pool cap (`getJavascriptRuntime` per request)  
 3. Holding **`JSInvokable`** without **`free()`**  
 4. Registering many unique channel names without dispose/reinitialize  
 5. `resetMode: none` (the default) with dirty globals between tenants  
+6. Using **`hard` / `resetOnRelease: true` hoping to “free memory”** under multi-tenant load — often **worsens process RSS**; prefer **`soft`** first  
+7. Watching only QJS `getMemoryUsage()` while **process RSS** climbs (Dart + Flutter + FFI + OS heaps are outside `memoryLimit`)
 
 ## Pool
 
@@ -57,6 +59,7 @@ create → evaluate… → (optional close / reinitialize) → dispose
 - Default **`resetMode: none`** reuses warm engines (better process RSS under
   churn). For tenants use **`soft`** first; **`hard`** / `resetOnRelease: true`
   only when you need a full native rebuild.
+- Integration checklist: [Production integration checklist](production-checklist.md).
 
 ## Stress testing
 

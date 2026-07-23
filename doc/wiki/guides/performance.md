@@ -1,5 +1,7 @@
 # Performance
 
+Production issues are often **process RSS, UI jank, and integration misuse** rather than us/op on small expressions. Ship with the [Production integration checklist](production-checklist.md).
+
 ## Prefer reuse
 
 Creating a QuickJS engine is far more expensive than `evaluate` on a warm runtime.
@@ -7,6 +9,7 @@ Creating a QuickJS engine is far more expensive than `evaluate` on a warm runtim
 - Long-lived feature → **one** `JavascriptRuntime`  
 - Parallel short scripts → **`JsEnginePool`** with a modest `maxSize`  
 - Avoid `getJavascriptRuntime()` per request in a hot loop  
+- Multi-tenant: prefer **`resetMode: soft`**. Do **not** use `hard` / `resetOnRelease: true` as a generic “memory fix” — hard reinitialize under churn often **increases process RSS** while QJS heap stays flat. See [Soak RSS analysis](soak-rss-analysis.md).
 
 ## Choose the right evaluate path
 
@@ -16,6 +19,8 @@ Creating a QuickJS engine is far more expensive than `evaluate` on a warm runtim
 | Large pure JSON-like trees | **`evaluateJson`** |
 | Binary buffers | TypedArray / `Uint8List` bulk path, not nested JS arrays of numbers |
 | Same script many times | `compile` once + `evaluateBytecode` |
+
+**Misuse that burns CPU and memory:** deep `evaluate` on multi‑MiB graphs, binary as `number[]`, and Dart→JS bulk copies in a tight UI-isolate loop.
 
 ## Cache host callables
 
@@ -76,11 +81,17 @@ flutter test test/bridge_counter_benchmark_test.dart
 Captured results are stored under `benchmark_results/<commit-short-hash>/` so
 measurements from different revisions remain separate.
 
+## UI isolate
+
+`evaluate` / `evaluateJson` / bulk bridge work is **synchronous on the calling isolate**. Multi‑ms or multi‑MiB work on the UI isolate causes jank — move it off-UI when latency matters.
+
 ## Logging
 
 `FlutterQjsLogger` and `console.*` have cost; raise level or disable in hot production paths if needed.
 
 ## See also
 
+- [Production integration checklist](production-checklist.md)  
 - [Memory & lifecycle](memory-and-lifecycle.md)  
+- [Multi-tenant pool](../recipes/multi-tenant-pool.md)  
 - [Testing & benchmarks](../testing-and-benchmarks.md)  

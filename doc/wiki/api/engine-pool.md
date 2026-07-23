@@ -77,8 +77,10 @@ If you skip `getJavascriptRuntime`, call `enableHandlePromises()` yourself when 
 ## Guidance
 
 - Prefer the pool for **multi-tenant** or high-churn script execution.  
-- Multi-tenant: prefer `resetMode: EngineResetMode.soft`, or `hard` / `resetOnRelease: true`.  
+- Multi-tenant: prefer **`resetMode: EngineResetMode.soft`**. Use `hard` / `resetOnRelease: true` only when soft isolation is not enough — hard reinitialize under churn often **increases process RSS**.  
 - Still dispose the **pool** at shutdown.  
+- Do not treat the pool as a free pass for multi‑MiB `evaluate` on the UI isolate.
 
 Recipe: [Multi-tenant pool](../recipes/multi-tenant-pool.md).  
-Soak patterns: `example/lib/soak_stress_runner.dart`.
+Checklist: [Production integration checklist](../guides/production-checklist.md).  
+Soak patterns: `example/lib/soak_stress_runner.dart` · reference worker: `example/lib/production_tenant_worker.dart`.

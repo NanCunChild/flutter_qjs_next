@@ -1,8 +1,9 @@
 ## 1.2.0
 
-* **Pool default:** `JsEnginePoolConfig.resetOnRelease` is now **`false`** (warm reuse; better process RSS under churn). Set `true` for multi-tenant isolation.
+* **Pool default:** `JsEnginePoolConfig.resetOnRelease` is now **`false`** (warm reuse; better process RSS under churn). Multi-tenant: prefer `resetMode: soft` (not hard as an RSS fix).
 * **Soft wipe:** `JavascriptRuntime.softReset()` + `EngineResetMode` (`none` / `soft` / `hard`) on `JsEnginePoolConfig.resetMode`. Prefer `soft` for multi-tenant isolation without full native rebuild; `resetOnRelease: true` still maps to `hard`.
 * Document soak RSS analysis: process RSS growth is dominated by hard reinitialize churn, not QJS heap / bridge counters.
+* **Docs:** production integration checklist (`doc/wiki/guides/production-checklist.md`), multi-tenant recipe updates, and example `ProductionTenantWorker` + tests.
 
 ## 1.1.1
 
