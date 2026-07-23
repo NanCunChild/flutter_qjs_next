@@ -79,6 +79,11 @@ Each case report includes:
 
 `--full-test` enables plotting by default; use `--plot` / `--no-plot` to override.
 
+### Interpreting RSS vs leaks
+
+Long-haul results (tiny plateau vs `dart_to_js` rising floor, bridge/QJS checks):
+**[Soak RSS analysis](guides/soak-rss-analysis.md)**.
+
 ## In-app tools
 
 `example/lib/main.dart` exposes UI for demos and may open a benchmarks screen.  

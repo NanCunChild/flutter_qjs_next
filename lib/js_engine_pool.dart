@@ -3,22 +3,40 @@ import 'dart:collection';
 
 import 'package:flutter_qjs_next/flutter_qjs.dart';
 
+/// How [JsEnginePool] prepares an engine for the next lease on [JsEnginePool.release].
+enum EngineResetMode {
+  /// Warm reuse — no wipe (default). Not multi-tenant safe.
+  none,
+
+  /// [JavascriptRuntime.softReset]: clear globals/channels/timers, keep native heap.
+  soft,
+
+  /// [JavascriptRuntime.reinitialize]: full native rebuild between tenants.
+  hard,
+}
+
 /// Configuration for engines created by [JsEnginePool].
 class JsEnginePoolConfig {
   final int stackSize;
   final int? timeout;
   final int? memoryLimit;
 
-  /// When true (default), [JsEnginePool.release] calls [JavascriptRuntime.reinitialize]
-  /// so the next tenant does not see prior `globalThis` / channel state.
-  final bool resetOnRelease;
+  /// Isolation strategy between leases. Default [EngineResetMode.none].
+  final EngineResetMode resetMode;
+
+  /// When true, equivalent to [EngineResetMode.hard] if [resetMode] is omitted
+  /// (see constructor). Prefer setting [resetMode] explicitly.
+  bool get resetOnRelease => resetMode == EngineResetMode.hard;
 
   const JsEnginePoolConfig({
     this.stackSize = 1024 * 1024,
     this.timeout,
     this.memoryLimit = kDefaultJsMemoryLimit,
-    this.resetOnRelease = true,
-  });
+    EngineResetMode resetMode = EngineResetMode.none,
+    bool resetOnRelease = false,
+  }) : resetMode = resetOnRelease && resetMode == EngineResetMode.none
+           ? EngineResetMode.hard
+           : resetMode;
 }
 
 /// Bounded pool of [JavascriptRuntime] instances for multi-engine workloads.
@@ -26,9 +44,9 @@ class JsEnginePoolConfig {
 /// Engines are created lazily up to [maxSize]. Call [acquire] / [release], or
 /// use [withEngine]. Always [dispose] the pool when finished.
 ///
-/// By default [JsEnginePoolConfig.resetOnRelease] reinitializes engines on
-/// return so scripts do not share dirty globals. Set `resetOnRelease: false`
-/// only when callers guarantee cleanup.
+/// Default [JsEnginePoolConfig.resetMode] is [EngineResetMode.none] (warm reuse).
+/// Use [EngineResetMode.soft] or [EngineResetMode.hard] (or `resetOnRelease: true`)
+/// when tenants must not share `globalThis` / channels.
 class JsEnginePool {
   final int maxSize;
   final JsEnginePoolConfig config;
@@ -100,12 +118,25 @@ class JsEnginePool {
   }
 
   void _prepareForReuse(JavascriptRuntime engine) {
-    if (!config.resetOnRelease) return;
-    _resetCount++;
-    try {
-      engine.reinitialize();
-    } catch (_) {
-      _destroy(engine);
+    switch (config.resetMode) {
+      case EngineResetMode.none:
+        return;
+      case EngineResetMode.soft:
+        _resetCount++;
+        try {
+          engine.softReset();
+        } catch (_) {
+          _destroy(engine);
+        }
+        return;
+      case EngineResetMode.hard:
+        _resetCount++;
+        try {
+          engine.reinitialize();
+        } catch (_) {
+          _destroy(engine);
+        }
+        return;
     }
   }
 

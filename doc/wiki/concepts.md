@@ -106,7 +106,7 @@ Treat channel names and payloads as **untrusted** if scripts are untrusted. Pref
 |----------|------|
 | Single long-lived runtime | One app feature, trusted or carefully gated scripts |
 | Multiple runtimes | Hard isolation between features/tenants |
-| [`JsEnginePool`](api/engine-pool.md) | Bounded concurrency; default **`resetOnRelease`** reinitializes between tenants |
+| [`JsEnginePool`](api/engine-pool.md) | Bounded concurrency; default warm reuse (`resetMode: none`); use `soft` / `hard` between tenants |
 
 ## Compatibility knobs
 

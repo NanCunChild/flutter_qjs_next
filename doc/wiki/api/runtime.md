@@ -89,7 +89,8 @@ JsMemoryUsage? getMemoryUsage();
 |--------|---------|
 | `close()` | Free native runtime/context; next evaluate may recreate (unless disposed) |
 | `dispose()` | Idempotent: mark disposed, close port, free native, drop channels; **cannot reopen** |
-| `reinitialize()` | `close` + clear contexts + new engine id + `init()` again (pool reset) |
+| `softReset()` | Clear globals / channels / timers; keep native heap + engine id (pool `soft`) |
+| `reinitialize()` | `close` + clear contexts + new engine id + `init()` again (pool `hard`) |
 
 Always call **`dispose()`** when you own a runtime and are done.
 

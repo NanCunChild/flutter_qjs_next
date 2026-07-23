@@ -12,3 +12,6 @@ ios/cxx
 macos/cxx
 
 .vscode
+
+soak_profiles/
+soak_ab_logs/

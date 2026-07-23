@@ -15,7 +15,7 @@
 |---------|-----|
 | Evaluate after dispose | Create a new runtime; `dispose` is final |
 | `TimeoutException` from pool | Increase `maxSize`, shorten work, or longer `acquire` timeout |
-| Cross-tenant pollution | Keep `resetOnRelease: true`; re-register bridges after reset |
+| Cross-tenant pollution | Set `resetMode: soft` or `hard` (default is warm reuse); re-register bridges after reset |
 | Channel “already exists” | `setupBridge` returns false if name taken; dispose/reinit or pick a new name |
 
 ## Promises / timers

@@ -169,7 +169,15 @@ abstract class JavascriptRuntime {
   /// Used by [JsEnginePool] when resetting a leased engine. Default is no-op.
   void reinitialize() {}
 
-  /// Free Dart-side JS refs that must not outlive [close]/call before native free.
+  /// Clear tenant state without destroying the native QuickJS engine.
+  ///
+  /// Cancels pending `setTimeout` timers, wipes user globals / host maps, drops
+  /// custom channels, then reinstalls console + setTimeout. Prefer this over
+  /// [reinitialize] when isolation is needed but process RSS under churn matters.
+  /// Default is no-op; [QuickJsRuntime2] implements a real wipe.
+  void softReset() {}
+
+  /// Free Dart-side JS refs that must not outlive [close]; call before native free.
   @protected
   void releaseHostCaches() {
     _setTimeoutGeneration++;

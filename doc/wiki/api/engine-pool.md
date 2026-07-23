@@ -5,15 +5,24 @@
 ## Config
 
 ```dart
+enum EngineResetMode { none, soft, hard }
+
 class JsEnginePoolConfig {
-  final int stackSize;      // default 1 MiB
+  final int stackSize;           // default 1 MiB
   final int? timeout;
-  final int? memoryLimit;   // default kDefaultJsMemoryLimit
-  final bool resetOnRelease; // default true
+  final int? memoryLimit;        // default kDefaultJsMemoryLimit
+  final EngineResetMode resetMode; // default none
+  // resetOnRelease: true  → same as resetMode: hard (compat)
 }
 ```
 
-When **`resetOnRelease`** is true, `release` calls `reinitialize()` so the next tenant does not see prior `globalThis` / channel state. On reinitialize failure the engine is destroyed.
+| Mode | On `release` | When |
+|------|--------------|------|
+| `none` (default) | No wipe | Trusted / same-tenant warm reuse |
+| `soft` | `softReset()` — clear globals, channels, timers; keep native heap | Multi-tenant with better RSS under churn |
+| `hard` | `reinitialize()` — full native rebuild | Strongest isolation |
+
+On reset failure the engine is destroyed.
 
 `memoryLimit` is per engine, not a pool-wide or process-wide limit. With
 `maxSize: 4` and a 64 MiB limit, the pool may reserve up to roughly 256 MiB of
@@ -68,7 +77,7 @@ If you skip `getJavascriptRuntime`, call `enableHandlePromises()` yourself when 
 ## Guidance
 
 - Prefer the pool for **multi-tenant** or high-churn script execution.  
-- Keep `resetOnRelease: true` unless you fully wipe state yourself.  
+- Multi-tenant: prefer `resetMode: EngineResetMode.soft`, or `hard` / `resetOnRelease: true`.  
 - Still dispose the **pool** at shutdown.  
 
 Recipe: [Multi-tenant pool](../recipes/multi-tenant-pool.md).  

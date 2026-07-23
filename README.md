@@ -53,7 +53,7 @@ final pool = JsEnginePool(
   maxSize: 4,
   config: JsEnginePoolConfig(
     timeout: 3000,
-    // default: resetOnRelease true → reinitialize() between tenants
+    // default: resetMode none (warm reuse). soft/hard or resetOnRelease:true between tenants
   ),
 );
 final out = await pool.withEngine((js) async {

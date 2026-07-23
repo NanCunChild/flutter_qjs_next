@@ -1,3 +1,22 @@
+## 1.2.0
+
+* **Pool default:** `JsEnginePoolConfig.resetOnRelease` is now **`false`** (warm reuse; better process RSS under churn). Set `true` for multi-tenant isolation.
+* **Soft wipe:** `JavascriptRuntime.softReset()` + `EngineResetMode` (`none` / `soft` / `hard`) on `JsEnginePoolConfig.resetMode`. Prefer `soft` for multi-tenant isolation without full native rebuild; `resetOnRelease: true` still maps to `hard`.
+* Document soak RSS analysis: process RSS growth is dominated by hard reinitialize churn, not QJS heap / bridge counters.
+
+## 1.1.1
+
+* Fix `QuickJsRuntime2.close` reference leak: release runtime refs via `jsReleaseRuntimeRefs` before freeing the `JSContext`.
+
+## 1.1.0
+
+* **Perf:** `JsTypedArrayTransfer` and native owned-buffer paths for TypedArray / ArrayBuffer bridging.
+* **Perf:** `evaluateJsonBatch` for bulk JSON evaluate and bulk result copy.
+* Optimize object reference tables on the FFI boundary.
+* Fix `Uint8ClampedArray` double-copy path; expand TypedArray benchmarks (sizes, element types, non-zero offset, both directions).
+* **Feat:** native bridge allocation / copy counters (`readBridgeStats` / `jsBridgeStats*`) on all platforms.
+* Expand micro-benchmarks, soak/stress coverage, and performance wiki docs (measured results, standard `benchmark_results/` layout).
+
 ## 1.0.2
 
 * Add a complete Flutter example application and include it in the published package.
@@ -18,7 +37,7 @@
 * `dart:ffi` bindings for Android, iOS, macOS, Linux, Windows.
 * Array / TypedArray marshalling fast paths, `evaluateJson`, timeout/memory/stack limits, console logger, safer `setTimeout` channel (cached invokable runner).
 * Default `memoryLimit` **64 MiB** (`kDefaultJsMemoryLimit`); pass `0` for unlimited.
-* Multi-engine: `JsEnginePool` / `JsEnginePoolConfig` with **`resetOnRelease`** (default true) via `JavascriptRuntime.reinitialize()`.
+* Multi-engine: `JsEnginePool` / `JsEnginePoolConfig` with **`resetOnRelease`** via `JavascriptRuntime.reinitialize()`.
 * Unique engine instance ids: `qjs-<isolateHash>-<serial>-<us>` (not `identityHashCode`).
 * `QuickJsRuntime2.autoExecutePendingJobs` (default true) drains Promise jobs after evaluate / call / bytecode / evaluateJson; documented in README.
 * Isolate module load: 1ms wait on `IntPtr` slot instead of 1µs pointer spin.

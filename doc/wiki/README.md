@@ -39,6 +39,7 @@ On push to `main`/`master` (paths under `docs/wiki/**`), CI runs `scripts/sync-w
 - [Security](guides/security.md)
 - [Performance](guides/performance.md)
 - [Memory & lifecycle](guides/memory-and-lifecycle.md)
+- [Soak RSS analysis](guides/soak-rss-analysis.md)
 - [ES modules](guides/modules.md)
 - [Migration (flutter_js / older flutter_qjs)](guides/migration-from-flutter-js.md)
 - [Platforms](guides/platforms.md)

@@ -204,7 +204,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   }
 
   /// Drop native heap + channels and re-run [init] (console, setTimeout, bridges).
-  /// Used by [JsEnginePool] when `resetOnRelease` is true.
+  /// Used by [JsEnginePool] when [EngineResetMode.hard] / `resetOnRelease: true`.
   @override
   void reinitialize() {
     if (_disposed) {
@@ -220,6 +220,56 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     dartContext.clear();
     _engineInstanceId = _newEngineInstanceId();
     _needsInitialization = false;
+    init();
+  }
+
+  /// Wipe tenant state while keeping the same native engine and instance id.
+  /// Used by [JsEnginePool] with [EngineResetMode.soft].
+  @override
+  void softReset() {
+    if (_disposed) {
+      throw StateError('QuickJsRuntime2 is disposed');
+    }
+    releaseHostCaches();
+    localContext.clear();
+    dartContext.clear();
+    try {
+      disposeChannelFunctions();
+    } catch (_) {}
+    if (_rt == null) {
+      _needsInitialization = false;
+      init();
+      return;
+    }
+    // Drop user own-props; [init] reinstalls sendMessage / console / setTimeout.
+    evaluate(r'''
+      (function () {
+        var g = globalThis;
+        var keep = {
+          Object: 1, Function: 1, Array: 1, Number: 1, parseFloat: 1, parseInt: 1,
+          Infinity: 1, NaN: 1, undefined: 1, Boolean: 1, String: 1, Symbol: 1,
+          Date: 1, Promise: 1, RegExp: 1, Error: 1, EvalError: 1, RangeError: 1,
+          ReferenceError: 1, SyntaxError: 1, TypeError: 1, URIError: 1,
+          globalThis: 1, Math: 1, JSON: 1, Reflect: 1, Proxy: 1, Map: 1, Set: 1,
+          WeakMap: 1, WeakSet: 1, ArrayBuffer: 1, SharedArrayBuffer: 1,
+          DataView: 1, Int8Array: 1, Uint8Array: 1, Uint8ClampedArray: 1,
+          Int16Array: 1, Uint16Array: 1, Int32Array: 1, Uint32Array: 1,
+          Float32Array: 1, Float64Array: 1, BigInt64Array: 1, BigUint64Array: 1,
+          BigInt: 1, WeakRef: 1, FinalizationRegistry: 1, Atomics: 1,
+          encodeURI: 1, encodeURIComponent: 1, decodeURI: 1, decodeURIComponent: 1,
+          escape: 1, unescape: 1, isFinite: 1, isNaN: 1, eval: 1
+        };
+        var names = Object.getOwnPropertyNames(g);
+        for (var i = 0; i < names.length; i++) {
+          var k = names[i];
+          if (keep[k]) continue;
+          try { delete g[k]; } catch (e) {}
+        }
+      })();
+    ''');
+    try {
+      runGC();
+    } catch (_) {}
     init();
   }
 

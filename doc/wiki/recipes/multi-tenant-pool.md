@@ -10,7 +10,7 @@ final pool = JsEnginePool(
   config: const JsEnginePoolConfig(
     timeout: 2000,
     memoryLimit: 64 * 1024 * 1024,
-    resetOnRelease: true, // default
+    resetMode: EngineResetMode.soft, // or hard / resetOnRelease: true
   ),
 );
 

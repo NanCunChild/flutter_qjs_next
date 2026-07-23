@@ -26,7 +26,8 @@ final js = getJavascriptRuntime(
 - Treat `memoryLimit` as a per-runtime QuickJS heap budget, not a process RSS
   limit. For multiple engines, account for the aggregate budget and pool
   overhead separately.
-- Prefer **`JsEnginePool` with `resetOnRelease: true`** between tenants.
+- Prefer **`JsEnginePool` with `resetMode: soft` (or `hard` / `resetOnRelease: true`)**
+  between tenants — pool default is warm reuse (`none`), which is not multi-tenant safe.
 
 ## Capability control
 

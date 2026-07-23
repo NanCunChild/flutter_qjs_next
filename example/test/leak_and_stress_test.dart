@@ -53,7 +53,10 @@ void main() {
 
   group('JsEnginePool', () {
     test('resetOnRelease isolates tenants', () async {
-      final pool = JsEnginePool(maxSize: 1);
+      final pool = JsEnginePool(
+        maxSize: 1,
+        config: const JsEnginePoolConfig(resetOnRelease: true),
+      );
       addTearDown(pool.dispose);
 
       await pool.withEngine((js) async {
@@ -63,6 +66,58 @@ void main() {
         final r = js.evaluate('typeof globalThis.secret');
         expect(r.rawResult, 'undefined');
       });
+    });
+
+    test('default resetOnRelease false keeps warm state', () async {
+      final pool = JsEnginePool(maxSize: 1);
+      addTearDown(pool.dispose);
+
+      await pool.withEngine((js) async {
+        js.evaluate('globalThis.secret = 99');
+      });
+      await pool.withEngine((js) async {
+        final r = js.evaluate('globalThis.secret');
+        expect(r.rawResult, 99);
+      });
+    });
+
+    test('soft resetOnRelease isolates tenants without hard reinit', () async {
+      final pool = JsEnginePool(
+        maxSize: 1,
+        config: const JsEnginePoolConfig(resetMode: EngineResetMode.soft),
+      );
+      addTearDown(pool.dispose);
+
+      String? id1;
+      await pool.withEngine((js) async {
+        id1 = js.getEngineInstanceId();
+        js.evaluate('globalThis.secret = 99');
+        js.onMessage('tenantA', (_) {});
+      });
+      await pool.withEngine((js) async {
+        expect(js.getEngineInstanceId(), id1);
+        final r = js.evaluate('typeof globalThis.secret');
+        expect(r.rawResult, 'undefined');
+        // Prior tenant channel must not remain registered.
+        final registered =
+            JavascriptRuntime.channelFunctionsRegistered[js.getEngineInstanceId()];
+        expect(registered?.containsKey('tenantA'), isFalse);
+      });
+      expect(pool.resetCount, 2);
+    });
+
+    test('softReset cancels old setTimeout callbacks', () async {
+      final js = getJavascriptRuntime();
+      addTearDown(js.dispose);
+
+      js.evaluate('setTimeout(() => { globalThis.old = true }, 20)');
+      (js as QuickJsRuntime2).softReset();
+      js.evaluate('globalThis.count = 0');
+      js.evaluate('setTimeout(() => { globalThis.count += 1 }, 60)');
+
+      await Future.delayed(const Duration(milliseconds: 100));
+      expect(js.evaluate('globalThis.old').rawResult, isNull);
+      expect(js.evaluate('globalThis.count').rawResult, 1);
     });
 
     test('resetOnRelease cancels old setTimeout callbacks', () async {

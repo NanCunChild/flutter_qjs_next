@@ -25,6 +25,9 @@ js.runGC(); // force QuickJS GC
 Process RSS includes Dart, Flutter, native and plugin heaps. Monitor it
 separately; a QuickJS heap limit alone cannot enforce a process RSS ceiling.
 
+Soak evidence (RSS climb vs flat QJS / balanced bridge): see
+[Soak RSS analysis](soak-rss-analysis.md).
+
 ## Runtime lifecycle
 
 ```text
@@ -34,7 +37,8 @@ create → evaluate… → (optional close / reinitialize) → dispose
 | Call | Effect |
 |------|--------|
 | `close()` | Free native rt/ctx; caches released; may recreate on next evaluate |
-| `reinitialize()` | close + clear maps + new id + init (pool uses this) |
+| `softReset()` | Clear globals / channels / timers; keep native heap + engine id |
+| `reinitialize()` | close + clear maps + new id + init (pool `hard` reset) |
 | `dispose()` | Final: no reopen; port closed; channels removed |
 
 ## Common leak patterns
@@ -43,14 +47,16 @@ create → evaluate… → (optional close / reinitialize) → dispose
 2. Creating engines in a loop without a pool cap  
 3. Holding **`JSInvokable`** without **`free()`**  
 4. Registering many unique channel names without dispose/reinitialize  
-5. `resetOnRelease: false` with dirty globals between tenants  
+5. `resetMode: none` (the default) with dirty globals between tenants  
 
 ## Pool
 
 - `maxSize` caps concurrent engines.  
 - Each engine has its own heap limit; the pool's aggregate QuickJS usage can be
   roughly `maxSize * memoryLimit`, before Dart and native overhead.
-- Default reset on release avoids cross-tenant memory retention of JS objects (native heap still recycled via reinitialize/close).
+- Default **`resetMode: none`** reuses warm engines (better process RSS under
+  churn). For tenants use **`soft`** first; **`hard`** / `resetOnRelease: true`
+  only when you need a full native rebuild.
 
 ## Stress testing
 
