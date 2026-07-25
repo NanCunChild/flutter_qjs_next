@@ -28,6 +28,8 @@ Plugin registration is pure **Objective-C** so SPM can mix ObjC + C/C++ in one t
 
 On Apple, QuickJS `cutils.h` must not redefine `BOOL` under Objective-C (`#if !defined(__OBJC__)`).
 
+QuickJS version string lives in `VERSION.txt` (not `VERSION`): macOS/iOS APFS is often **case-insensitive**, so a file named `VERSION` is treated as the C++ standard header `<version>` and breaks libc++ (`ptrdiff_t` cascade).
+
 ## Not supported
 
 - **Web** — `dart:ffi` and native shared libraries are required.  

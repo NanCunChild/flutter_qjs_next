@@ -9,10 +9,12 @@ cp ../cxx-windows/ffi.cpp ./cxx-windows/ffi.cpp
 
 cp -r ../cxx-windows/quickjs/* ./cxx-windows
 
+rm -f ./cxx-windows/VERSION ./cxx-windows/version ./cxx-windows/VERSION.txt ./cxx-windows/version.txt
+
 rm ./cxx-windows/quickjs.c
 
 
-quickjs_version=$(cat ../cxx-windows/quickjs/VERSION)
+quickjs_version=$(cat ../cxx-windows/quickjs/VERSION.txt)
 
 sed '1i\
 \#define CONFIG_VERSION \"'$quickjs_version'\"\

@@ -20,7 +20,8 @@ let package = Package(
             ],
             path: "Sources/flutter_qjs_next",
             exclude: [
-                "quickjs/VERSION",
+                // Avoid macOS case-insensitive FS: VERSION collides with C++ <version>
+                "quickjs/VERSION.txt",
             ],
             publicHeadersPath: "include",
             cSettings: [
@@ -39,5 +40,6 @@ let package = Package(
                 .linkedLibrary("c++"),
             ]
         )
-    ]
+    ],
+    cxxLanguageStandard: .cxx17
 )

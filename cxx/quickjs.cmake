@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # quickjs
 set(QUICK_JS_LIB_DIR ${CXX_LIB_DIR}/quickjs)
-file (STRINGS "${QUICK_JS_LIB_DIR}/VERSION" QUICKJS_VERSION)
+file (STRINGS "${QUICK_JS_LIB_DIR}/VERSION.txt" QUICKJS_VERSION)
 add_library(quickjs STATIC
     ${QUICK_JS_LIB_DIR}/cutils.c
     ${QUICK_JS_LIB_DIR}/libregexp.c

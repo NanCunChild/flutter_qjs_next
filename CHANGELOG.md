@@ -4,6 +4,7 @@
 * **Apple plugins:** pure Objective-C registration (drop Swift) so SPM can compile C/C++ + ObjC in one target.
 * **SPM:** depend on Flutter’s `FlutterFramework`; public headers only under `Sources/.../include/`.
 * **CocoaPods:** public headers limited to `Classes/`; QuickJS headers private; header search path for `cxx/`.
+* **macOS SPM:** rename QuickJS `VERSION` → `VERSION.txt` (APFS case-insensitive clash with C++ `#include <version>`).
 
 ## 1.2.0
 

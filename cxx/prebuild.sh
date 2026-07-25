@@ -9,10 +9,13 @@ cp ../cxx/ffi.cpp ./cxx/ffi.cpp
 
 cp -r ../cxx/quickjs/* ./cxx
 
+# Never leave VERSION on Apple case-insensitive FS (clashes with C++ <version>)
+rm -f ./cxx/VERSION ./cxx/version ./cxx/VERSION.txt ./cxx/version.txt
+
 rm ./cxx/quickjs.c
 
 
-quickjs_version=$(cat ../cxx/quickjs/VERSION)
+quickjs_version=$(cat ../cxx/quickjs/VERSION.txt)
 
 sed '1i\
 \#define CONFIG_VERSION \"'$quickjs_version'\"\
