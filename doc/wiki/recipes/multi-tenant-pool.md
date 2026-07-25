@@ -49,8 +49,11 @@ Do **not** use `hard` as a generic “lower memory” switch. Soak analysis show
 - Re-register channels inside `withEngine` after soft/hard reset.  
 - Cap `maxSize`: aggregate QuickJS heap ≈ `maxSize × memoryLimit`, plus Dart/native RSS outside the limit.  
 - Prefer `evaluateJson` for large JSON-like results; TypedArray for binary.  
+- Cache `JSInvokable` for hot callables; `free()` when done.  
+- Cap large Dart→JS buffer size (bridge copies; not true zero-copy by default).  
 - Keep heavy work off the UI isolate when latency matters.  
+- Log process RSS together with `getMemoryUsage()` / optional `readBridgeStats()`.  
 
 Full checklist: [Production integration checklist](../guides/production-checklist.md).  
-Reference class: `example/lib/production_tenant_worker.dart`.  
+Reference class: `example/lib/production_tenant_worker.dart` (budget, JSON, TypedArray, invokable cache, diagnostics).  
 Soak: `example/test/soak_stress_test.dart`.

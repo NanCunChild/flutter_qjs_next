@@ -148,9 +148,41 @@ Details: [Security](security.md).
 Runnable reference in the example app: `example/lib/production_tenant_worker.dart`
 (tests: `example/test/production_tenant_worker_test.dart`).
 
-```dart
-import 'package:flutter_qjs_next/flutter_qjs.dart';
+That class also shows app-layer guards: payload size budget, `evaluateJson`,
+TypedArray push/pull, `JSInvokable` cache via `mapWithCachedFunction`, and
+`diagnostics()` (pair `getMemoryUsage()` + `readBridgeStats()` with process RSS).
 
+```dart
+// App code: copy example/lib/production_tenant_worker.dart or depend on the example package.
+// import 'package:your_app/production_tenant_worker.dart';
+
+final worker = ProductionTenantWorker(
+  maxSize: 4,
+  timeoutMs: 2000,
+  memoryLimit: 32 * 1024 * 1024,
+  // resetMode: EngineResetMode.soft (default for this helper)
+);
+
+// Data-only:
+// final data = await worker.run(source, asJson: true);
+
+// Hot callable:
+// final out = await worker.mapWithCachedFunction('(a,b)=>a+b', [[1,2],[3,4]]);
+
+// Binary:
+// await worker.pushBytes(bytes);
+// final u8 = await worker.pullBytes('new Uint8Array(buf)');
+
+// Metrics (plus your process RSS):
+// final d = await worker.diagnostics(runGc: true);
+
+// App / feature teardown:
+// worker.dispose();
+```
+
+Minimal pool-only form:
+
+```dart
 final JsEnginePool tenantPool = JsEnginePool(
   maxSize: 4,
   config: const JsEnginePoolConfig(
@@ -160,22 +192,14 @@ final JsEnginePool tenantPool = JsEnginePool(
   ),
 );
 
-/// Run untrusted or per-tenant script; isolate globals between leases.
 Future<Object?> runTenantScript(String source, {bool asJson = false}) {
   return tenantPool.withEngine((js) async {
-    // Re-register any host bridges for this lease if needed.
-    if (asJson) {
-      return js.evaluateJson(source);
-    }
+    if (asJson) return js.evaluateJson(source);
     final r = js.evaluate(source);
-    if (r.isError) {
-      throw StateError(r.stringResult);
-    }
+    if (r.isError) throw StateError(r.stringResult);
     return r.rawResult;
   });
 }
-
-// App shutdown:
 // tenantPool.dispose();
 ```
 
