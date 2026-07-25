@@ -87,7 +87,7 @@ class _DartObject extends JSRef implements JSRefLeakable {
 class JSError extends _IsolateEncodable {
   late String message;
   late String stack;
-  JSError(message, [stack]) {
+  JSError(Object? message, [Object? stack]) {
     if (message is JSError) {
       this.message = message.message;
       this.stack = message.stack;

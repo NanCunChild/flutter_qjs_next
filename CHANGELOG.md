@@ -1,5 +1,6 @@
-## Unreleased
+## 1.2.1
 
+* **Lint:** add missing type annotations on `JSError` constructor parameters (`lib/quickjs/object.dart`).
 * **macOS/iOS build:** avoid ObjC `BOOL` clash with QuickJS `cutils.h` (`#if !defined(__OBJC__)`).
 * **Apple plugins:** pure Objective-C registration (drop Swift) so SPM can compile C/C++ + ObjC in one target.
 * **SPM:** depend on Flutter’s `FlutterFramework`; public headers only under `Sources/.../include/`.
