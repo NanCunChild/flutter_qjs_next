@@ -57,7 +57,10 @@
 #define minimum_length(n)  n
 #endif
 
+/* Apple Objective-C modules already define BOOL (often as _Bool). */
+#if !defined(__OBJC__)
 typedef int BOOL;
+#endif
 
 #ifndef FALSE
 enum {

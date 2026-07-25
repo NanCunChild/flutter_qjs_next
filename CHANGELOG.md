@@ -1,3 +1,10 @@
+## Unreleased
+
+* **macOS/iOS build:** avoid ObjC `BOOL` clash with QuickJS `cutils.h` (`#if !defined(__OBJC__)`).
+* **Apple plugins:** pure Objective-C registration (drop Swift) so SPM can compile C/C++ + ObjC in one target.
+* **SPM:** depend on Flutter’s `FlutterFramework`; public headers only under `Sources/.../include/`.
+* **CocoaPods:** public headers limited to `Classes/`; QuickJS headers private; header search path for `cxx/`.
+
 ## 1.2.0
 
 * **Pool default:** `JsEnginePoolConfig.resetOnRelease` is now **`false`** (warm reuse; better process RSS under churn). Multi-tenant: prefer `resetMode: soft` (not hard as an RSS fix).

@@ -12,6 +12,22 @@
 
 Native code: C/C++ FFI bridge under `cxx/`, embedded QuickJS under `cxx/quickjs/`.
 
+## Apple (iOS / macOS) source layout
+
+| Path | Role |
+|------|------|
+| `cxx/` | **Source of truth** for `ffi.*` + `quickjs/` |
+| `cxx/prebuild.sh` | CocoaPods `prepare_command`: copies `cxx/` → `ios/cxx` or `macos/cxx` (flattened headers) |
+| `ios/Classes`, `macos/Classes` | CocoaPods plugin entry (ObjC only) |
+| `ios/flutter_qjs_next/`, `macos/flutter_qjs_next/` | Swift Package Manager trees (`Package.swift` + `Sources/…`) |
+| `ios/.../Sources/.../quickjs`, `macos/.../quickjs` | SPM copies of QuickJS (keep in sync with `cxx/quickjs/`) |
+
+Plugin registration is pure **Objective-C** so SPM can mix ObjC + C/C++ in one target (Swift + C/C++ in the same SPM target is rejected).
+
+`Package.swift` depends on Flutter’s generated `FlutterFramework` package (Flutter 3.44+ SPM path). CocoaPods still works via the podspecs.
+
+On Apple, QuickJS `cutils.h` must not redefine `BOOL` under Objective-C (`#if !defined(__OBJC__)`).
+
 ## Not supported
 
 - **Web** — `dart:ffi` and native shared libraries are required.  
@@ -21,6 +37,7 @@ Native code: C/C++ FFI bridge under `cxx/`, embedded QuickJS under `cxx/quickjs/
 
 - Dart `^3.10.0`, Flutter `>=3.0.0`  
 - Platform SDKs as required by Flutter for your target  
+- iOS/macOS: Xcode + CocoaPods and/or Swift Package Manager (Flutter 3.44+)
 
 ## Build notes
 

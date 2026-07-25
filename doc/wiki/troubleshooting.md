@@ -8,6 +8,9 @@
 | Native library not found | Not using Flutter plugin build | `flutter run` / `flutter test` under an app with the dependency |
 | `dart run` **crashes the compiler** | Known FFI `fromFunction` toolchain crash | Use `flutter test` / `flutter run` instead |
 | Plugin not registered | Wrong package or incomplete pub get | `flutter pub get`, clean rebuild `flutter clean && flutter pub get` |
+| macOS/iOS: `typedef redefinition` of `BOOL` (`int` vs `_Bool`) | QuickJS `cutils.h` vs Apple ObjC | Ensure `cutils.h` uses `#if !defined(__OBJC__)`; `flutter clean` + rebuild so CocoaPods re-runs `prebuild.sh` |
+| SPM: missing Flutter / Swift+C same target | Old `Package.swift` or Swift plugin sources | Keep pure ObjC plugin + `FlutterFramework` dep; see [Platforms](guides/platforms.md) |
+| Flutter warns plugin lacks SPM | Missing/invalid `ios\|macos/<pkg>/Package.swift` | Restore package layout; do not delete `Package.swift` long-term (required on Flutter 3.44+) |
 
 ## Runtime
 

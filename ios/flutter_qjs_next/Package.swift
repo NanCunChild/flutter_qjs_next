@@ -9,16 +9,20 @@ let package = Package(
     products: [
         .library(name: "flutter-qjs-next", targets: ["flutter_qjs_next"])
     ],
-    dependencies: [],
+    dependencies: [
+        .package(name: "FlutterFramework", path: "../FlutterFramework"),
+    ],
     targets: [
         .target(
             name: "flutter_qjs_next",
-            dependencies: [],
+            dependencies: [
+                .product(name: "FlutterFramework", package: "FlutterFramework"),
+            ],
             path: "Sources/flutter_qjs_next",
             exclude: [
                 "quickjs/VERSION",
             ],
-            publicHeadersPath: ".",
+            publicHeadersPath: "include",
             cSettings: [
                 .headerSearchPath("."),
                 .headerSearchPath("quickjs"),
