@@ -165,8 +165,10 @@ extern "C"
 
   DLLEXPORT uint32_t jsNewClass(JSContext *ctx, const char *name)
   {
-    JSClassID QJSClassId = 0;
-    JS_NewClassID(&QJSClassId);
+    /* Allocate the class id once per process: JS_NewClassID only allocates
+       while the id is 0, and ids are global and limited to 16 bits. */
+    static JSClassID dartObjectClassId = 0;
+    JSClassID QJSClassId = JS_NewClassID(&dartObjectClassId);
     JSRuntime *rt = JS_GetRuntime(ctx);
     if (!JS_IsRegisteredClass(rt, QJSClassId))
     {
@@ -295,6 +297,16 @@ extern "C"
       opaque->start_ms = 0;
   }
 
+  DLLEXPORT void jsBeginCall(JSContext *ctx)
+  {
+    js_begin_call(JS_GetRuntime(ctx));
+  }
+
+  DLLEXPORT void jsEndCall(JSContext *ctx)
+  {
+    js_end_call(JS_GetRuntime(ctx));
+  }
+
   DLLEXPORT JSValue *jsEval(JSContext *ctx, const char *input, size_t input_len, const char *filename, int32_t eval_flags)
   {
     JSRuntime *rt = JS_GetRuntime(ctx);
@@ -339,9 +351,9 @@ extern "C"
     return new JSValue(JS_NewFloat64(ctx, val));
   }
 
-  DLLEXPORT JSValue *jsNewString(JSContext *ctx, const char *str)
+  DLLEXPORT JSValue *jsNewString(JSContext *ctx, const char *str, size_t len)
   {
-    return new JSValue(JS_NewString(ctx, str));
+    return new JSValue(JS_NewStringLen(ctx, str, len));
   }
 
   DLLEXPORT JSValue *jsNewArrayBufferCopy(JSContext *ctx, const uint8_t *buf, size_t len)
@@ -430,11 +442,11 @@ extern "C"
     return p;
   }
 
-  DLLEXPORT const char *jsToCString(JSContext *ctx, JSValueConst *val)
+  DLLEXPORT const char *jsToCString(JSContext *ctx, JSValueConst *val, size_t *plen)
   {
     JSRuntime *rt = JS_GetRuntime(ctx);
     js_begin_call(rt);
-    const char *ret = JS_ToCString(ctx, *val);
+    const char *ret = JS_ToCStringLen(ctx, plen, *val);
     js_end_call(rt);
     return ret;
   }

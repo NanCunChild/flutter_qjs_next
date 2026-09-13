@@ -171,8 +171,9 @@ abstract class JavascriptRuntime {
 
   /// Clear tenant state without destroying the native QuickJS engine.
   ///
-  /// Cancels pending `setTimeout` timers, wipes user globals / host maps, drops
-  /// custom channels, then reinstalls console + setTimeout. Prefer this over
+  /// Cancels pending `setTimeout` timers, wipes user globals (including global
+  /// `var` / `let` / `const` bindings) and host maps, drops custom channels,
+  /// then reinstalls console + setTimeout. Prefer this over
   /// [reinitialize] when isolation is needed but process RSS under churn matters.
   /// Default is no-op; [QuickJsRuntime2] implements a real wipe.
   void softReset() {}

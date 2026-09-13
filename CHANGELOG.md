@@ -1,3 +1,15 @@
+## 1.2.2
+
+* **Fix:** `compile()` crashed (`free(): invalid pointer`) — bytecode buffer is now released with `js_free`.
+* **Fix:** Dart→JS conversion read freed memory when the same `List` / `Map` appeared more than once (non-cyclic shared references).
+* **Fix (behavior):** `softReset()` now replaces the `JSContext` on the same `JSRuntime`. Global `var` / `let` / `const` / `class` bindings and builtin prototype changes no longer survive, and builtins such as `AggregateError`, `Iterator`, `Float16Array` are no longer deleted. Native heap and engine instance id are kept.
+* **Fix (behavior):** `timeout` now also covers JS run while converting results (getters, Proxy traps). A throwing or interrupted getter makes the whole result an error (`evaluate` → `isError`, `JSInvokable.invoke` → throws `JSError`) instead of silently becoming `null`.
+* **Fix:** strings containing U+0000 are no longer truncated in either direction (native `jsNewString` / `jsToCString` take explicit lengths).
+* **Fix:** a Dart host function that throws no longer leaks its `JSRef` arguments.
+* **Fix:** the `DartObject` class id is allocated once per process instead of per context, removing per-engine `class_array` growth and the ~65k engine-creation limit.
+* **Native:** new exports `jsBeginCall` / `jsEndCall`; `jsNewString` and `jsToCString` signatures changed (all platform copies synchronized).
+* **Tests / docs:** `example/test/review_regression_test.dart`; review notes in `doc/review/2026-09-13-code-review.md`.
+
 ## 1.2.1
 
 * **Lint:** add missing type annotations on `JSError` constructor parameters (`lib/quickjs/object.dart`).

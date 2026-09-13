@@ -56,6 +56,11 @@ extern "C" {
 
   DLLEXPORT JSRuntime *jsGetRuntime(JSContext *ctx);
 
+  /* Nestable timeout window around host work that may run JS (getters, traps). */
+  DLLEXPORT void jsBeginCall(JSContext *ctx);
+
+  DLLEXPORT void jsEndCall(JSContext *ctx);
+
   DLLEXPORT JSValue *jsEval(JSContext *ctx, const char *input, size_t input_len, const char *filename, int32_t eval_flags);
 
   DLLEXPORT int32_t jsValueGetTag(JSValue *val);
@@ -72,7 +77,7 @@ extern "C" {
 
   DLLEXPORT JSValue *jsNewFloat64(JSContext *ctx, double val);
 
-  DLLEXPORT JSValue *jsNewString(JSContext *ctx, const char *str);
+  DLLEXPORT JSValue *jsNewString(JSContext *ctx, const char *str, size_t len);
 
   DLLEXPORT JSValue *jsNewArrayBufferCopy(JSContext *ctx, const uint8_t *buf, size_t len);
 
@@ -113,7 +118,7 @@ extern "C" {
 
   DLLEXPORT double jsToFloat64(JSContext *ctx, JSValueConst *val);
 
-  DLLEXPORT const char *jsToCString(JSContext *ctx, JSValueConst *val);
+  DLLEXPORT const char *jsToCString(JSContext *ctx, JSValueConst *val, size_t *plen);
 
   DLLEXPORT void jsFreeCString(JSContext *ctx, const char *ptr);
 

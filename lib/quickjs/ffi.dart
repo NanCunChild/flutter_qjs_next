@@ -5,6 +5,7 @@
  * @LastEditors: ekibun
  * @LastEditTime: 2020-12-02 11:14:35
  */
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
@@ -528,6 +529,16 @@ final Pointer<JSRuntime> Function(Pointer<JSContext>) jsGetRuntime = _qjsLib
     )
     .asFunction();
 
+/// void jsBeginCall(JSContext *ctx)
+final void Function(Pointer<JSContext>) jsBeginCall = _qjsLib
+    .lookup<NativeFunction<Void Function(Pointer<JSContext>)>>('jsBeginCall')
+    .asFunction();
+
+/// void jsEndCall(JSContext *ctx)
+final void Function(Pointer<JSContext>) jsEndCall = _qjsLib
+    .lookup<NativeFunction<Void Function(Pointer<JSContext>)>>('jsEndCall')
+    .asFunction();
+
 /// JSValue *jsEval(JSContext *ctx, const char *input, size_t input_len, const char *filename, int eval_flags)
 final Pointer<JSValue> Function(
   Pointer<JSContext> ctx,
@@ -621,19 +632,26 @@ jsNewFloat64 = _qjsLib
     >('jsNewFloat64')
     .asFunction();
 
-/// JSValue *jsNewString(JSContext *ctx, const char *str)
-final Pointer<JSValue> Function(Pointer<JSContext> ctx, Pointer<Utf8> str)
+/// JSValue *jsNewString(JSContext *ctx, const char *str, size_t len)
+final Pointer<JSValue> Function(
+  Pointer<JSContext> ctx,
+  Pointer<Uint8> str,
+  int len,
+)
 _jsNewString = _qjsLib
     .lookup<
       NativeFunction<
-        Pointer<JSValue> Function(Pointer<JSContext>, Pointer<Utf8>)
+        Pointer<JSValue> Function(Pointer<JSContext>, Pointer<Uint8>, IntPtr)
       >
     >('jsNewString')
     .asFunction();
 
 Pointer<JSValue> jsNewString(Pointer<JSContext> ctx, String str) {
-  final utf8str = str.toNativeUtf8();
-  final jsStr = _jsNewString(ctx, utf8str);
+  // Pass the byte length explicitly: the string may contain U+0000.
+  final bytes = utf8.encode(str);
+  final utf8str = malloc<Uint8>(bytes.length + 1);
+  utf8str.asTypedList(bytes.length).setAll(0, bytes);
+  final jsStr = _jsNewString(ctx, utf8str, bytes.length);
   malloc.free(utf8str);
   return jsStr;
 }
@@ -829,15 +847,28 @@ jsToFloat64 = _qjsLib
     >('jsToFloat64')
     .asFunction();
 
-/// const char *jsToCString(JSContext *ctx, JSValue *val)
-final Pointer<Utf8> Function(Pointer<JSContext> ctx, Pointer<JSValue> val)
+/// const char *jsToCString(JSContext *ctx, JSValue *val, size_t *plen)
+final Pointer<Utf8> Function(
+  Pointer<JSContext> ctx,
+  Pointer<JSValue> val,
+  Pointer<IntPtr> plen,
+)
 _jsToCString = _qjsLib
     .lookup<
       NativeFunction<
-        Pointer<Utf8> Function(Pointer<JSContext>, Pointer<JSValue>)
+        Pointer<Utf8> Function(
+          Pointer<JSContext>,
+          Pointer<JSValue>,
+          Pointer<IntPtr>,
+        )
       >
     >('jsToCString')
     .asFunction();
+
+/// Reused out-parameter for [_jsToCString]. Native code writes it after any
+/// nested JS/Dart callbacks have returned, so reading it right after the call
+/// is safe.
+final Pointer<IntPtr> _cStringLength = calloc<IntPtr>();
 
 /// void jsFreeCString(JSContext *ctx, const char *ptr)
 final void Function(Pointer<JSContext> ctx, Pointer<Utf8> val)
@@ -848,9 +879,9 @@ jsFreeCString = _qjsLib
     .asFunction();
 
 String jsToCString(Pointer<JSContext> ctx, Pointer<JSValue> val) {
-  final ptr = _jsToCString(ctx, val);
+  final ptr = _jsToCString(ctx, val, _cStringLength);
   if (ptr.address == 0) throw Exception('JSValue cannot convert to string');
-  final str = ptr.toDartString();
+  final str = ptr.toDartString(length: _cStringLength.value);
   jsFreeCString(ctx, ptr);
   return str;
 }

@@ -30,14 +30,17 @@ class _DartFunction extends JSInvokable {
     final passThis = RegExp(
       '{.*thisVal.*}',
     ).hasMatch(_func.runtimeType.toString());
-    final ret = Function.apply(
-      _func,
-      args,
-      passThis ? {#thisVal: thisVal} : null,
-    );
-    JSRef.freeRecursive(args);
-    JSRef.freeRecursive(thisVal);
-    return ret;
+    try {
+      return Function.apply(
+        _func,
+        args,
+        passThis ? {#thisVal: thisVal} : null,
+      );
+    } finally {
+      // Release even when the host function throws.
+      JSRef.freeRecursive(args);
+      JSRef.freeRecursive(thisVal);
+    }
   }
 
   @override
@@ -161,9 +164,11 @@ class _JSFunction extends _JSObject implements JSInvokable, _IsolateEncodable {
       jsFreeValue(ctx, jsRet);
       throw _parseJSException(ctx);
     }
-    final ret = _jsToDart(ctx, jsRet);
-    jsFreeValue(ctx, jsRet);
-    return ret;
+    try {
+      return _jsToDart(ctx, jsRet);
+    } finally {
+      jsFreeValue(ctx, jsRet);
+    }
   }
 
   Pointer<JSValue> _invoke(List<dynamic> arguments, [dynamic thisVal]) {

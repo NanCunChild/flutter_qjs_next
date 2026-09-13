@@ -171,27 +171,12 @@ class QuickJsRuntime2 extends JavascriptRuntime {
       releaseHostCaches();
     } catch (_) {}
     final rt = _rt;
-    final ctx = _ctx;
     if (rt == null) return;
-    String? referenceLeak;
     try {
       _executePendingJob();
     } catch (_) {}
-    if (ctx != null) {
-      final jsonStringifyFn = _jsonStringifyFn;
-      _jsonStringifyFn = null;
-      if (jsonStringifyFn != null) {
-        try {
-          jsFreeValue(ctx, jsonStringifyFn);
-        } catch (_) {}
-      }
-      referenceLeak = jsReleaseRuntimeRefs(rt, ctx);
-      try {
-        jsFreeContext(ctx);
-      } catch (_) {}
-    }
+    final referenceLeak = _freeContext(rt);
     _rt = null;
-    _ctx = null;
     localContext.clear();
     dartContext.clear();
     _needsInitialization = true;
@@ -201,6 +186,26 @@ class QuickJsRuntime2 extends JavascriptRuntime {
       throw JSError(e);
     }
     if (referenceLeak != null) throw JSError(referenceLeak);
+  }
+
+  /// Release Dart-side refs and free the current JSContext, keeping [rt].
+  /// Returns the reference leak report, if any.
+  String? _freeContext(Pointer<JSRuntime> rt) {
+    final ctx = _ctx;
+    if (ctx == null) return null;
+    final jsonStringifyFn = _jsonStringifyFn;
+    _jsonStringifyFn = null;
+    if (jsonStringifyFn != null) {
+      try {
+        jsFreeValue(ctx, jsonStringifyFn);
+      } catch (_) {}
+    }
+    final referenceLeak = jsReleaseRuntimeRefs(rt, ctx);
+    _ctx = null;
+    try {
+      jsFreeContext(ctx);
+    } catch (_) {}
+    return referenceLeak;
   }
 
   /// Drop native heap + channels and re-run [init] (console, setTimeout, bridges).
@@ -223,8 +228,12 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     init();
   }
 
-  /// Wipe tenant state while keeping the same native engine and instance id.
+  /// Wipe tenant state while keeping the same native runtime and instance id.
   /// Used by [JsEnginePool] with [EngineResetMode.soft].
+  ///
+  /// Replaces the JSContext on the same JSRuntime: `globalThis`, global
+  /// `var` / `let` / `const` / `class` bindings and builtin prototype changes
+  /// are all dropped, while the native heap is kept.
   @override
   void softReset() {
     if (_disposed) {
@@ -236,41 +245,24 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     try {
       disposeChannelFunctions();
     } catch (_) {}
-    if (_rt == null) {
+    final rt = _rt;
+    if (rt == null) {
       _needsInitialization = false;
       init();
       return;
     }
-    // Drop user own-props; [init] reinstalls sendMessage / console / setTimeout.
-    evaluate(r'''
-      (function () {
-        var g = globalThis;
-        var keep = {
-          Object: 1, Function: 1, Array: 1, Number: 1, parseFloat: 1, parseInt: 1,
-          Infinity: 1, NaN: 1, undefined: 1, Boolean: 1, String: 1, Symbol: 1,
-          Date: 1, Promise: 1, RegExp: 1, Error: 1, EvalError: 1, RangeError: 1,
-          ReferenceError: 1, SyntaxError: 1, TypeError: 1, URIError: 1,
-          globalThis: 1, Math: 1, JSON: 1, Reflect: 1, Proxy: 1, Map: 1, Set: 1,
-          WeakMap: 1, WeakSet: 1, ArrayBuffer: 1, SharedArrayBuffer: 1,
-          DataView: 1, Int8Array: 1, Uint8Array: 1, Uint8ClampedArray: 1,
-          Int16Array: 1, Uint16Array: 1, Int32Array: 1, Uint32Array: 1,
-          Float32Array: 1, Float64Array: 1, BigInt64Array: 1, BigUint64Array: 1,
-          BigInt: 1, WeakRef: 1, FinalizationRegistry: 1, Atomics: 1,
-          encodeURI: 1, encodeURIComponent: 1, decodeURI: 1, decodeURIComponent: 1,
-          escape: 1, unescape: 1, isFinite: 1, isNaN: 1, eval: 1
-        };
-        var names = Object.getOwnPropertyNames(g);
-        for (var i = 0; i < names.length; i++) {
-          var k = names[i];
-          if (keep[k]) continue;
-          try { delete g[k]; } catch (e) {}
-        }
-      })();
-    ''');
+    // Bounded drain: a self-rescheduling Promise chain must not hang reset.
+    try {
+      executePendingJobs();
+    } catch (_) {}
+    final referenceLeak = _freeContext(rt);
+    _ctx = jsNewContext(rt);
     try {
       runGC();
     } catch (_) {}
+    // [init] reinstalls sendMessage / console / setTimeout.
     init();
+    if (referenceLeak != null) throw JSError(referenceLeak);
   }
 
   void _maybeDrainJobs() {
@@ -278,6 +270,27 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     try {
       executePendingJobs();
     } catch (_) {}
+  }
+
+  /// Convert and free [jsval]. Conversion errors (a throwing or timed-out
+  /// getter, for example) are reported through [JsEvalResult.isError].
+  JsEvalResult _toEvalResult(Pointer<JSContext> ctx, Pointer<JSValue> jsval) {
+    dynamic result;
+    try {
+      result = _jsToDart(ctx, jsval);
+    } catch (e) {
+      final exception = e is JSError ? e : JSError(e);
+      return JsEvalResult(exception.toString(), exception, isError: true);
+    } finally {
+      jsFreeValue(ctx, jsval);
+    }
+    _maybeDrainJobs();
+    return JsEvalResult(
+      result?.toString() ?? 'null',
+      result,
+      isPromise: result is Future,
+      isError: result is JSError,
+    );
   }
 
   void _executePendingJob() {
@@ -352,16 +365,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
       JSError exception = _parseJSException(ctx);
       return JsEvalResult(exception.toString(), exception, isError: true);
     }
-    final result = _jsToDart(ctx, jsval);
-    final isPromise = result is Future;
-    jsFreeValue(ctx, jsval);
-    _maybeDrainJobs();
-    return JsEvalResult(
-      result?.toString() ?? "null",
-      result,
-      isPromise: isPromise,
-      isError: result is JSError,
-    );
+    return _toEvalResult(ctx, jsval);
   }
 
   /// Evaluate js script and decode the result via a single `JSON.stringify`
@@ -424,15 +428,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
       return JsEvalResult(exception.toString(), exception, isError: true);
     }
 
-    final result = _jsToDart(ctx, value);
-    jsFreeValue(ctx, value);
-    _maybeDrainJobs();
-    return JsEvalResult(
-      result?.toString() ?? "null",
-      result,
-      isPromise: result is Future,
-      isError: result is JSError,
-    );
+    return _toEvalResult(ctx, value);
   }
 
   @override
@@ -451,7 +447,8 @@ class QuickJsRuntime2 extends JavascriptRuntime {
       return Uint8List.fromList(value.asTypedList(length));
     } finally {
       if (value.address != 0) {
-        calloc.free(value);
+        // Allocated by QuickJS (JS_WriteObject), not libc malloc.
+        jsFree(ctx, value.cast());
       }
       calloc.free(scriptPtr);
       calloc.free(fileNamePtr);
@@ -476,15 +473,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
       final exception = _parseJSException(ctx);
       return JsEvalResult(exception.toString(), exception, isError: true);
     }
-    final result = _jsToDart(ctx, jsRet);
-    jsFreeValue(ctx, jsRet);
-    _maybeDrainJobs();
-    return JsEvalResult(
-      result?.toString() ?? 'null',
-      result,
-      isPromise: result is Future,
-      isError: result is JSError,
-    );
+    return _toEvalResult(ctx, jsRet);
   }
 
   @override
