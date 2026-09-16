@@ -70,7 +70,25 @@ see **[Production checklist](doc/wiki/guides/production-checklist.md)** and
 
 Engine ids include the isolate hash (`qjs-<isolate>-<serial>-<us>`) so parallel isolates do not collide in channel maps.
 
-`forceJavascriptCoreOnAndroid` and `xhr` are accepted for API compatibility with flutter_js but **are not implemented** (always QuickJS; no built-in XHR/fetch polyfill).
+`forceJavascriptCoreOnAndroid` and `xhr` are accepted for API compatibility with flutter_js but **are not implemented** (always QuickJS; there is no XHR).
+
+### Web APIs
+
+Every engine gets timers, `queueMicrotask`, `console`, `performance`,
+`structuredClone`, `atob`/`btoa` and `crypto` random values. The standard
+library (`URL`, streams, `Headers`/`Request`/`Response`, `crypto.subtle`, …) and
+`fetch` are opt-in:
+
+```dart
+final js = getJavascriptRuntime(
+  webApis: JsWebApis(
+    web: true,
+    fetch: JsFetchOptions(allowUrl: (url) => url.host == 'api.example.com'),
+  ),
+);
+```
+
+See **[Web APIs](doc/wiki/api/web-apis.md)** for the level list, costs and deviations.
 
 ### Dart ↔ JS bridge
 
@@ -94,7 +112,7 @@ Use `evaluateJson` when you only need a Dart JSON-like tree (often faster for la
 
 ### Event loop / Promises
 
-QuickJS jobs and `setTimeout` are drained through the runtime’s `ReceivePort`. After scheduling async JS, call `dispatch()` (or rely on paths that already pump the port, e.g. promise helpers in `handle_promises.dart`).
+QuickJS jobs are drained through the runtime’s `ReceivePort`. Timer and `fetch` callbacks run their own microtask checkpoint; for other async paths call `dispatch()` (or rely on paths that already pump the port, e.g. promise helpers in `handle_promises.dart`).
 
 ```dart
 // Drain Promise microtasks / jobs in a tight loop:

@@ -24,17 +24,18 @@ class _DartFunction extends JSInvokable {
   final Function _func;
   _DartFunction(this._func);
 
+  /// Whether [_func] takes a named `thisVal` (computed once, not per call).
+  late final bool _passThis = RegExp(
+    '{.*thisVal.*}',
+  ).hasMatch(_func.runtimeType.toString());
+
   @override
   dynamic invoke(List args, [thisVal]) {
-    /// wrap this into function
-    final passThis = RegExp(
-      '{.*thisVal.*}',
-    ).hasMatch(_func.runtimeType.toString());
     try {
       return Function.apply(
         _func,
         args,
-        passThis ? {#thisVal: thisVal} : null,
+        _passThis ? {#thisVal: thisVal} : null,
       );
     } finally {
       // Release even when the host function throws.

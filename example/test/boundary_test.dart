@@ -356,14 +356,29 @@ void main() {
 
   group('Memory limit boundary', () {
     test('engine with tiny memory limit can still evaluate', () {
-      final runtime = getJavascriptRuntime(
+      // The Web API layer needs ~200 KiB of JS heap to install; a tiny engine
+      // opts out of it (see JsWebApis.core).
+      final runtime = QuickJsRuntime2(
         timeout: 500,
         memoryLimit: 256 * 1024,
+        webApis: const JsWebApis(core: false),
       );
       addTearDown(runtime.dispose);
 
       final r = runtime.evaluate('1 + 1');
       expect(r.rawResult, 2);
+      expect(runtime.evaluate('typeof console').rawResult, 'undefined');
+    });
+
+    test('engine with Web APIs needs a bigger limit', () {
+      final runtime = getJavascriptRuntime(
+        timeout: 500,
+        memoryLimit: 1024 * 1024,
+      );
+      addTearDown(runtime.dispose);
+
+      expect(runtime.evaluate('1 + 1').rawResult, 2);
+      expect(runtime.evaluate('typeof structuredClone').rawResult, 'function');
     });
 
     test('exceeding memory limit with large allocation', () {

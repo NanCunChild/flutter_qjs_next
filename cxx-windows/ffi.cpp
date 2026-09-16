@@ -7,6 +7,7 @@
  */
 #include "ffi.h"
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <future>
 #include <stdlib.h>
@@ -216,6 +217,16 @@ extern "C"
   DLLEXPORT void jsSetMemoryLimit(JSRuntime *rt, size_t limit)
   {
     JS_SetMemoryLimit(rt, limit);
+  }
+
+  DLLEXPORT void jsSetStripInfo(JSRuntime *rt, int32_t flags)
+  {
+    JS_SetStripInfo(rt, flags);
+  }
+
+  DLLEXPORT int32_t jsGetStripInfo(JSRuntime *rt)
+  {
+    return JS_GetStripInfo(rt);
   }
 
   DLLEXPORT void jsRunGC(JSRuntime *rt)
@@ -735,6 +746,256 @@ extern "C"
     js_end_call(rt);
 
     return new JSValue(value);
+  }
+
+  /* Web API natives (TextEncoder / TextDecoder / performance.now). */
+
+  // Byte view of a TypedArray argument. Returns -1 with a pending exception.
+  static int js_web_get_bytes(JSContext *ctx, JSValueConst val, uint8_t **pdata, size_t *plen)
+  {
+    size_t offset = 0, length = 0, bytes_per_element = 0;
+    JSValue buffer = JS_GetTypedArrayBuffer(ctx, val, &offset, &length, &bytes_per_element);
+    if (JS_IsException(buffer))
+      return -1;
+    *pdata = NULL;
+    *plen = 0;
+    if (length > 0)
+    {
+      size_t size = 0;
+      uint8_t *ptr = JS_GetArrayBuffer(ctx, &size, buffer);
+      if (!ptr)
+      {
+        JS_FreeValue(ctx, buffer);
+        return -1;
+      }
+      *pdata = ptr + offset;
+      *plen = length;
+    }
+    JS_FreeValue(ctx, buffer);
+    return 0;
+  }
+
+  // QuickJS emits lone surrogates as 3-byte WTF-8 (ED A0..BF xx); TextEncoder
+  // must emit U+FFFD instead. 0xED is never a continuation byte.
+  static void js_web_replace_surrogates(uint8_t *p, size_t len)
+  {
+    for (size_t i = 0; i + 2 < len; i++)
+    {
+      if (p[i] == 0xED && p[i + 1] >= 0xA0)
+      {
+        p[i] = 0xEF;
+        p[i + 1] = 0xBF;
+        p[i + 2] = 0xBD;
+        i += 2;
+      }
+    }
+  }
+
+  // WHATWG UTF-8 decoder step: length of the valid sequence at p, or 0 with
+  // *pskip set to the maximal invalid subpart to replace by one U+FFFD.
+  static size_t js_web_utf8_valid(const uint8_t *p, size_t n, size_t *pskip)
+  {
+    uint8_t b = p[0];
+    uint8_t lo = 0x80, hi = 0xBF;
+    size_t need;
+    if (b < 0x80)
+      return 1;
+    if (b >= 0xC2 && b <= 0xDF)
+      need = 1;
+    else if (b >= 0xE0 && b <= 0xEF)
+    {
+      need = 2;
+      if (b == 0xE0)
+        lo = 0xA0;
+      else if (b == 0xED)
+        hi = 0x9F;
+    }
+    else if (b >= 0xF0 && b <= 0xF4)
+    {
+      need = 3;
+      if (b == 0xF0)
+        lo = 0x90;
+      else if (b == 0xF4)
+        hi = 0x8F;
+    }
+    else
+    {
+      *pskip = 1;
+      return 0;
+    }
+    for (size_t j = 1; j <= need; j++)
+    {
+      if (j >= n || p[j] < lo || p[j] > hi)
+      {
+        *pskip = j;
+        return 0;
+      }
+      lo = 0x80;
+      hi = 0xBF;
+    }
+    return need + 1;
+  }
+
+  // utf8Encode(string) -> Uint8Array
+  static JSValue js_web_utf8_encode(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv)
+  {
+    size_t len = 0;
+    const char *str = JS_ToCStringLen(ctx, &len, argv[0]);
+    if (!str)
+      return JS_EXCEPTION;
+    JSValue buffer = JS_NewArrayBufferCopy(ctx, (const uint8_t *)str, len);
+    JS_FreeCString(ctx, str);
+    if (JS_IsException(buffer))
+      return buffer;
+    if (len > 0)
+    {
+      size_t size = 0;
+      uint8_t *data = JS_GetArrayBuffer(ctx, &size, buffer);
+      if (data)
+        js_web_replace_surrogates(data, size);
+    }
+    JSValueConst args[3] = {buffer, JS_UNDEFINED, JS_UNDEFINED};
+    JSValue ta = JS_NewTypedArray(ctx, 3, args, JS_TYPED_ARRAY_UINT8);
+    JS_FreeValue(ctx, buffer);
+    return ta;
+  }
+
+  // utf8EncodeInto(string, Uint8Array) -> [read (UTF-16 units), written]
+  static JSValue js_web_utf8_encode_into(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv)
+  {
+    size_t len = 0;
+    const char *str = JS_ToCStringLen(ctx, &len, argv[0]);
+    if (!str)
+      return JS_EXCEPTION;
+    uint8_t *dst = NULL;
+    size_t cap = 0;
+    if (js_web_get_bytes(ctx, argv[1], &dst, &cap) < 0)
+    {
+      JS_FreeCString(ctx, str);
+      return JS_EXCEPTION;
+    }
+    const uint8_t *src = (const uint8_t *)str;
+    size_t i = 0, written = 0;
+    int64_t read = 0;
+    while (i < len)
+    {
+      uint8_t b = src[i];
+      size_t n = b < 0x80 ? 1 : b < 0xE0 ? 2 : b < 0xF0 ? 3 : 4;
+      if (i + n > len || written + n > cap)
+        break;
+      if (n == 3 && b == 0xED && src[i + 1] >= 0xA0)
+      {
+        dst[written] = 0xEF;
+        dst[written + 1] = 0xBF;
+        dst[written + 2] = 0xBD;
+      }
+      else
+      {
+        memcpy(dst + written, src + i, n);
+      }
+      written += n;
+      i += n;
+      read += n == 4 ? 2 : 1;
+    }
+    JS_FreeCString(ctx, str);
+    JSValue ret = JS_NewArray(ctx);
+    if (JS_IsException(ret))
+      return ret;
+    JS_SetPropertyUint32(ctx, ret, 0, JS_NewInt64(ctx, read));
+    JS_SetPropertyUint32(ctx, ret, 1, JS_NewInt64(ctx, (int64_t)written));
+    return ret;
+  }
+
+  // utf8Decode(Uint8Array, fatal) -> string; invalid input throws when fatal.
+  static JSValue js_web_utf8_decode(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv)
+  {
+    uint8_t *src = NULL;
+    size_t len = 0;
+    if (js_web_get_bytes(ctx, argv[0], &src, &len) < 0)
+      return JS_EXCEPTION;
+    int fatal = JS_ToBool(ctx, argv[1]);
+    size_t i = 0, skip = 0;
+    while (i < len)
+    {
+      if (src[i] < 0x80)
+      {
+        i++;
+        continue;
+      }
+      size_t k = js_web_utf8_valid(src + i, len - i, &skip);
+      if (!k)
+        break;
+      i += k;
+    }
+    if (i == len)
+      return JS_NewStringLen(ctx, len ? (const char *)src : "", len);
+    if (fatal)
+      return JS_ThrowTypeError(ctx, "The encoded data was not valid");
+    uint8_t *out = (uint8_t *)js_malloc(ctx, len * 3);
+    if (!out)
+      return JS_EXCEPTION;
+    memcpy(out, src, i);
+    size_t o = i;
+    while (i < len)
+    {
+      if (src[i] < 0x80)
+      {
+        out[o++] = src[i++];
+        continue;
+      }
+      size_t k = js_web_utf8_valid(src + i, len - i, &skip);
+      if (k)
+      {
+        memcpy(out + o, src + i, k);
+        o += k;
+        i += k;
+      }
+      else
+      {
+        out[o++] = 0xEF;
+        out[o++] = 0xBF;
+        out[o++] = 0xBD;
+        i += skip;
+      }
+    }
+    JSValue ret = JS_NewStringLen(ctx, (const char *)out, o);
+    js_free(ctx, out);
+    return ret;
+  }
+
+  // now() -> monotonic milliseconds (double)
+  static JSValue js_web_now(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv)
+  {
+    using namespace std::chrono;
+    return JS_NewFloat64(ctx, duration<double, std::milli>(steady_clock::now().time_since_epoch()).count());
+  }
+
+  DLLEXPORT JSValue *jsNewWebNatives(JSContext *ctx)
+  {
+    static const struct
+    {
+      const char *name;
+      int length;
+      JSCFunction *func;
+    } funcs[] = {
+        {"utf8Encode", 1, js_web_utf8_encode},
+        {"utf8EncodeInto", 2, js_web_utf8_encode_into},
+        {"utf8Decode", 2, js_web_utf8_decode},
+        {"now", 0, js_web_now},
+    };
+    JSValue obj = JS_NewObject(ctx);
+    if (JS_IsException(obj))
+      return new JSValue(obj);
+    for (const auto &f : funcs)
+    {
+      JSValue fn = JS_NewCFunction(ctx, f.func, f.name, f.length);
+      if (JS_IsException(fn) || JS_SetPropertyStr(ctx, obj, f.name, fn) < 0)
+      {
+        JS_FreeValue(ctx, obj);
+        return new JSValue(JS_EXCEPTION);
+      }
+    }
+    return new JSValue(obj);
   }
 
 }

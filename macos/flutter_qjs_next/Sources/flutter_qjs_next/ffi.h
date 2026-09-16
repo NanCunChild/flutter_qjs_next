@@ -39,6 +39,11 @@ extern "C" {
 
   DLLEXPORT void jsSetMemoryLimit(JSRuntime *rt, size_t limit);
 
+  /* JS_STRIP_SOURCE / JS_STRIP_DEBUG for code compiled afterwards. */
+  DLLEXPORT void jsSetStripInfo(JSRuntime *rt, int32_t flags);
+
+  DLLEXPORT int32_t jsGetStripInfo(JSRuntime *rt);
+
   DLLEXPORT void jsRunGC(JSRuntime *rt);
 
   /* Fills *out with JS_ComputeMemoryUsage fields (malloc_size, memory_used_size, …). */
@@ -188,6 +193,10 @@ extern "C" {
   DLLEXPORT uint8_t *CompileScript(JSContext *ctx, const char *script, const char *fileName, size_t *lengthPtr);
 
   DLLEXPORT JSValue *EvaluateBytecode(JSContext *ctx, size_t length, uint8_t *buf);
+
+  /* Object of C helpers for the Web API layer: utf8Encode, utf8EncodeInto,
+     utf8Decode, now. */
+  DLLEXPORT JSValue *jsNewWebNatives(JSContext *ctx);
 
 #ifdef __cplusplus
 }

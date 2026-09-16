@@ -45,15 +45,19 @@ If `rawResult` is a Dart `Future` (Promise marshalled), it awaits that Future wh
 
 `getJavascriptRuntime` calls `enableHandlePromises()` (marks a flag; no 20 ms poll registry).
 
-## `setTimeout`
+## Timers
 
-Implemented in Dart:
+`setTimeout` / `setInterval` / `clearTimeout` / `clearInterval` are backed by
+Dart `Timer`s (see [Web APIs](web-apis.md)):
 
-1. JS stores the callback and `sendMessage('SetTimeout', { timeoutIndex, timeout })`.  
-2. Dart starts a `Timer`.  
-3. On fire, invokes a **cached** JS runner invokable (not free’d per shot).
+1. JS stores the callback and calls a host function.
+2. Dart starts a `Timer` (`Timer.periodic` for intervals).
+3. On fire, Dart invokes a cached JS dispatcher, then runs the **microtask
+   checkpoint** — promises resolved inside the callback continue without a
+   manual pump (unless `autoExecutePendingJobs` is `false`).
 
-`clearTimeout` only deletes the JS-side callback entry.
+`clearTimeout` / `clearInterval` cancel the Dart `Timer` itself. Callback
+exceptions go to `reportError` (logged at error level), not silence.
 
 Host wall-clock timers still require the Dart event loop to run (normal in Flutter).
 

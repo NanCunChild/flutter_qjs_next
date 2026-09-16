@@ -30,7 +30,7 @@ QuickJsRuntime2({
 });
 ```
 
-Calls `init()` (channels, console, setTimeout).
+Calls `init()` (channels and the [Web APIs](web-apis.md)).
 
 ### Memory-limit semantics
 

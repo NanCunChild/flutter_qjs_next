@@ -39,5 +39,3 @@ flutter:
         pluginClass: FlutterQjsPlugin
       ios:
         pluginClass: FlutterQjsPlugin
-  assets:
-    - assets/js/

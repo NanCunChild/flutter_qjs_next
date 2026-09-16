@@ -38,8 +38,31 @@ flutter test test/soak_stress_test.dart
 
 Runner: `example/lib/soak_stress_runner.dart` (entry `example/test/soak_stress_test.dart`).
 
-Metrics are appended as JSONL under `SOAK_DUMP_DIR/soak_metrics.jsonl` (RSS, QJS heap,
-pool stats, bridge counters, per-op `opCounts`).
+Metrics are appended as JSONL under `SOAK_DUMP_DIR/soak_metrics.jsonl` (RSS, open file
+descriptors, QJS heap, pool stats, bridge counters, per-op `opCounts`, fetch counters).
+
+### Web API workloads
+
+The Web API families (`doc/design/2026-09-16-web-apis-soak.md`) exercise timers,
+`structuredClone`, `console`, `URL`, encoding, `Blob`/`FormData`, streams,
+`crypto.subtle` and `fetch` (against an in-process HTTP server). Each operation
+validates its own result, so a long run doubles as a consistency test.
+
+```bash
+# Mixed Web API load with a cooldown so RSS can be interpreted
+flutter test test/soak_stress_test.dart --timeout none \
+  --dart-define=SOAK_PROFILE=web_all \
+  --dart-define=SOAK_DURATION_SEC=300 \
+  --dart-define=SOAK_COOLDOWN_SEC=90
+```
+
+Extra knobs: `SOAK_WEB` (none/core/web/fetch), `SOAK_COOLDOWN_SEC`,
+`SOAK_FETCH_STUB=1` (replace the network with an in-process stub),
+`SOAK_MAX_FD_GROWTH`, `SOAK_MAX_DART_REFS`, `SOAK_MAX_ENGINE_HEAP_MB`.
+
+Under sustained load RSS only grows (the Dart heap never returns pages), so judge
+memory by the `retained` / `retainedPerOp` / `retainedPerReset` line printed after
+the cooldown, not by the curve during the run.
 
 ### A/B and full_test matrix
 
@@ -56,7 +79,9 @@ scripts/run-soak-ab.sh --full-test --duration 3600 --rss-factor 128 --output soa
 scripts/run-soak-ab.sh --full-test --profiles tiny,no_typed_array,dart_to_js --duration 600
 ```
 
-Profiles: `all`, `tiny`, `no_typed_array`, `dart_to_js`, `js_to_dart`, `typed_array`.
+Profiles: `all`, `tiny`, `no_typed_array`, `dart_to_js`, `js_to_dart`, `typed_array`,
+`web_core`, `web_url`, `web_encoding`, `web_blob`, `web_streams`, `web_crypto`,
+`web_fetch`, `web_all`, `mixed_all`.
 
 ### Charts (line + path heatmaps)
 

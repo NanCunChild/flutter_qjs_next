@@ -47,7 +47,7 @@ This builds a string and `evaluate`s it. Prefer registering a bridge and invokin
 ## Host context maps
 
 ```dart
-js.localContext; // Map — used by the package (e.g. setTimeout runner cache)
+js.localContext; // Map — free-form per-engine storage for your own code
 js.dartContext;  // Map — free for app data; cleared on reinitialize()
 ```
 

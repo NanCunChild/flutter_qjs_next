@@ -18,8 +18,12 @@ Options:
   --ops-per-burst N   Operations per worker burst (default: 8)
   --metrics SEC       Metrics interval (default: 5)
   --profile NAME      Workload profile (default: all)
-                      Values: all, tiny, no_typed_array, dart_to_js,
+                      Legacy: all, tiny, no_typed_array, dart_to_js,
                       js_to_dart, typed_array
+                      Web APIs: web_core, web_url, web_encoding, web_blob,
+                      web_streams, web_crypto, web_fetch, web_all, mixed_all
+  --web LEVEL         Web API level: auto (default), none, core, web, fetch
+                      auto lets each profile pick what it needs
   --full-test         Run every profile (see --profiles) with A/B reset
   --profiles LIST     Comma-separated profiles for --full-test
                       (default: tiny,no_typed_array,dart_to_js,js_to_dart,typed_array,all)
@@ -39,6 +43,10 @@ Examples:
 
   # Re-plot existing soak_profiles tree
   scripts/run-soak-ab.sh --plot-only soak_profiles
+
+  # Web API matrix (see doc/design/2026-09-16-web-apis-soak.md)
+  scripts/run-soak-ab.sh --full-test --duration 3600 \
+    --profiles web_core,web_url,web_encoding,web_blob,web_streams,web_crypto,web_fetch,web_all,mixed_all
 USAGE
 }
 
@@ -49,6 +57,7 @@ workers=32
 ops_per_burst=8
 metrics_sec=5
 profile=all
+web_level=auto
 full_test=0
 profiles_csv="tiny,no_typed_array,dart_to_js,js_to_dart,typed_array,all"
 rounds=1
@@ -92,6 +101,11 @@ while [[ $# -gt 0 ]]; do
     --profile)
       [[ $# -ge 2 ]] || { usage >&2; exit 2; }
       profile=$2
+      shift 2
+      ;;
+    --web)
+      [[ $# -ge 2 ]] || { usage >&2; exit 2; }
+      web_level=$2
       shift 2
       ;;
     --full-test)
@@ -202,6 +216,11 @@ mkdir -p "$output_dir"
 output_dir="$(realpath -m "$output_dir")"
 mkdir -p "$output_dir"
 
+web_define=""
+if [[ "$web_level" != "auto" ]]; then
+  web_define="SOAK_WEB=$web_level"
+fi
+
 IFS=',' read -r -a profile_list <<< "$profiles_csv"
 if [[ "$full_test" -eq 0 ]]; then
   profile_list=("$profile")
@@ -223,6 +242,7 @@ config_file="$output_dir/config.txt"
   printf 'metrics_sec=%s\n' "$metrics_sec"
   printf 'full_test=%s\n' "$full_test"
   printf 'profiles=%s\n' "$((IFS=','; echo "${profile_list[*]}"))"
+  printf 'web_level=%s\n' "$web_level"
   printf 'rounds=%s\n' "$rounds"
   printf 'flutter=%s\n' "$flutter_cmd"
   printf 'host=%s\n' "$(hostname 2>/dev/null || true)"
@@ -259,6 +279,7 @@ run_case() {
       --dart-define="SOAK_OPS_PER_BURST=$ops_per_burst" \
       --dart-define="SOAK_METRICS_SEC=$metrics_sec" \
       --dart-define="SOAK_PROFILE=$prof" \
+      ${web_define:+--dart-define="$web_define"} \
       --dart-define="SOAK_RESET_ON_RELEASE=$reset_value" \
       --dart-define="SOAK_MAX_RSS_GROWTH=$rss_factor" \
       --dart-define="SOAK_DUMP_DIR=$case_dir/${case_name}_dumps"

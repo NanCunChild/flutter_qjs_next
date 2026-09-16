@@ -38,7 +38,10 @@ class FlutterJsHomeScreen extends StatefulWidget {
 class _FlutterJsHomeScreenState extends State<FlutterJsHomeScreen> {
   String _jsResult = '';
 
-  final JavascriptRuntime javascriptRuntime = getJavascriptRuntime();
+  // Web APIs: L1 standard library plus fetch (see JsWebApis / JsFetchOptions).
+  final JavascriptRuntime javascriptRuntime = getJavascriptRuntime(
+    webApis: const JsWebApis(fetch: JsFetchOptions()),
+  );
 
   String? _quickjsVersion;
   String? _benchmarkSummary;

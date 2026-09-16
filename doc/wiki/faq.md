@@ -10,7 +10,9 @@ It aims for a **compatible** API surface (`getJavascriptRuntime`, bridges, `JsEv
 
 ### Why is my `fetch` failing?
 
-There is no built-in network stack. Provide a polyfill or a Dart bridge.
+`fetch` is installed only when the runtime is created with
+`webApis: JsWebApis(fetch: JsFetchOptions(...))`, and each URL (including every
+redirect hop) must pass `allowUrl`. See [Web APIs](api/web-apis.md).
 
 ### What is the default memory limit?
 
@@ -28,7 +30,7 @@ Deep JS→Dart conversion is expensive for large pure data. JSON round-trip in-e
 
 ### Do I need to free functions returned from JS?
 
-Yes — cast to `JSInvokable` and call **`free()`** when you own them (not the package’s setTimeout runner).
+Yes — cast to `JSInvokable` and call **`free()`** when you own them. Handles the package itself holds (timer and `fetch` callbacks) are released on `dispose` / reset.
 
 ### Can I run untrusted user scripts safely?
 

@@ -34,6 +34,7 @@ On push to `main`/`master` (paths under `doc/wiki/**`), CI runs `scripts/sync-wi
 - [Bytecode](api/bytecode.md)
 - [Engine pool](api/engine-pool.md)
 - [Logging](api/logging.md)
+- [Web APIs (WinterTC subset)](api/web-apis.md)
 
 ### Guides
 
@@ -65,9 +66,10 @@ On push to `main`/`master` (paths under `doc/wiki/**`), CI runs `scripts/sync-wi
 
 ## What this package is not
 
-- A browser or full Web API surface  
+- A browser or a complete Web API surface (no DOM, no `WebAssembly`, no XHR)  
+- A WinterTC-conformant runtime — see [Web APIs](api/web-apis.md) for the subset that is installed  
 - JavaScriptCore on Android (always QuickJS)  
-- A built-in `fetch` / XHR implementation (`xhr: true` is accepted for API compatibility but ignored)  
+- Networked by default: `fetch` exists only when you pass `JsFetchOptions` (`xhr: true` is still ignored)  
 - A security sandbox by itself — you must set limits and control bridges  
 
 ## Links

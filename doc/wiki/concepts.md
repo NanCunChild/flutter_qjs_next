@@ -43,11 +43,12 @@ When a runtime is constructed, `JavascriptRuntime.init()` installs:
 
 | Feature | Role |
 |---------|------|
-| `console.log/warn/error/info` | Forward to `FlutterQjsLogger` via channel `ConsoleLog` |
-| `setTimeout` / `clearTimeout` | Schedule Dart `Timer`s; callbacks run through a **cached** invokable runner |
+| [Web APIs](api/web-apis.md) L0 | `console`, timers, `queueMicrotask`, `performance`, `structuredClone`, `atob`/`btoa`, `DOMException`, `crypto` random values |
+| [Web APIs](api/web-apis.md) L1 / L2 | Off by default: `URL`, streams, `Headers`/`Request`/`Response`, `crypto.subtle`, and `fetch` |
 | `sendMessage(channel, payload)` | Call Dart handlers registered with `onMessage` / `setupBridge` |
 
-These are reinstalled after [`reinitialize()`](api/runtime.md) (pool reset).
+These are reinstalled after [`reinitialize()`](api/runtime.md) and `softReset()` (pool reset).
+Pass `JsWebApis(core: false)` for an engine with no Web APIs at all.
 
 ## Evaluating code
 
@@ -66,7 +67,7 @@ QuickJS Promise reactions and other microtasks sit on a **job queue**.
 
 - By default **`autoExecutePendingJobs` is `true`**: after `evaluate` / `evaluateJson` / `evaluateBytecode` / `callFunction`, the runtime drains pending jobs.
 - You can also call `executePendingJob()` / `executePendingJobs()` yourself.
-- Long-lived async (`setTimeout`, host Futures resolved back into JS) may need `dispatch()` and/or [`handlePromise`](api/promises-and-event-loop.md).
+- Timer and `fetch` callbacks run a microtask checkpoint themselves; host Futures resolved back into JS may still need `dispatch()` and/or [`handlePromise`](api/promises-and-event-loop.md).
 
 Disabling auto-drain is useful when you want explicit control or minimal post-call work.
 
@@ -115,7 +116,7 @@ Ship multi-tenant / high-churn code with the [Production checklist](guides/produ
 `getJavascriptRuntime(forceJavascriptCoreOnAndroid: …, xhr: …)` accepts flutter_js-style arguments but:
 
 - Always uses QuickJS  
-- Does **not** install a built-in XHR/fetch polyfill  
+- Installs `fetch` only when you pass `JsFetchOptions` ([Web APIs](api/web-apis.md)); never XHR  
 
 See [Migration](guides/migration-from-flutter-js.md).
 

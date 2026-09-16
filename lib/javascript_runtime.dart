@@ -1,12 +1,11 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:flutter/foundation.dart';
 
-import 'flutter_qjs_logger.dart';
 import 'js_eval_result.dart';
 import 'quickjs/ffi.dart' show JsMemoryUsage;
+import 'web/web_apis.dart';
 
 export 'quickjs/ffi.dart' show JsMemoryUsage;
 
@@ -87,10 +86,18 @@ abstract class JavascriptRuntime {
   @protected
   JavascriptRuntime init() {
     initChannelFunctions();
-    _setupConsoleLog();
-    _setupSetTimeout();
+    _webApiHost = WebApiHost.install(this, webApis, createWebNatives());
     return this;
   }
+
+  /// Web platform APIs installed by [init] and reinstalled after resets.
+  JsWebApis get webApis => const JsWebApis();
+
+  /// Engine-specific native helpers handed to the Web API layer, or `null`.
+  @protected
+  Object? createWebNatives() => null;
+
+  WebApiHost? _webApiHost;
 
   Map<String, dynamic> localContext = {};
 
@@ -106,7 +113,9 @@ abstract class JavascriptRuntime {
 
   JsEvalResult evaluate(String code, {String? sourceUrl});
 
-  Uint8List compile(String code, String fileName) {
+  /// Compile [code] to bytecode. [stripSource] drops function source text:
+  /// a smaller heap, but `Function.prototype.toString` no longer shows it.
+  Uint8List compile(String code, String fileName, {bool stripSource = false}) {
     throw UnimplementedError();
   }
 
@@ -165,148 +174,26 @@ abstract class JavascriptRuntime {
   /// QuickJS heap usage snapshot, or `null` if unavailable.
   JsMemoryUsage? getMemoryUsage() => null;
 
-  /// Drop native heap and re-run channel / console / setTimeout setup.
+  /// Drop native heap and re-run channel / Web API setup.
   /// Used by [JsEnginePool] when resetting a leased engine. Default is no-op.
   void reinitialize() {}
 
   /// Clear tenant state without destroying the native QuickJS engine.
   ///
-  /// Cancels pending `setTimeout` timers, wipes user globals (including global
+  /// Cancels pending timers and host work, wipes user globals (including global
   /// `var` / `let` / `const` bindings) and host maps, drops custom channels,
-  /// then reinstalls console + setTimeout. Prefer this over
+  /// then reinstalls the Web APIs. Prefer this over
   /// [reinitialize] when isolation is needed but process RSS under churn matters.
   /// Default is no-op; [QuickJsRuntime2] implements a real wipe.
   void softReset() {}
 
   /// Free Dart-side JS refs that must not outlive [close]; call before native free.
+  /// Cancels Web API timers and host work installed by [init].
   @protected
   void releaseHostCaches() {
-    _setTimeoutGeneration++;
-    for (final timer in _setTimeoutTimers) {
-      timer.cancel();
-    }
-    _setTimeoutTimers.clear();
-    _releaseSetTimeoutRunner();
-  }
-
-  static const _setTimeoutRunnerKey = '__setTimeoutRunner';
-  final Set<Timer> _setTimeoutTimers = <Timer>{};
-  int _setTimeoutGeneration = 0;
-
-  void _releaseSetTimeoutRunner() {
-    final runner = localContext.remove(_setTimeoutRunnerKey);
-    if (runner == null) return;
-    try {
-      (runner as dynamic).free();
-    } catch (_) {}
-  }
-
-  dynamic _getSetTimeoutRunner() {
-    final cached = localContext[_setTimeoutRunnerKey];
-    if (cached != null) return cached;
-    final runner = evaluate(r'''
-      (function(i) {
-        var cb = __NATIVE_FLUTTER_JS__setTimeoutCallbacks[i];
-        if (cb) {
-          delete __NATIVE_FLUTTER_JS__setTimeoutCallbacks[i];
-          cb();
-        }
-      })
-    ''').rawResult;
-    localContext[_setTimeoutRunnerKey] = runner;
-    return runner;
-  }
-
-  void _setupConsoleLog() {
-    evaluate("""
-    var console = {
-      log: function() {
-        sendMessage('ConsoleLog', JSON.stringify(['log'].concat(Array.prototype.slice.call(arguments))));
-      },
-      warn: function() {
-        sendMessage('ConsoleLog', JSON.stringify(['warn'].concat(Array.prototype.slice.call(arguments))));
-      },
-      error: function() {
-        sendMessage('ConsoleLog', JSON.stringify(['error'].concat(Array.prototype.slice.call(arguments))));
-      },
-      info: function() {
-        sendMessage('ConsoleLog', JSON.stringify(['info'].concat(Array.prototype.slice.call(arguments))));
-      }
-    }""");
-    onMessage('ConsoleLog', (dynamic args) {
-      if (args is! List || args.isEmpty) return;
-      final level = args[0];
-    final output =
-        args.length < 2 ? '' : args.sublist(1).join(' ');
-      switch (level) {
-        case 'error':
-          FlutterQjsLogger.error(output);
-          break;
-        case 'warn':
-          FlutterQjsLogger.warning(output);
-          break;
-        default:
-          FlutterQjsLogger.info(output);
-      }
-    });
-  }
-
-  void _setupSetTimeout() {
-    evaluate(r"""
-      var __NATIVE_FLUTTER_JS__setTimeoutCount = -1;
-      var __NATIVE_FLUTTER_JS__setTimeoutCallbacks = {};
-      function setTimeout(fnTimeout, timeout) {
-        try {
-          __NATIVE_FLUTTER_JS__setTimeoutCount += 1;
-          var timeoutIndex = __NATIVE_FLUTTER_JS__setTimeoutCount;
-          __NATIVE_FLUTTER_JS__setTimeoutCallbacks[timeoutIndex] = fnTimeout;
-          sendMessage('SetTimeout', JSON.stringify({
-            timeoutIndex: timeoutIndex,
-            timeout: timeout || 0
-          }));
-          return timeoutIndex;
-        } catch (e) {
-          console.error('setTimeout error', e && e.message);
-        }
-      }
-      function clearTimeout(timeoutIndex) {
-        delete __NATIVE_FLUTTER_JS__setTimeoutCallbacks[timeoutIndex];
-      }
-      1
-    """);
-    onMessage('SetTimeout', (dynamic args) {
-      try {
-        if (args is! Map) return;
-        final durationRaw = args['timeout'] ?? 0;
-        final idxRaw = args['timeoutIndex'];
-        final duration =
-            durationRaw is num ? durationRaw.toInt() : int.tryParse('$durationRaw') ?? 0;
-        final idx = idxRaw is num
-            ? idxRaw.toInt()
-            : int.tryParse('$idxRaw');
-        if (idx == null) return;
-
-        final generation = _setTimeoutGeneration;
-        late final Timer timer;
-        timer = Timer(Duration(milliseconds: duration < 0 ? 0 : duration), () {
-          _setTimeoutTimers.remove(timer);
-          if (generation != _setTimeoutGeneration) return;
-          // Cached invokable (see _getSetTimeoutRunner); never free per-fire.
-          try {
-            final runner = _getSetTimeoutRunner();
-            if (runner == null) return;
-            (runner as dynamic).invoke([idx]);
-          } catch (_) {
-            // Engine disposed/reinitialized, or invoke failed.
-          }
-        });
-        _setTimeoutTimers.add(timer);
-      } on Exception catch (e) {
-        FlutterQjsLogger.error('Exception in setTimeout callback', e);
-      } on Error catch (e) {
-        FlutterQjsLogger.error('Error in setTimeout callback', e);
-      }
-    });
+    final host = _webApiHost;
+    _webApiHost = null;
+    host?.dispose();
   }
 
   /// Dart → JS message helper. Prefer not to inject untrusted strings into

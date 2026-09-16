@@ -31,7 +31,7 @@ Still work in the common case:
 | Topic | flutter_qjs_next |
 |-------|------------------|
 | Engine on Android | **Always QuickJS** (`forceJavascriptCoreOnAndroid` ignored) |
-| XHR / fetch | **Not** installed (`xhr` ignored). Polyfill or bridge yourself |
+| XHR / fetch | No XHR ever. `fetch` is available by opting in: `webApis: JsWebApis(fetch: JsFetchOptions(...))` |
 | Default QuickJS heap | **64 MiB per runtime** unless you set `memoryLimit` |
 | Promise jobs | `autoExecutePendingJobs: true` by default |
 | Promise helper | Lightweight `handlePromise` (no 20 ms query poll registry) |

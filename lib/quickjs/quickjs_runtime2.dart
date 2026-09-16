@@ -10,6 +10,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter_qjs_next/flutter_qjs_logger.dart';
 import 'package:flutter_qjs_next/javascript_runtime.dart';
 import 'package:flutter_qjs_next/js_eval_result.dart';
+import 'package:flutter_qjs_next/web/web_apis.dart' show JsWebApis;
 
 import 'ffi.dart';
 
@@ -71,6 +72,10 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   /// Handler function to manage js module.
   final _JsHostPromiseRejectionHandler? hostPromiseRejectionHandler;
 
+  /// Web platform APIs installed into every context. See [JsWebApis].
+  @override
+  final JsWebApis webApis;
+
   QuickJsRuntime2({
     this.moduleHandler,
     this.stackSize = 1024 * 1024,
@@ -78,6 +83,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     int? memoryLimit = kDefaultJsMemoryLimit,
     this.hostPromiseRejectionHandler,
     this.autoExecutePendingJobs = true,
+    this.webApis = const JsWebApis(),
   }) : memoryLimit = normalizeJsMemoryLimit(memoryLimit) {
     this.init();
   }
@@ -208,7 +214,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     return referenceLeak;
   }
 
-  /// Drop native heap + channels and re-run [init] (console, setTimeout, bridges).
+  /// Drop native heap + channels and re-run [init] (bridges, Web APIs).
   /// Used by [JsEnginePool] when [EngineResetMode.hard] / `resetOnRelease: true`.
   @override
   void reinitialize() {
@@ -260,7 +266,7 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     try {
       runGC();
     } catch (_) {}
-    // [init] reinstalls sendMessage / console / setTimeout.
+    // [init] reinstalls sendMessage and the Web APIs.
     init();
     if (referenceLeak != null) throw JSError(referenceLeak);
   }
@@ -337,6 +343,19 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     final rt = _rt;
     if (rt == null || _disposed) return null;
     return jsComputeMemoryUsage(rt);
+  }
+
+  @override
+  Object? createWebNatives() {
+    _ensureEngine();
+    final ctx = _ctx!;
+    final natives = jsNewWebNatives(ctx);
+    try {
+      if (jsIsException(natives) != 0) throw _parseJSException(ctx);
+      return _JSObject(ctx, natives);
+    } finally {
+      jsFreeValue(ctx, natives);
+    }
   }
 
   @override
@@ -432,13 +451,21 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   }
 
   @override
-  Uint8List compile(String script, String fileName) {
+  Uint8List compile(
+    String script,
+    String fileName, {
+    bool stripSource = false,
+  }) {
     _ensureEngine();
     final ctx = _ctx!;
+    final rt = _rt!;
     final scriptPtr = script.toNativeUtf8().cast<Char>();
     final fileNamePtr = fileName.toNativeUtf8().cast<Char>();
     final lengthPtr = calloc<IntPtr>();
+    final stripInfo = jsGetStripInfo(rt);
+    if (stripSource) jsSetStripInfo(rt, stripInfo | jsStripSource);
     final value = compileFn(ctx, scriptPtr, fileNamePtr, lengthPtr);
+    if (stripSource) jsSetStripInfo(rt, stripInfo);
     try {
       if (value.address == 0) {
         throw _parseJSException(ctx);

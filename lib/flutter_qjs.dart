@@ -1,6 +1,7 @@
 import 'package:flutter_qjs_next/javascript_runtime.dart';
 import './quickjs/quickjs_runtime2.dart';
 import './extensions/handle_promises.dart';
+import './web/web_apis.dart';
 
 export './extensions/handle_promises.dart';
 export './quickjs/quickjs_runtime2.dart';
@@ -8,6 +9,13 @@ export 'flutter_qjs_logger.dart';
 export 'javascript_runtime.dart';
 export 'js_engine_pool.dart';
 export 'js_eval_result.dart';
+export 'web/web_apis.dart'
+    show
+        JsFetchHandler,
+        JsFetchOptions,
+        JsFetchRequest,
+        JsFetchResponse,
+        JsWebApis;
 
 /// Creates a [JavascriptRuntime] backed by QuickJS.
 ///
@@ -21,6 +29,8 @@ export 'js_eval_result.dart';
 /// Each runtime is a separate QuickJS engine (own heap, channels, port).
 /// Prefer [JsEnginePool] when many short-lived scripts run in parallel.
 ///
+/// [webApis] selects the Web platform APIs installed into the context.
+///
 /// [forceJavascriptCoreOnAndroid] and [xhr] are kept for flutter_js-compatible
 /// call sites but are ignored (always QuickJS; no built-in XHR).
 JavascriptRuntime getJavascriptRuntime({
@@ -30,6 +40,7 @@ JavascriptRuntime getJavascriptRuntime({
   int stackSize = 1024 * 1024,
   int? timeout,
   int? memoryLimit = kDefaultJsMemoryLimit,
+  JsWebApis webApis = const JsWebApis(),
 }) {
   final resolvedStack = (extraArgs?['stackSize'] as int?) ?? stackSize;
   final resolvedTimeout = (extraArgs?['timeout'] as int?) ?? timeout;
@@ -39,6 +50,7 @@ JavascriptRuntime getJavascriptRuntime({
     stackSize: resolvedStack,
     timeout: resolvedTimeout,
     memoryLimit: resolvedMemory,
+    webApis: webApis,
   );
   runtime.enableHandlePromises();
   return runtime;

@@ -881,7 +881,13 @@ jsFreeCString = _qjsLib
 String jsToCString(Pointer<JSContext> ctx, Pointer<JSValue> val) {
   final ptr = _jsToCString(ctx, val, _cStringLength);
   if (ptr.address == 0) throw Exception('JSValue cannot convert to string');
-  final str = ptr.toDartString(length: _cStringLength.value);
+  final length = _cStringLength.value;
+  final bytes = ptr.cast<Uint8>();
+  // Utf8Decoder silently drops a leading BOM: decode past it and restore it.
+  final str =
+      length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF
+      ? '\uFEFF${(bytes + 3).cast<Utf8>().toDartString(length: length - 3)}'
+      : ptr.toDartString(length: length);
   jsFreeCString(ctx, ptr);
   return str;
 }
@@ -1326,3 +1332,28 @@ jsFree = _qjsLib
       NativeFunction<Void Function(Pointer<JSContext>, Pointer<JSPropertyEnum>)>
     >('jsFree')
     .asFunction();
+
+/// JS_STRIP_SOURCE: drop function source text from compiled code.
+const int jsStripSource = 1 << 0;
+
+/// void jsSetStripInfo(JSRuntime *rt, int32_t flags)
+final void Function(Pointer<JSRuntime> rt, int flags) jsSetStripInfo = _qjsLib
+    .lookup<NativeFunction<Void Function(Pointer<JSRuntime>, Int32)>>(
+      'jsSetStripInfo',
+    )
+    .asFunction();
+
+/// int32_t jsGetStripInfo(JSRuntime *rt)
+final int Function(Pointer<JSRuntime> rt) jsGetStripInfo = _qjsLib
+    .lookup<NativeFunction<Int32 Function(Pointer<JSRuntime>)>>(
+      'jsGetStripInfo',
+    )
+    .asFunction();
+
+/// JSValue *jsNewWebNatives(JSContext *ctx)
+final Pointer<JSValue> Function(Pointer<JSContext> ctx) jsNewWebNatives =
+    _qjsLib
+        .lookup<NativeFunction<Pointer<JSValue> Function(Pointer<JSContext>)>>(
+          'jsNewWebNatives',
+        )
+        .asFunction();

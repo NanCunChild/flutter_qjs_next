@@ -13,6 +13,18 @@ import 'package:flutter_test/flutter_test.dart';
 ///   --dart-define=SOAK_WORKERS=32
 /// ```
 ///
+/// Web API workloads (doc/design/2026-09-16-web-apis-soak.md) select the level
+/// they need automatically:
+///
+/// ```bash
+/// flutter test test/soak_stress_test.dart --timeout none \
+///   --dart-define=SOAK_PROFILE=web_all --dart-define=SOAK_DURATION_SEC=600
+/// ```
+///
+/// Profiles: web_core, web_url, web_encoding, web_blob, web_streams,
+/// web_crypto, web_fetch, web_all, mixed_all. Override the level with
+/// `--dart-define=SOAK_WEB=none|core|web|fetch`.
+///
 /// Other defines: see header in `lib/soak_stress_runner.dart`.
 ///
 /// Do **not** use bare `dart run` — same FFI constraint as benchmarks.

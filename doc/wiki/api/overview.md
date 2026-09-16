@@ -40,7 +40,7 @@ class JsEvalResult {
 | Argument | Behavior in flutter_qjs_next |
 |----------|------------------------------|
 | `forceJavascriptCoreOnAndroid` | Ignored — always QuickJS |
-| `xhr` | Ignored — no built-in XHR/fetch |
+| `xhr` | Ignored — there is no XHR. For `fetch`, pass `webApis: JsWebApis(fetch: JsFetchOptions(...))` ([Web APIs](web-apis.md)) |
 
 ## QuickJS-only features
 

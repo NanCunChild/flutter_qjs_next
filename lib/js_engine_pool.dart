@@ -21,6 +21,9 @@ class JsEnginePoolConfig {
   final int? timeout;
   final int? memoryLimit;
 
+  /// Web platform APIs installed into pooled engines.
+  final JsWebApis webApis;
+
   /// Isolation strategy between leases. Default [EngineResetMode.none].
   final EngineResetMode resetMode;
 
@@ -32,6 +35,7 @@ class JsEnginePoolConfig {
     this.stackSize = 1024 * 1024,
     this.timeout,
     this.memoryLimit = kDefaultJsMemoryLimit,
+    this.webApis = const JsWebApis(),
     EngineResetMode resetMode = EngineResetMode.none,
     bool resetOnRelease = false,
   }) : resetMode = resetOnRelease && resetMode == EngineResetMode.none
@@ -83,6 +87,7 @@ class JsEnginePool {
       stackSize: config.stackSize,
       timeout: config.timeout,
       memoryLimit: config.memoryLimit,
+      webApis: config.webApis,
     );
   }
 

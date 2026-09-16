@@ -26,6 +26,9 @@ final js = getJavascriptRuntime(
 - Treat `memoryLimit` as a per-runtime QuickJS heap budget, not a process RSS
   limit. For multiple engines, account for the aggregate budget and pool
   overhead separately.
+- The Web APIs need heap of their own: about **320 KiB** for the default L0 set
+  and about **1 MiB** with L1 / `fetch`. Engines with a tighter budget should use
+  `JsWebApis(core: false)`.
 - Prefer **`JsEnginePool` with `resetMode: soft` (or `hard` / `resetOnRelease: true`)**
   between tenants — pool default is warm reuse (`none`), which is not multi-tenant safe.
 
@@ -33,13 +36,19 @@ final js = getJavascriptRuntime(
 
 - **Do not** register bridges that expose privileged host operations under names scripts can guess.  
 - Validate and authorize every `onMessage` payload.  
-- There is **no built-in network**: any `fetch`/HTTP requires **your** polyfill or bridge. That is a feature for lockdown — only add what you intend.  
+- **Network is off unless you ask for it.** `fetch` exists only when the runtime is built with
+  `webApis: JsWebApis(fetch: JsFetchOptions(...))`. When you enable it, set `allowUrl` (checked for
+  the first URL **and every redirect hop**), keep `maxResponseBytes` finite, and consider a custom
+  `handler` that routes through your own HTTP stack. See [Web APIs](../api/web-apis.md).
+- The Web API layer itself exposes no host capability: timers, `console`, encoding, `URL`, streams
+  and `crypto.subtle` are pure computation. `JsWebApis(core: false)` removes even those.
 - Module loading (`moduleHandler`) returns source you supply; treat requested module names as untrusted input.
 
 ## What limits do *not* provide
 
 | Control | Does **not** mean |
 |---------|-------------------|
+| `allowUrl` | Protection against a malicious *handler*, DNS rebinding, or SSRF through hosts you allowed |
 | `timeout` | Full fairness under all native callbacks |
 | `memoryLimit` | A cap on Dart heap, Flutter memory, process RSS, or all bridge allocations |
 | Bytecode | Integrity or authenticity of code |
