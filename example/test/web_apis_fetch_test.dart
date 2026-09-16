@@ -84,7 +84,7 @@ void main() {
   QuickJsRuntime2 engine({JsFetchOptions options = const JsFetchOptions()}) {
     final runtime = QuickJsRuntime2(
       timeout: 20000,
-      webApis: JsWebApis(fetch: options),
+      webApis: JsWebApis.standard(fetch: options),
     );
     runtime.evaluate('globalThis.BASE = ${jsonEncode(base)}');
     js = runtime;
@@ -306,7 +306,7 @@ void main() {
   });
 
   test('fetch is absent unless configured', () {
-    final plain = QuickJsRuntime2(webApis: const JsWebApis(web: true));
+    final plain = QuickJsRuntime2(webApis: const JsWebApis.standard());
     addTearDown(plain.dispose);
     expect(plain.evaluate('typeof fetch').rawResult, 'undefined');
     expect(plain.evaluate('typeof Response').rawResult, 'function');

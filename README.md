@@ -81,14 +81,15 @@ library (`URL`, streams, `Headers`/`Request`/`Response`, `crypto.subtle`, …) a
 
 ```dart
 final js = getJavascriptRuntime(
-  webApis: JsWebApis(
-    web: true,
+  webApis: JsWebApis.standard(
     fetch: JsFetchOptions(allowUrl: (url) => url.host == 'api.example.com'),
   ),
 );
 ```
 
-See **[Web APIs](doc/wiki/api/web-apis.md)** for the level list, costs and deviations.
+Or name individual modules — `JsWebApis(modules: {JsWebModule.url})` installs URL
+parsing and nothing else. See **[Web APIs](doc/wiki/api/web-apis.md)** for the
+module list, per-module costs and deviations.
 
 ### Dart ↔ JS bridge
 

@@ -15,7 +15,8 @@ export 'web/web_apis.dart'
         JsFetchOptions,
         JsFetchRequest,
         JsFetchResponse,
-        JsWebApis;
+        JsWebApis,
+        JsWebModule;
 
 /// Creates a [JavascriptRuntime] backed by QuickJS.
 ///

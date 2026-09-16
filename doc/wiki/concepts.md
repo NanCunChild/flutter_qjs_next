@@ -43,12 +43,15 @@ When a runtime is constructed, `JavascriptRuntime.init()` installs:
 
 | Feature | Role |
 |---------|------|
-| [Web APIs](api/web-apis.md) L0 | `console`, timers, `queueMicrotask`, `performance`, `structuredClone`, `atob`/`btoa`, `DOMException`, `crypto` random values |
-| [Web APIs](api/web-apis.md) L1 / L2 | Off by default: `URL`, streams, `Headers`/`Request`/`Response`, `crypto.subtle`, and `fetch` |
+| [Web APIs](api/web-apis.md) `core` | `console`, timers, `queueMicrotask`, `performance`, `structuredClone`, `atob`/`btoa`, `DOMException`, `crypto` random values |
+| [Web APIs](api/web-apis.md) other modules | Off by default: `URL`, encoding, events, streams, `Blob`, `Headers`/`Request`/`Response`, `crypto.subtle`, `navigator`, and `fetch` |
 | `sendMessage(channel, payload)` | Call Dart handlers registered with `onMessage` / `setupBridge` |
 
 These are reinstalled after [`reinitialize()`](api/runtime.md) and `softReset()` (pool reset).
-Pass `JsWebApis(core: false)` for an engine with no Web APIs at all.
+Web APIs are selected per module and installed with their dependency closure:
+`JsWebApis()` installs `core` only, `JsWebApis(modules: {JsWebModule.url})` adds
+URL parsing, `JsWebApis.standard()` installs everything that is pure computation,
+and `JsWebApis.none()` gives an engine with no Web APIs at all.
 
 ## Evaluating code
 

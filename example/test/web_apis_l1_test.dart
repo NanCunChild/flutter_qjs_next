@@ -13,7 +13,7 @@ void main() {
     FlutterQjsLogger.handler = (level, message, error) {
       logs.add((level, message));
     };
-    js = QuickJsRuntime2(timeout: 5000, webApis: const JsWebApis(web: true));
+    js = QuickJsRuntime2(timeout: 5000, webApis: const JsWebApis.standard());
   });
 
   tearDown(() {

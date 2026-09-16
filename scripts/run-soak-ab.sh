@@ -22,7 +22,7 @@ Options:
                       js_to_dart, typed_array
                       Web APIs: web_core, web_url, web_encoding, web_blob,
                       web_streams, web_crypto, web_fetch, web_all, mixed_all
-  --web LEVEL         Web API level: auto (default), none, core, web, fetch
+  --web LEVEL         Web API modules: auto (default), none, core, standard, fetch
                       auto lets each profile pick what it needs
   --full-test         Run every profile (see --profiles) with A/B reset
   --profiles LIST     Comma-separated profiles for --full-test

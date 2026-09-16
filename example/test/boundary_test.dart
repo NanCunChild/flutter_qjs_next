@@ -361,7 +361,7 @@ void main() {
       final runtime = QuickJsRuntime2(
         timeout: 500,
         memoryLimit: 256 * 1024,
-        webApis: const JsWebApis(core: false),
+        webApis: const JsWebApis.none(),
       );
       addTearDown(runtime.dispose);
 

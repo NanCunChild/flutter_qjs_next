@@ -1,6 +1,6 @@
 part of '../web_apis.dart';
 
-/// L1 `crypto.subtle` (SHA digests and HMAC only) plus `navigator`.
+/// `crypto.subtle`: SHA digests and HMAC only.
 ///
 /// Every other algorithm rejects with `NotSupportedError`.
 const String _jsCrypto = r'''
@@ -223,21 +223,7 @@ const String _jsCrypto = r'''
     configurable: true,
   });
 
-  class Navigator {
-    constructor(key = undefined) {
-      if (key !== illegal) throw new TypeError('Illegal constructor');
-    }
-    get userAgent() { return host.userAgent(); }
-    get hardwareConcurrency() { return 1; }
-    get language() { return 'en-US'; }
-    get languages() { return ['en-US']; }
-    get onLine() { return true; }
-  }
-  Object.defineProperty(Navigator.prototype, Symbol.toStringTag, { value: 'Navigator', configurable: true });
-
   define(g, 'SubtleCrypto', SubtleCrypto);
   define(g, 'CryptoKey', CryptoKey);
-  define(g, 'Navigator', Navigator);
-  define(g, 'navigator', new Navigator(illegal));
 })
 ''';

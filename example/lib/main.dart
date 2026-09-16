@@ -40,7 +40,7 @@ class _FlutterJsHomeScreenState extends State<FlutterJsHomeScreen> {
 
   // Web APIs: L1 standard library plus fetch (see JsWebApis / JsFetchOptions).
   final JavascriptRuntime javascriptRuntime = getJavascriptRuntime(
-    webApis: const JsWebApis(fetch: JsFetchOptions()),
+    webApis: const JsWebApis.standard(fetch: JsFetchOptions()),
   );
 
   String? _quickjsVersion;

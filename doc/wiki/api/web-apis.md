@@ -6,47 +6,89 @@ context. It is **not** a WinterTC-conformant runtime: QuickJS has no
 
 Design notes: `doc/design/2026-09-13-web-apis.md`.
 
-## Levels
+## Modules
 
-| Level | Default | What is installed |
-|-------|---------|-------------------|
-| **L0 core** | on | `setTimeout` / `clearTimeout` / `setInterval` / `clearInterval`, `queueMicrotask`, `reportError`, `console`, `performance`, `structuredClone`, `atob` / `btoa`, `DOMException`, `crypto.getRandomValues` / `crypto.randomUUID` |
-| **L1 standard library** | off | `Event` / `CustomEvent` / `EventTarget`, `AbortController` / `AbortSignal`, `TextEncoder` / `TextDecoder`, `URL` / `URLSearchParams`, `Blob` / `File` / `FormData`, `ReadableStream` / `WritableStream` / `TransformStream` + queuing strategies + `TextEncoderStream` / `TextDecoderStream`, `Headers` / `Request` / `Response`, `crypto.subtle`, `navigator` |
-| **L2 network** | off | `fetch` (implies L1) |
+Web APIs are installed per module. You name the modules you want and the runtime
+installs their **dependency closure**, in dependency order. What a module needs
+from another module is the module's business, not yours.
+
+| Module | Requires | Globals |
+|---|---|---|
+| `core` | — | `setTimeout` / `clearTimeout` / `setInterval` / `clearInterval`, `queueMicrotask`, `reportError`, `console`, `performance`, `structuredClone`, `atob` / `btoa`, `DOMException`, `crypto.getRandomValues` / `crypto.randomUUID` |
+| `events` | `core` | `Event`, `CustomEvent`, `EventTarget`, `AbortController`, `AbortSignal` |
+| `encoding` | `core` | `TextEncoder`, `TextDecoder` |
+| `url` | `core` | `URL`, `URLSearchParams` |
+| `crypto` | `core` | `crypto.subtle`, `SubtleCrypto`, `CryptoKey` |
+| `navigator` | `core` | `Navigator`, `navigator` |
+| `streams` | `core`, `events`, `encoding` | `ReadableStream`, `WritableStream`, `TransformStream`, the queuing strategies, `TextEncoderStream`, `TextDecoderStream` |
+| `blob` | `core`, `streams` | `Blob`, `File`, `FormData` |
+| `http` | `core`, `url`, `events`, `streams`, `blob` | `Headers`, `Request`, `Response` |
+| `fetch` | `core`, `http`, `streams` | `fetch` — **needs a capability**, see below |
 
 ```dart
-final js = QuickJsRuntime2(
-  webApis: JsWebApis(
-    web: true,                       // L1
-    fetch: JsFetchOptions(           // L2 (implies L1)
-      allowUrl: (url) => url.host == 'api.example.com',
-      maxResponseBytes: 16 * 1024 * 1024,
-    ),
-    userAgent: 'my-app/1.0',
-  ),
-);
+// Presets.
+const JsWebApis.none();       // nothing at all: plain ECMAScript
+const JsWebApis();            // core only (the default)
+const JsWebApis.standard();   // every pure-computation module
+JsWebApis.standard(fetch: JsFetchOptions(...));
+
+// Or name what you need; dependencies come along.
+const JsWebApis(modules: {JsWebModule.url});   // core + url, 224 KiB
+const JsWebApis(modules: {JsWebModule.http});  // pulls url, events, encoding,
+                                               // streams and blob with it
 ```
 
 `getJavascriptRuntime(webApis: ...)` and `JsEnginePoolConfig(webApis: ...)` take
-the same object. `JsWebApis(core: false)` installs **nothing** (no `console`, no
-timers) for engines that need the smallest possible context.
+the same object. `JsWebApis.resolvedModules` returns the ordered closure and
+`installs(module)` answers whether a module ends up in it.
 
-## Cost per level
+### Capabilities
 
-Measured on Linux x64 (debug build), per engine:
+`fetch` is the only module that reaches outside the JS context, so it is the
+only one that cannot be switched on by itself: it is installed when — and only
+when — you pass the policy object that grants it.
 
-| Level | Engine creation | `softReset()` | JS heap |
-|-------|-----------------|---------------|---------|
-| `core: false` | 0.31 ms | 0.27 ms | 78 KiB |
-| L0 (default) | 1.06 ms | 0.92 ms | 160 KiB |
-| L0 + L1 | 2.97 ms | 2.58 ms | 453 KiB |
-| L0 + L1 + fetch | 2.94 ms | 2.66 ms | 461 KiB |
+```dart
+JsWebApis(modules: {JsWebModule.fetch})              // ArgumentError
+JsWebApis(fetch: JsFetchOptions(...))                // fetch + its closure
+JsWebApis.standard(fetch: JsFetchOptions(...))       // everything
+```
+
+Every other module is pure computation over values already in the heap. Without
+`JsFetchOptions` the engine has no network at all. See
+[Security](../guides/security.md).
+
+## Cost per module
+
+Measured on Linux x64 (debug build), per engine: `heap` is
+`getMemoryUsage().memoryUsedSize` after construction, `own` is what the module
+itself adds on top of its dependencies, and `create` is engine construction
+including the install.
+
+| Modules installed | own | heap | create |
+|---|---|---|---|
+| *(`JsWebApis.none()`)* | — | 77 KiB | 0.22 ms |
+| `core` | 82 KiB | 160 KiB | 0.90 ms |
+| `+ navigator` | 3 KiB | 163 KiB | 0.84 ms |
+| `+ encoding` | 7 KiB | 167 KiB | 0.89 ms |
+| `+ crypto` | 22 KiB | 181 KiB | 0.95 ms |
+| `+ events` | 30 KiB | 190 KiB | 1.04 ms |
+| `+ url` | 64 KiB | 224 KiB | 1.09 ms |
+| `+ events, encoding, streams` | 89 KiB | 286 KiB | 1.45 ms |
+| `+ …, blob` | 23 KiB | 310 KiB | 1.53 ms |
+| `+ …, url, http` | 51 KiB | 425 KiB | 2.10 ms |
+| `JsWebApis.standard()` | — | 451 KiB | 2.28 ms |
+| `JsWebApis.standard(fetch: …)` | 8 KiB | 459 KiB | 2.35 ms |
+
+A context needs roughly **320 KiB** of `memoryLimit` to install `core` and about
+**1 MiB** for the full `standard()` set; below that, construction fails with
+`InternalError: out of memory`. Selecting fewer modules lowers both numbers — a
+URL-only engine is under half the size of a `standard()` one.
 
 Module sources are compiled to bytecode **once per process** (in a scratch
 engine, so the compile peak is not charged to your `memoryLimit`) and then
-evaluated per context. A context with the Web APIs needs roughly **320 KiB** of
-`memoryLimit` for L0 and about **1 MiB** for L1; below that, construction fails
-with `InternalError: out of memory`.
+evaluated per context. A module you never select is never compiled, and its
+source is a `const String` the AOT compiler can drop from the binary.
 
 ## Event loop
 
@@ -113,7 +155,7 @@ network. See [Security](../guides/security.md).
   response rather than an opaque one.
 - **Not implemented**: `WebAssembly`, `CompressionStream` / `DecompressionStream`,
   `URLPattern`, `XMLHttpRequest`, `WebSocket`.
-- **`IsolateQjs`** installs L0 only.
+- **`IsolateQjs`** installs `core` only.
 
 Behaviour is verified against Node.js 24 by the differential tests in
 `example/test/web_apis_*_test.dart`. Where Node itself deviates from the spec

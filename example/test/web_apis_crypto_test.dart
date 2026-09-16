@@ -17,7 +17,7 @@ void main() {
   late QuickJsRuntime2 js;
 
   setUp(() {
-    js = QuickJsRuntime2(timeout: 20000, webApis: const JsWebApis(web: true));
+    js = QuickJsRuntime2(timeout: 20000, webApis: const JsWebApis.standard());
   });
   tearDown(() => js.dispose());
 
@@ -65,7 +65,7 @@ void main() {
   test('navigator reports the configured user agent', () {
     expect(js.evaluate('navigator.userAgent').rawResult, 'flutter_qjs_next');
     final custom = QuickJsRuntime2(
-      webApis: const JsWebApis(web: true, userAgent: 'my-app/2.0'),
+      webApis: const JsWebApis.standard(userAgent: 'my-app/2.0'),
     );
     addTearDown(custom.dispose);
     expect(custom.evaluate('navigator.userAgent').rawResult, 'my-app/2.0');

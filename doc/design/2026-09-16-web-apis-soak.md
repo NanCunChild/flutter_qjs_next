@@ -1,7 +1,9 @@
 # Web API soak 实验设计
 
 日期：2026-09-16
-被测对象：`doc/design/2026-09-13-web-apis.md` 引入的 L0 / L1 / L2。
+被测对象：`doc/design/2026-09-13-web-apis.md` 引入的 Web API 模块。
+术语说明：本文写于模块制改造（2026-09-17）之前，表格里的 L0 / L0+L1 分别对应今天的
+`JsWebApis()`（只装 `core`）与 `JsWebApis.standard()`；`SOAK_WEB=web` 已更名为 `standard`。
 承载框架：`example/lib/soak_stress_runner.dart`（复用池压力、指标采样、失败 dump、A/B 脚本）。
 
 ## 1. 为什么单独设计一次
@@ -142,7 +144,7 @@ JS 堆、Dart 句柄表、文件描述符都没有泄漏。
 
 | 生命周期操作 | 每次保留 |
 |---|---|
-| 创建+销毁（`core: false`，完全不装 Web API） | 1.9 KB |
+| 创建+销毁（`JsWebApis.none()`，完全不装 Web API） | 1.9 KB |
 | 创建+销毁（L0） | 2.6 KB |
 | 创建+销毁（L0+L1） | 4.6 KB |
 | `reinitialize`（L0） | 1.0 KB |
@@ -176,4 +178,4 @@ JS 堆、Dart 句柄表、文件描述符都没有泄漏。
 - 第 8 节第 2 条的碎片假设未做直接验证（需要 `malloc_trim` 或换分配器做对照实验）。
 - 多 isolate 并发（沿用现有 soak 的限制）。
 - 真实网络与 TLS（本地 server 是明文 HTTP）。
-- `IsolateQjs`（只装 L0，不在本实验范围）。
+- `IsolateQjs`（只装 `core`，不在本实验范围）。

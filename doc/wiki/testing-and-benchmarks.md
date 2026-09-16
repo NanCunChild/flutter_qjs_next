@@ -56,7 +56,7 @@ flutter test test/soak_stress_test.dart --timeout none \
   --dart-define=SOAK_COOLDOWN_SEC=90
 ```
 
-Extra knobs: `SOAK_WEB` (none/core/web/fetch), `SOAK_COOLDOWN_SEC`,
+Extra knobs: `SOAK_WEB` (none/core/standard/fetch), `SOAK_COOLDOWN_SEC`,
 `SOAK_FETCH_STUB=1` (replace the network with an in-process stub),
 `SOAK_MAX_FD_GROWTH`, `SOAK_MAX_DART_REFS`, `SOAK_MAX_ENGINE_HEAP_MB`.
 

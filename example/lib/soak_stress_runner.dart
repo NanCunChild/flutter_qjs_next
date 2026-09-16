@@ -83,7 +83,7 @@ import 'package:flutter_qjs_next/flutter_qjs.dart';
 //   --dart-define=SOAK_DUMP_DIR=soak_dumps
 //   --dart-define=SOAK_SEED=1
 //   --dart-define=SOAK_PROFILE=all
-//   --dart-define=SOAK_WEB=core|none|web|fetch
+//   --dart-define=SOAK_WEB=core|none|standard|fetch
 //   --dart-define=SOAK_MAX_FD_GROWTH=128
 //   --dart-define=SOAK_MAX_DART_REFS=512
 //   --dart-define=SOAK_MAX_ENGINE_HEAP_MB=16
@@ -180,10 +180,10 @@ class SoakStressConfig {
   final Duration cooldown;
 
   JsWebApis get webApis => switch (webApiLevel) {
-    'none' => const JsWebApis(core: false),
+    'none' => const JsWebApis.none(),
     'core' => const JsWebApis(),
-    'web' => const JsWebApis(web: true),
-    'fetch' => JsWebApis(
+    'standard' => const JsWebApis.standard(),
+    'fetch' => JsWebApis.standard(
       fetch: fetchStub
           ? JsFetchOptions(handler: _stubFetch)
           : const JsFetchOptions(),
@@ -191,11 +191,12 @@ class SoakStressConfig {
     _ => throw ArgumentError.value(
       webApiLevel,
       'SOAK_WEB',
-      'expected none, core, web, or fetch',
+      'expected none, core, standard, or fetch',
     ),
   };
 
-  bool get webEnabled => webApiLevel == 'web' || webApiLevel == 'fetch';
+  bool get webEnabled =>
+      webApiLevel == 'standard' || webApiLevel == 'fetch';
   bool get fetchEnabled => webApiLevel == 'fetch';
 
   /// Hint printed in dumps for operators (not executed).
@@ -268,7 +269,7 @@ class SoakStressConfig {
   static String _resolveWebLevel(String explicit, String profile) {
     if (explicit.isNotEmpty) return explicit;
     if (_fetchProfiles.contains(profile)) return 'fetch';
-    if (profile.startsWith('web_')) return 'web';
+    if (profile.startsWith('web_')) return 'standard';
     return 'core';
   }
 
@@ -412,7 +413,7 @@ Future<SoakStressResult> runSoakStress({
     throw ArgumentError.value(
       cfg.webApiLevel,
       'SOAK_WEB',
-      'profile ${cfg.workloadProfile} needs SOAK_WEB=web or fetch',
+      'profile ${cfg.workloadProfile} needs SOAK_WEB=standard or fetch',
     );
   }
   if (SoakStressConfig._fetchProfiles.contains(cfg.workloadProfile) &&

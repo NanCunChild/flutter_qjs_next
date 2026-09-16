@@ -120,7 +120,7 @@ void main() {
   late QuickJsRuntime2 js;
 
   setUp(() {
-    js = QuickJsRuntime2(timeout: 5000, webApis: const JsWebApis(web: true));
+    js = QuickJsRuntime2(timeout: 5000, webApis: const JsWebApis.standard());
   });
   tearDown(() => js.dispose());
 

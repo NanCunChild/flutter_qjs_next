@@ -38,8 +38,11 @@ class WebApiHost {
   }
 
   void _install(Object? natives) {
-    if (!config.core) return;
-    final core = _load('core', _jsCore);
+    final order = config.resolvedModules;
+    if (order.isEmpty) return;
+
+    // Every module requires `core`, so the closure puts it first.
+    final core = _load(JsWebModule.core);
     final Map<String, JSInvokable> exports;
     try {
       exports = _retain(core.invoke([natives, _coreHost()]));
@@ -47,44 +50,64 @@ class WebApiHost {
       core.free();
     }
     _fireTimer = exports['fire'];
-    if (!config.installsWeb) return;
     final install = exports['install']!;
-    _installModule(install, 'events', _jsEvents, const {});
-    _installModule(install, 'encoding', _jsEncoding, const {});
-    _installModule(install, 'url', _jsUrl, const {});
-    _installModule(install, 'streams', _jsStreams, const {});
-    _installModule(install, 'blob', _jsBlob, const {});
-    _installModule(install, 'http', _jsHttp, const {});
-    _installModule(install, 'crypto', _jsCrypto, {
-      'digest': _digest,
-      'hmac': _hmac,
-      'userAgent': () => config.userAgent,
-    });
-    final fetchOptions = config.fetch;
-    if (fetchOptions == null) return;
-    final fetchHost = _FetchHost(this, fetchOptions, config.userAgent);
-    _fetch = fetchHost;
-    fetchHost.bind(
-      _installModule(install, 'fetch', _jsFetch, fetchHost.hostFunctions()),
-    );
-  }
 
-  Map<String, JSInvokable> _installModule(
-    JSInvokable install,
-    String name,
-    String source,
-    Map<String, Function> moduleHost,
-  ) {
-    final module = _load(name, source);
-    try {
-      return _retain(install.invoke([module, moduleHost]));
-    } finally {
-      module.free();
+    for (final module in order.skip(1)) {
+      _installModule(install, module);
     }
   }
 
-  JSInvokable _load(String name, String source) {
-    final bytecode = _bytecode[name] ??= _compile(name, source);
+  /// Host functions a module needs, and the wiring for modules that own host
+  /// state. Pure modules get an empty object.
+  Map<String, JSInvokable> _installModule(
+    JSInvokable install,
+    JsWebModule module,
+  ) {
+    if (identical(module, JsWebModule.crypto)) {
+      return _invokeModule(install, module, {'digest': _digest, 'hmac': _hmac});
+    }
+    if (identical(module, JsWebModule.navigator)) {
+      return _invokeModule(install, module, {
+        'userAgent': () => config.userAgent,
+      });
+    }
+    if (identical(module, JsWebModule.fetch)) {
+      final options = config.fetch;
+      if (options == null) {
+        throw ArgumentError.value(
+          module,
+          'modules',
+          'JsWebModule.fetch grants the "${module.capability}" capability and '
+              'needs JsFetchOptions; pass JsWebApis(fetch: ...)',
+        );
+      }
+      final fetchHost = _FetchHost(this, options, config.userAgent);
+      _fetch = fetchHost;
+      final exports = _invokeModule(install, module, fetchHost.hostFunctions());
+      fetchHost.bind(exports);
+      return exports;
+    }
+    return _invokeModule(install, module, const {});
+  }
+
+  Map<String, JSInvokable> _invokeModule(
+    JSInvokable install,
+    JsWebModule module,
+    Map<String, Function> moduleHost,
+  ) {
+    final source = _load(module);
+    try {
+      return _retain(install.invoke([source, moduleHost]));
+    } finally {
+      source.free();
+    }
+  }
+
+  JSInvokable _load(JsWebModule module) {
+    final bytecode = _bytecode[module.name] ??= _compile(
+      module.name,
+      module._source,
+    );
     final result = _runtime.evaluateBytecode(bytecode);
     if (result.isError) throw result.rawResult as Object;
     return result.rawResult as JSInvokable;
@@ -96,7 +119,7 @@ class WebApiHost {
   static Uint8List _compile(String name, String source) {
     final scratch = QuickJsRuntime2(
       memoryLimit: 0,
-      webApis: const JsWebApis(core: false),
+      webApis: const JsWebApis.none(),
     );
     try {
       return scratch.compile(source, 'web:$name', stripSource: true);

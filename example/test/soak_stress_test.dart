@@ -23,7 +23,7 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// Profiles: web_core, web_url, web_encoding, web_blob, web_streams,
 /// web_crypto, web_fetch, web_all, mixed_all. Override the level with
-/// `--dart-define=SOAK_WEB=none|core|web|fetch`.
+/// `--dart-define=SOAK_WEB=none|core|standard|fetch`.
 ///
 /// Other defines: see header in `lib/soak_stress_runner.dart`.
 ///
