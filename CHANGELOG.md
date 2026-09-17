@@ -1,4 +1,4 @@
-## Unreleased
+## 1.4.0
 
 * **Feat:** `JsModuleBundle` — compile an ES module graph to bytecode once and register it in a context, so imports resolve locally instead of through the module loader. `IsolateQjs(bundle: ...)` ships the bundle with the spawn message and `evaluateBundleEntry()` runs it, which removes the per-module cross-isolate round trip (the worker used to park in 1 ms `sleep` steps while the spawning isolate resolved each module) and the per-load parse. `IsolateQjs(moduleSources: {...})` is the same round-trip-free path without precompiling.
 * **Feat:** `JavascriptRuntime.compile(..., asModule: true)` and `registerModuleBytecode(bytecode, resolve: false)`.
