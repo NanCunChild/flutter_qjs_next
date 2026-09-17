@@ -10,6 +10,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter_qjs_next/flutter_qjs_logger.dart';
 import 'package:flutter_qjs_next/javascript_runtime.dart';
 import 'package:flutter_qjs_next/js_eval_result.dart';
+import 'package:flutter_qjs_next/js_module_bundle.dart';
 import 'package:flutter_qjs_next/web/web_apis.dart' show JsWebApis;
 
 import 'ffi.dart';
