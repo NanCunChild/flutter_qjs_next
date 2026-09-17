@@ -1134,9 +1134,25 @@ Future<HttpServer> _startSoakServer() async {
             await response.flush();
           }
         case 'slow':
-          for (var i = 0; i < 20; i++) {
+          // fetchAbort / fetchAbandoned cut this response off on purpose.
+          // Writing to a peer that went away neither fails nor completes, so
+          // without watching `done` (and bounding `flush`) every aborted
+          // request leaves a handler parked here for the rest of the run —
+          // which is what made web_fetch look like an engine leak.
+          var connected = true;
+          unawaited(
+            response.done.then(
+              (_) => connected = false,
+              onError: (Object _) => connected = false,
+            ),
+          );
+          for (var i = 0; i < 20 && connected; i++) {
             response.write('tick;');
-            await response.flush();
+            final flushed = await response
+                .flush()
+                .timeout(const Duration(milliseconds: 500))
+                .then((_) => true, onError: (Object _) => false);
+            if (!flushed) break;
             await Future<void>.delayed(const Duration(milliseconds: 25));
           }
         case 'echo':
@@ -1169,7 +1185,7 @@ Future<HttpServer> _startSoakServer() async {
       // Client aborted mid-response; the JS side asserts its own outcome.
     } finally {
       try {
-        await response.close();
+        await response.close().timeout(const Duration(seconds: 1));
       } catch (_) {}
     }
   });
