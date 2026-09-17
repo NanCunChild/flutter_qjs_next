@@ -270,7 +270,31 @@ class SoakStressConfig {
     if (explicit.isNotEmpty) return explicit;
     if (_fetchProfiles.contains(profile)) return 'fetch';
     if (profile.startsWith('web_')) return 'standard';
+    if (profile.startsWith(_singleOpPrefix)) {
+      final kind = _singleOp(profile);
+      if (_fetchOps.contains(kind)) return 'fetch';
+      if (_webCoreOps.contains(kind) || kind.name.startsWith('web')) {
+        return 'standard';
+      }
+    }
     return 'core';
+  }
+
+  /// `SOAK_PROFILE=op:<name>` pins the workload to one [_OpKind], which is how
+  /// a profile-level regression gets narrowed to a single operation.
+  static const _singleOpPrefix = 'op:';
+
+  static _OpKind _singleOp(String profile) {
+    final name = profile.substring(_singleOpPrefix.length);
+    for (final kind in _OpKind.values) {
+      if (kind.name == name) return kind;
+    }
+    throw ArgumentError.value(
+      profile,
+      'SOAK_PROFILE',
+      'unknown op name "$name"; expected one of '
+          '${_OpKind.values.map((k) => k.name).join(', ')}',
+    );
   }
 
   static const _fetchProfiles = {'web_fetch', 'web_all', 'mixed_all'};
@@ -415,6 +439,10 @@ Future<SoakStressResult> runSoakStress({
       'SOAK_WEB',
       'profile ${cfg.workloadProfile} needs SOAK_WEB=standard or fetch',
     );
+  }
+  if (cfg.workloadProfile.startsWith(SoakStressConfig._singleOpPrefix)) {
+    // Validates the name and, with it, the level implied above.
+    SoakStressConfig._singleOp(cfg.workloadProfile);
   }
   if (SoakStressConfig._fetchProfiles.contains(cfg.workloadProfile) &&
       !cfg.fetchEnabled) {
@@ -767,6 +795,9 @@ int _rss() {
 }
 
 _OpKind _pickOp(Random rng, String profile) {
+  if (profile.startsWith(SoakStressConfig._singleOpPrefix)) {
+    return SoakStressConfig._singleOp(profile);
+  }
   switch (profile) {
     case 'tiny':
       return _OpKind.evaluateTiny;
@@ -815,7 +846,8 @@ _OpKind _pickOp(Random rng, String profile) {
         'SOAK_PROFILE',
         'expected all, tiny, no_typed_array, dart_to_js, js_to_dart, '
             'typed_array, web_core, web_url, web_encoding, web_blob, '
-            'web_streams, web_crypto, web_fetch, web_all, or mixed_all',
+            'web_streams, web_crypto, web_fetch, web_all, mixed_all, '
+            'or op:<opName>',
       );
   }
   final r = rng.nextInt(100);
