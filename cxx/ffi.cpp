@@ -477,7 +477,13 @@ extern "C"
 
   DLLEXPORT uint8_t *jsGetArrayBuffer(JSContext *ctx, size_t *psize, JSValueConst *obj)
   {
-    return JS_GetArrayBuffer(ctx, psize, *obj);
+    uint8_t *ptr = JS_GetArrayBuffer(ctx, psize, *obj);
+    /* The host uses this as a probe on every object, and QuickJS reports "not
+       an ArrayBuffer" by throwing. Drop that exception so it cannot resurface
+       later as a bogus failure of an unrelated call. */
+    if (ptr == NULL)
+      JS_FreeValue(ctx, JS_GetException(ctx));
+    return ptr;
   }
 
   // Create a JS TypedArray of `type` (JSTypedArrayEnum) from a raw byte buffer.
@@ -564,6 +570,9 @@ extern "C"
     if (JS_IsException(buffer))
     {
       JS_FreeValue(ctx, buffer);
+      /* "not a TypedArray" is how this probe says no. Leaving it pending would
+         make the *next* unrelated exception check in the host report it. */
+      JS_FreeValue(ctx, JS_GetException(ctx));
       return NULL;
     }
     // DataView also succeeds; we only want typed arrays with a known enum.
@@ -571,6 +580,7 @@ extern "C"
     if (type < 0)
     {
       JS_FreeValue(ctx, buffer);
+      JS_FreeValue(ctx, JS_GetException(ctx));
       return NULL;
     }
     size_t buf_size = 0;
