@@ -344,6 +344,82 @@ final void Function(Pointer<JSRuntime>) jsRunGC = _qjsLib
     .lookup<NativeFunction<Void Function(Pointer<JSRuntime>)>>('jsRunGC')
     .asFunction();
 
+final int Function() _jsTrimNativeHeap = _qjsLib
+    .lookup<NativeFunction<Int32 Function()>>('jsTrimNativeHeap')
+    .asFunction();
+
+/// Ask the C allocator to return free pages to the OS, and report whether it
+/// released anything. Unsupported allocators return `false`.
+///
+/// Churning QuickJS engines (`dispose`, [JavascriptRuntime.reinitialize]) frees
+/// thousands of small blocks whose pages the allocator keeps for reuse, so
+/// process RSS stays high while the live heap is tiny. This is the lever for
+/// giving those pages back; see `doc/wiki/guides/soak-rss-analysis.md`.
+bool trimNativeHeap() => _jsTrimNativeHeap() != 0;
+
+final void Function(Pointer<Int64>, int) _jsNativeHeapUsage = _qjsLib
+    .lookup<NativeFunction<Void Function(Pointer<Int64>, Int32)>>(
+      'jsNativeHeapUsage',
+    )
+    .asFunction();
+
+/// C heap accounting: what the allocator holds vs what is actually live.
+///
+/// A growing [arenaBytes] with a flat [inUseBytes] is allocator residency or
+/// fragmentation, not a leak. All fields are 0 where the platform allocator has
+/// no equivalent (currently: everything but glibc ≥ 2.33).
+class NativeHeapUsage {
+  const NativeHeapUsage({
+    required this.arenaBytes,
+    required this.inUseBytes,
+    required this.freeBytes,
+    required this.mmappedBytes,
+  });
+
+  /// Total bytes the allocator obtained from the OS for its main arena.
+  final int arenaBytes;
+
+  /// Bytes handed out and not yet freed.
+  final int inUseBytes;
+
+  /// Bytes free inside the arena — held by the process, unused by the program.
+  final int freeBytes;
+
+  /// Bytes in blocks the allocator mapped separately (returned to the OS on
+  /// free, so they do not accumulate).
+  final int mmappedBytes;
+
+  bool get isSupported => arenaBytes != 0 || mmappedBytes != 0;
+
+  Map<String, int> toJson() => <String, int>{
+    'arena': arenaBytes,
+    'inUse': inUseBytes,
+    'free': freeBytes,
+    'mmapped': mmappedBytes,
+  };
+
+  @override
+  String toString() =>
+      'NativeHeapUsage(arena=$arenaBytes, inUse=$inUseBytes, '
+      'free=$freeBytes, mmapped=$mmappedBytes)';
+}
+
+/// Snapshot of [NativeHeapUsage] for the whole process.
+NativeHeapUsage readNativeHeapUsage() {
+  final out = calloc<Int64>(4);
+  try {
+    _jsNativeHeapUsage(out, 4);
+    return NativeHeapUsage(
+      arenaBytes: out[0],
+      inUseBytes: out[1],
+      freeBytes: out[2],
+      mmappedBytes: out[3],
+    );
+  } finally {
+    calloc.free(out);
+  }
+}
+
 /// DLLEXPORT void jsComputeMemoryUsage(JSRuntime *rt, int64_t *out, int32_t n)
 final void Function(Pointer<JSRuntime>, Pointer<Int64>, int)
 _jsComputeMemoryUsage = _qjsLib

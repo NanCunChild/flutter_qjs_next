@@ -46,6 +46,17 @@ extern "C" {
 
   DLLEXPORT void jsRunGC(JSRuntime *rt);
 
+  /* Ask the C allocator to return free pages to the OS. QuickJS heaps are made
+     of many small blocks, so churning engines leaves the process holding pages
+     that hold almost nothing. Returns 1 if memory was released, 0 if the
+     platform allocator has no equivalent. */
+  DLLEXPORT int32_t jsTrimNativeHeap(void);
+
+  /* C heap accounting, for telling a real leak apart from allocator residency:
+     out[0] arena bytes, out[1] in use, out[2] free inside the arena,
+     out[3] mmapped. Zero where the platform has no equivalent (n must be >= 4). */
+  DLLEXPORT void jsNativeHeapUsage(int64_t *out, int32_t n);
+
   /* Fills *out with JS_ComputeMemoryUsage fields (malloc_size, memory_used_size, …). */
   DLLEXPORT void jsComputeMemoryUsage(JSRuntime *rt, int64_t *out, int32_t n);
 

@@ -14,6 +14,13 @@
 #include <string.h>
 #include <time.h>
 
+#if defined(__GLIBC__) || defined(__ANDROID__)
+#include <malloc.h>
+#endif
+#if defined(__APPLE__)
+#include <malloc/malloc.h>
+#endif
+
 #if defined(_WIN32)
 #include <windows.h>
 #endif
@@ -247,6 +254,36 @@ extern "C"
   DLLEXPORT void jsRunGC(JSRuntime *rt)
   {
     JS_RunGC(rt);
+  }
+
+  DLLEXPORT int32_t jsTrimNativeHeap(void)
+  {
+#if defined(__GLIBC__)
+    return malloc_trim(0) ? 1 : 0;
+#elif defined(__ANDROID__)
+    return mallopt(M_PURGE, 0) ? 1 : 0;
+#elif defined(__APPLE__)
+    malloc_zone_pressure_relief(NULL, 0);
+    return 1;
+#else
+    return 0;
+#endif
+  }
+
+  DLLEXPORT void jsNativeHeapUsage(int64_t *out, int32_t n)
+  {
+    if (!out || n < 4)
+      return;
+    out[0] = out[1] = out[2] = out[3] = 0;
+#if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if __GLIBC_PREREQ(2, 33)
+    struct mallinfo2 info = mallinfo2();
+    out[0] = (int64_t)info.arena;
+    out[1] = (int64_t)info.uordblks;
+    out[2] = (int64_t)info.fordblks;
+    out[3] = (int64_t)info.hblkhd;
+#endif
+#endif
   }
 
   /* out[0..]: malloc_size, malloc_limit, memory_used_size, malloc_count,

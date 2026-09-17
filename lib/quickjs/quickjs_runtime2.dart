@@ -20,7 +20,10 @@ export 'ffi.dart'
         JSRef,
         JSTypedArrayType,
         JsTypedArrayTransfer,
-        readBridgeStats;
+        NativeHeapUsage,
+        readBridgeStats,
+        readNativeHeapUsage,
+        trimNativeHeap;
 
 part 'isolate.dart';
 part 'object.dart';
