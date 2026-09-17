@@ -110,9 +110,14 @@ void _runJsIsolate(Map spawnMessage) async {
   SendPort sendPort = spawnMessage[#port];
   ReceivePort port = ReceivePort();
   sendPort.send(port.sendPort);
-  // Module loader is sync in QuickJS; host resolution is async on another
-  // isolate. Reply is a native source string pointer written into [slot]
-  // (0 = pending, -1 = error). Worker parks with 1ms sleeps (not 1µs spin).
+  // Sources the worker can resolve on its own. Anything found here costs no
+  // isolate round trip, which is the whole point of [IsolateQjs.moduleSources]
+  // and [IsolateQjs.bundle].
+  final Map<String, String> localSources =
+      (spawnMessage[#moduleSources] as Map?)?.cast<String, String>() ??
+      const {};
+  final bundleBytes = spawnMessage[#bundle] as Uint8List?;
+  final hasRemoteHandler = spawnMessage[#hasModuleHandler] == true;
   final qjs = QuickJsRuntime2(
     stackSize: spawnMessage[#stackSize] ?? 1024 * 1024,
     timeout: spawnMessage[#timeout],
@@ -124,6 +129,14 @@ void _runJsIsolate(Map spawnMessage) async {
       });
     },
     moduleHandler: (name) {
+      final local = localSources[name];
+      if (local != null) return local;
+      if (!hasRemoteHandler) throw JSError('Module Not found: $name');
+      // Fallback: QuickJS's module loader is synchronous, but host resolution
+      // lives on another isolate. The reply is a native source string pointer
+      // written into [slot] (0 = pending, -1 = error) and the worker parks with
+      // 1ms sleeps. Every module costs at least one such round trip, so prefer
+      // [IsolateQjs.bundle] / [IsolateQjs.moduleSources] for known graphs.
       final slot = calloc<IntPtr>();
       slot.value = 0;
       sendPort.send({#type: #module, #name: name, #slot: slot.address});
@@ -132,35 +145,41 @@ void _runJsIsolate(Map spawnMessage) async {
       }
       final addr = slot.value;
       calloc.free(slot);
-      if (addr == -1) throw JSError('Module Not found');
+      if (addr == -1) throw JSError('Module Not found: $name');
       final ret = Pointer<Utf8>.fromAddress(addr);
       final retString = ret.toDartString();
       malloc.free(ret);
       return retString;
     },
   );
+  // Registering the bundle up front means every `import` in it resolves inside
+  // the worker's own context; the module loader above is never reached.
+  final bundle = bundleBytes == null
+      ? null
+      : JsModuleBundle.fromBytes(bundleBytes);
+  bundle?.install(qjs);
   port.listen((msg) async {
     dynamic data;
     SendPort? msgPort = msg[#port];
     try {
+      // Host function channel: bind provided Dart closures onto globalThis
+      // before evaluating. Each is an IsolateFunction routed back to the
+      // spawning isolate; returning a Future yields a JS Promise (via
+      // _dartToJs). Inject-once semantics: only the message that carries
+      // #functions binds them; persists across later evaluates on the same
+      // engine.
+      final encodedFns = msg[#functions];
+      if (encodedFns != null) {
+        final fns = _decodeData(encodedFns) as Map;
+        final setter = qjs.evaluate('(k,v)=>{globalThis[k]=v;}').rawResult;
+        try {
+          fns.forEach((k, v) => (setter as JSInvokable).invoke([k, v]));
+        } finally {
+          if (setter is JSRef) setter.free();
+        }
+      }
       switch (msg[#type]) {
         case #evaluate:
-          // Host function channel: bind provided Dart closures onto globalThis
-          // before evaluating. Each is an IsolateFunction routed back to the
-          // spawning isolate; returning a Future yields a JS Promise (via
-          // _dartToJs). Inject-once semantics: only the message that carries
-          // #functions binds them; persists across later evaluates on the same
-          // engine.
-          final encodedFns = msg[#functions];
-          if (encodedFns != null) {
-            final fns = _decodeData(encodedFns) as Map;
-            final setter = qjs.evaluate('(k,v)=>{globalThis[k]=v;}').rawResult;
-            try {
-              fns.forEach((k, v) => (setter as JSInvokable).invoke([k, v]));
-            } finally {
-              if (setter is JSRef) setter.free();
-            }
-          }
           // QuickJsRuntime2.evaluate wraps the result in a JsEvalResult and
           // reports errors via isError instead of throwing. Unwrap here so the
           // error travels back through the #error channel and Promises resolve
@@ -170,6 +189,12 @@ void _runJsIsolate(Map spawnMessage) async {
             name: msg[#name],
             evalFlags: msg[#flag],
           );
+          if (r.isError) throw r.rawResult;
+          data = await r.rawResult;
+          break;
+        case #evaluateBundleEntry:
+          if (bundle == null) throw JSError('IsolateQjs has no module bundle');
+          final r = qjs.evaluateBytecode(bundle.modules[bundle.entry]!);
           if (r.isError) throw r.rawResult;
           data = await r.rawResult;
           break;
@@ -204,7 +229,23 @@ class IsolateQjs {
   final int? memoryLimit;
 
   /// Asynchronously handler to manage js module.
+  ///
+  /// QuickJS resolves imports synchronously, so every module this handler
+  /// serves costs a round trip to the spawning isolate while the worker is
+  /// parked. Prefer [bundle] (or [moduleSources]) whenever the import graph is
+  /// known up front; keep this handler for genuinely dynamic resolution.
   final _JsAsyncModuleHandler? moduleHandler;
+
+  /// Modules compiled to bytecode ahead of time. They are registered in the
+  /// worker's context before the first [evaluate], so imports of their names
+  /// resolve locally: no [moduleHandler] round trip, no parked worker, and no
+  /// per-module parse cost at runtime.
+  final JsModuleBundle? bundle;
+
+  /// Module sources the worker resolves on its own, as a fallback for graphs
+  /// that are known but not precompiled. Cheaper than [moduleHandler] (no round
+  /// trip) but still parses on every load; [bundle] is the faster option.
+  final Map<String, String>? moduleSources;
 
   /// Handler function to manage js module.
   final _JsHostPromiseRejectionHandler? hostPromiseRejectionHandler;
@@ -222,6 +263,8 @@ class IsolateQjs {
   /// used in isolate, so **the handler function must be a top-level function or a static method**.
   IsolateQjs({
     this.moduleHandler,
+    this.bundle,
+    this.moduleSources,
     this.stackSize,
     this.timeout,
     this.memoryLimit,
@@ -257,6 +300,9 @@ class IsolateQjs {
       #stackSize: stackSize,
       #timeout: timeout,
       #memoryLimit: memoryLimit,
+      #bundle: bundle?.toBytes(),
+      #moduleSources: moduleSources,
+      #hasModuleHandler: moduleHandler != null,
     }, errorsAreFatal: true);
     final completer = Completer<SendPort>();
     port.listen(
@@ -346,6 +392,35 @@ class IsolateQjs {
     };
     // Inject host functions once, on the first evaluate that follows
     // setHostFunctions. Encoded as IsolateFunction refs (id + handle port).
+    if (_hostFunctions.isNotEmpty && !_hostFunctionsBound) {
+      msg[#functions] = _encodeData(_hostFunctions);
+      _hostFunctionsBound = true;
+    }
+    sendPort.send(msg);
+    final result = await evaluatePort.first;
+    evaluatePort.close();
+    if (result is Map && result.containsKey(#error)) {
+      throw _decodeData(result[#error]);
+    }
+    return _decodeData(result);
+  }
+
+  /// Evaluate the entry module of [bundle] in the worker.
+  ///
+  /// The whole graph is already compiled and registered, so this runs the entry
+  /// without parsing anything and without a single module round trip. Throws a
+  /// [JSError] when the instance was built without a bundle.
+  Future<dynamic> evaluateBundleEntry() async {
+    if (bundle == null) {
+      throw JSError('IsolateQjs was created without a module bundle');
+    }
+    _ensureEngine();
+    final evaluatePort = ReceivePort();
+    final sendPort = await _sendPort!;
+    final msg = {
+      #type: #evaluateBundleEntry,
+      #port: evaluatePort.sendPort,
+    };
     if (_hostFunctions.isNotEmpty && !_hostFunctionsBound) {
       msg[#functions] = _encodeData(_hostFunctions);
       _hostFunctionsBound = true;

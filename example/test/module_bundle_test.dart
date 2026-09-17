@@ -102,4 +102,52 @@ void main() {
       throwsA(isA<FormatException>()),
     );
   });
+
+  test('IsolateQjs evaluates a bundle without any module round trip', () async {
+    final bundle = JsModuleBundle.compileSources(
+      entry: 'main.js',
+      sources: _sources,
+    );
+    final qjs = IsolateQjs(bundle: bundle);
+    try {
+      await qjs.evaluateBundleEntry();
+      expect(await qjs.evaluate('globalThis.result'), 'hello world v1@1');
+    } finally {
+      await qjs.close();
+    }
+  });
+
+  test('IsolateQjs resolves moduleSources locally', () async {
+    final qjs = IsolateQjs(moduleSources: _sources);
+    try {
+      expect(
+        await qjs.evaluate(
+          "import { greet } from './lib/greet.js'; globalThis.r = greet('a');",
+          name: 'entry.js',
+          evalFlags: JSEvalFlag.MODULE,
+        ),
+        isNull,
+      );
+      expect(await qjs.evaluate('globalThis.r'), 'hello a v1');
+    } finally {
+      await qjs.close();
+    }
+  });
+
+  test('IsolateQjs without any module source reports the missing name',
+      () async {
+    final qjs = IsolateQjs();
+    try {
+      await expectLater(
+        qjs.evaluate(
+          "import './nope.js';",
+          name: 'entry.js',
+          evalFlags: JSEvalFlag.MODULE,
+        ),
+        throwsA(isA<JSError>()),
+      );
+    } finally {
+      await qjs.close();
+    }
+  });
 }
