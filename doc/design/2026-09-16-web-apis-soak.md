@@ -179,3 +179,23 @@ JS 堆、Dart 句柄表、文件描述符都没有泄漏。
 - 多 isolate 并发（沿用现有 soak 的限制）。
 - 真实网络与 TLS（本地 server 是明文 HTTP）。
 - `IsolateQjs`（只装 `core`，不在本实验范围）。
+
+## 11. 后续修正（2026-09-17）
+
+第 8 节第 2 条的"碎片假设"已做对照实验，**结论被推翻**：
+
+- `readNativeHeapUsage()`（glibc `mallinfo2`，现已写入 `soak_metrics.jsonl` 的
+  `nativeHeap`）显示 C 堆 arena 在整段 `web_fetch` 负载中稳定在 ~30 MB、
+  in-use ~26 MB，而进程 RSS 从 151 MB 涨到 691 MB；`malloc_trim(0)` 只收回
+  24 MB。增长全部在 **Dart 堆**，不是分配器碎片。
+- 按 profile 定位：`web_fetch` 3.04 MB/s，其余 profile ≤ 0.23 MB/s。
+- 用新的 `SOAK_PROFILE=op:<opName>` 逐个 op 定位：**只有 `fetchAbort` 泄漏**
+  （5.12 MB/s），其余 fetch op 都 ≤ 0.26 MB/s。
+- `example/test/http_control_test.dart` 在**完全不启动 QuickJS** 的情况下复现：
+  `CONTROL_MODE=abort` 30k 次请求 150 → 1206 MB，而 `read` / `cancel` /
+  `cancelpaused` 都收敛。即保留发生在 `dart:io` 中止请求的路径上，与本包的
+  fetch 桥接和引擎生命周期无关。
+- 另外修掉了 harness 自身的问题：`/slow` 端点在客户端中止后会永远停在
+  `flush()`，10k 次请求后有 6682 个 handler 卡住。
+
+详见 `doc/wiki/guides/soak-rss-analysis.md` 的 "Update 2026-09-17"。
