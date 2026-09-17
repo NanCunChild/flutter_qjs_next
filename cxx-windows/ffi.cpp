@@ -14,6 +14,13 @@
 #include <string.h>
 #include <time.h>
 
+#if defined(__GLIBC__) || defined(__ANDROID__)
+#include <malloc.h>
+#endif
+#if defined(__APPLE__)
+#include <malloc/malloc.h>
+#endif
+
 #if defined(_WIN32)
 #include <windows.h>
 #endif
@@ -110,7 +117,14 @@ extern "C"
   {
     char *str = (char *)((RuntimeOpaque *)opaque)->channel(ctx, JSChannelType_MODULE, (void *)module_name);
     if (str == 0)
+    {
+      /* The host reports "no such module" by returning null, which leaves no
+         pending exception; without this the failure surfaces as a null error
+         far from the import that caused it. */
+      if (!JS_HasException(ctx))
+        JS_ThrowReferenceError(ctx, "could not load module '%s'", module_name);
       return NULL;
+    }
     JSValue func_val = JS_Eval(ctx, str, strlen(str), module_name, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
     /* Dart allocates module source with malloc; free after copy into QuickJS */
     free(str);
@@ -131,7 +145,15 @@ extern "C"
     data[1] = &argc;
     data[2] = argv;
     data[3] = func_data;
-    return *(JSValue *)opaque->channel(ctx, JSChannelType_METHON, data);
+    /* The host allocates the reply with `new JSValue` (jsNewString, jsThrow,
+       …) and hands over ownership; without this delete every call from JS into
+       Dart leaked the cell. A null reply means the Dart callback itself threw. */
+    JSValue *reply = (JSValue *)opaque->channel(ctx, JSChannelType_METHON, data);
+    if (reply == NULL)
+      return JS_ThrowInternalError(ctx, "host call failed");
+    JSValue ret = *reply;
+    delete reply;
+    return ret;
   }
 
   void js_promise_rejection_tracker(JSContext *ctx, JSValueConst promise,
@@ -232,6 +254,36 @@ extern "C"
   DLLEXPORT void jsRunGC(JSRuntime *rt)
   {
     JS_RunGC(rt);
+  }
+
+  DLLEXPORT int32_t jsTrimNativeHeap(void)
+  {
+#if defined(__GLIBC__)
+    return malloc_trim(0) ? 1 : 0;
+#elif defined(__ANDROID__)
+    return mallopt(M_PURGE, 0) ? 1 : 0;
+#elif defined(__APPLE__)
+    malloc_zone_pressure_relief(NULL, 0);
+    return 1;
+#else
+    return 0;
+#endif
+  }
+
+  DLLEXPORT void jsNativeHeapUsage(int64_t *out, int32_t n)
+  {
+    if (!out || n < 4)
+      return;
+    out[0] = out[1] = out[2] = out[3] = 0;
+#if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if __GLIBC_PREREQ(2, 33)
+    struct mallinfo2 info = mallinfo2();
+    out[0] = (int64_t)info.arena;
+    out[1] = (int64_t)info.uordblks;
+    out[2] = (int64_t)info.fordblks;
+    out[3] = (int64_t)info.hblkhd;
+#endif
+#endif
   }
 
   /* out[0..]: malloc_size, malloc_limit, memory_used_size, malloc_count,
@@ -469,7 +521,13 @@ extern "C"
 
   DLLEXPORT uint8_t *jsGetArrayBuffer(JSContext *ctx, size_t *psize, JSValueConst *obj)
   {
-    return JS_GetArrayBuffer(ctx, psize, *obj);
+    uint8_t *ptr = JS_GetArrayBuffer(ctx, psize, *obj);
+    /* The host uses this as a probe on every object, and QuickJS reports "not
+       an ArrayBuffer" by throwing. Drop that exception so it cannot resurface
+       later as a bogus failure of an unrelated call. */
+    if (ptr == NULL)
+      JS_FreeValue(ctx, JS_GetException(ctx));
+    return ptr;
   }
 
   // Create a JS TypedArray of `type` (JSTypedArrayEnum) from a raw byte buffer.
@@ -556,6 +614,9 @@ extern "C"
     if (JS_IsException(buffer))
     {
       JS_FreeValue(ctx, buffer);
+      /* "not a TypedArray" is how this probe says no. Leaving it pending would
+         make the *next* unrelated exception check in the host report it. */
+      JS_FreeValue(ctx, JS_GetException(ctx));
       return NULL;
     }
     // DataView also succeeds; we only want typed arrays with a known enum.
@@ -563,6 +624,7 @@ extern "C"
     if (type < 0)
     {
       JS_FreeValue(ctx, buffer);
+      JS_FreeValue(ctx, JS_GetException(ctx));
       return NULL;
     }
     size_t buf_size = 0;
@@ -715,10 +777,12 @@ extern "C"
     js_free(ctx, ptab);
   }
 
-  DLLEXPORT uint8_t *CompileScript(JSContext *ctx, const char *script, const char *fileName, size_t *lengthPtr) {
+  DLLEXPORT uint8_t *jsCompile(JSContext *ctx, const char *script, const char *fileName,
+                               int32_t eval_flags, size_t *lengthPtr) {
     JSRuntime *rt = JS_GetRuntime(ctx);
     js_begin_call(rt);
-    JSValue value = JS_Eval(ctx, script, strlen(script), fileName, JS_EVAL_FLAG_COMPILE_ONLY);
+    JSValue value = JS_Eval(ctx, script, strlen(script), fileName,
+                            eval_flags | JS_EVAL_FLAG_COMPILE_ONLY);
 
     if (JS_IsException(value)) {
       JS_FreeValue(ctx, value);
@@ -732,12 +796,50 @@ extern "C"
     return out;
   }
 
+  DLLEXPORT uint8_t *CompileScript(JSContext *ctx, const char *script, const char *fileName, size_t *lengthPtr) {
+    return jsCompile(ctx, script, fileName, JS_EVAL_TYPE_GLOBAL, lengthPtr);
+  }
+
+  DLLEXPORT int32_t jsReadModuleBytecode(JSContext *ctx, size_t length, uint8_t *buf,
+                                         int32_t resolve) {
+    JSRuntime *rt = JS_GetRuntime(ctx);
+    js_begin_call(rt);
+    /* Reading a module registers it in ctx->loaded_modules; the returned value
+       is an extra reference, so dropping it keeps the module registered. */
+    JSValue obj = JS_ReadObject(ctx, buf, length, JS_READ_OBJ_BYTECODE);
+    if (JS_IsException(obj)) {
+      js_end_call(rt);
+      return -1;
+    }
+    if (JS_VALUE_GET_TAG(obj) != JS_TAG_MODULE) {
+      JS_FreeValue(ctx, obj);
+      js_end_call(rt);
+      JS_ThrowTypeError(ctx, "bytecode is not a module");
+      return -1;
+    }
+    int32_t ret = 0;
+    if (resolve && JS_ResolveModule(ctx, obj) < 0)
+      ret = -1;
+    JS_FreeValue(ctx, obj);
+    js_end_call(rt);
+    return ret;
+  }
+
   DLLEXPORT JSValue *EvaluateBytecode(JSContext *ctx, size_t length, uint8_t *buf) {
     JSRuntime *rt = JS_GetRuntime(ctx);
     js_begin_call(rt);
     JSValue obj = JS_ReadObject(ctx, buf, length, JS_READ_OBJ_BYTECODE);
 
     if (JS_IsException(obj)) {
+      js_end_call(rt);
+      return NULL;
+    }
+
+    /* A module read back from bytecode still has to link its imports; with the
+       rest of the bundle already registered this resolves from the context and
+       never reaches the module loader. */
+    if (JS_VALUE_GET_TAG(obj) == JS_TAG_MODULE && JS_ResolveModule(ctx, obj) < 0) {
+      JS_FreeValue(ctx, obj);
       js_end_call(rt);
       return NULL;
     }

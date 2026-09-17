@@ -84,7 +84,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.2.1"
+    version: "1.2.2"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -216,7 +216,7 @@ packages:
     source: hosted
     version: "2.2.0"
   vm_service:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: vm_service
       sha256: "0016aef94fc66495ac78af5859181e3f3bf2026bd8eecc72b9565601e19ab360"

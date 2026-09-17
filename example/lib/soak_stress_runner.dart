@@ -270,7 +270,31 @@ class SoakStressConfig {
     if (explicit.isNotEmpty) return explicit;
     if (_fetchProfiles.contains(profile)) return 'fetch';
     if (profile.startsWith('web_')) return 'standard';
+    if (profile.startsWith(_singleOpPrefix)) {
+      final kind = _singleOp(profile);
+      if (_fetchOps.contains(kind)) return 'fetch';
+      if (_webCoreOps.contains(kind) || kind.name.startsWith('web')) {
+        return 'standard';
+      }
+    }
     return 'core';
+  }
+
+  /// `SOAK_PROFILE=op:<name>` pins the workload to one [_OpKind], which is how
+  /// a profile-level regression gets narrowed to a single operation.
+  static const _singleOpPrefix = 'op:';
+
+  static _OpKind _singleOp(String profile) {
+    final name = profile.substring(_singleOpPrefix.length);
+    for (final kind in _OpKind.values) {
+      if (kind.name == name) return kind;
+    }
+    throw ArgumentError.value(
+      profile,
+      'SOAK_PROFILE',
+      'unknown op name "$name"; expected one of '
+          '${_OpKind.values.map((k) => k.name).join(', ')}',
+    );
   }
 
   static const _fetchProfiles = {'web_fetch', 'web_all', 'mixed_all'};
@@ -416,6 +440,10 @@ Future<SoakStressResult> runSoakStress({
       'profile ${cfg.workloadProfile} needs SOAK_WEB=standard or fetch',
     );
   }
+  if (cfg.workloadProfile.startsWith(SoakStressConfig._singleOpPrefix)) {
+    // Validates the name and, with it, the level implied above.
+    SoakStressConfig._singleOp(cfg.workloadProfile);
+  }
   if (SoakStressConfig._fetchProfiles.contains(cfg.workloadProfile) &&
       !cfg.fetchEnabled) {
     throw ArgumentError.value(
@@ -498,6 +526,10 @@ Future<SoakStressResult> runSoakStress({
         'peakRss': peakRss,
         'baselineRss': baselineRss,
         'procMemory': _procMemory(),
+        // Splits process RSS into the C heap and everything else (the Dart
+        // heap). A flat arena with climbing RSS means the growth is Dart-side,
+        // not QuickJS and not allocator fragmentation.
+        'nativeHeap': readNativeHeapUsage().toJson(),
         'pool': <String, dynamic>{
           'size': pool.size,
           'idle': pool.idleCount,
@@ -517,7 +549,7 @@ Future<SoakStressResult> runSoakStress({
         'metrics: ops=$totalOps errors=$errors pool size=${pool.size} '
         'idle=${pool.idleCount} inUse=${pool.inUseCount} rss=$rss '
         'peakRss=$peakRss baselineRss=$baselineRss fds=$fds '
-        'web=${env.toJson()} '
+        'web=${env.toJson()} nativeHeap=${readNativeHeapUsage()} '
         'engines=${engines.length} bridge=${readBridgeStats()}',
       );
       // Resource ceilings: each one maps to a hypothesis in
@@ -763,6 +795,9 @@ int _rss() {
 }
 
 _OpKind _pickOp(Random rng, String profile) {
+  if (profile.startsWith(SoakStressConfig._singleOpPrefix)) {
+    return SoakStressConfig._singleOp(profile);
+  }
   switch (profile) {
     case 'tiny':
       return _OpKind.evaluateTiny;
@@ -811,7 +846,8 @@ _OpKind _pickOp(Random rng, String profile) {
         'SOAK_PROFILE',
         'expected all, tiny, no_typed_array, dart_to_js, js_to_dart, '
             'typed_array, web_core, web_url, web_encoding, web_blob, '
-            'web_streams, web_crypto, web_fetch, web_all, or mixed_all',
+            'web_streams, web_crypto, web_fetch, web_all, mixed_all, '
+            'or op:<opName>',
       );
   }
   final r = rng.nextInt(100);
@@ -1134,9 +1170,25 @@ Future<HttpServer> _startSoakServer() async {
             await response.flush();
           }
         case 'slow':
-          for (var i = 0; i < 20; i++) {
+          // fetchAbort / fetchAbandoned cut this response off on purpose.
+          // Writing to a peer that went away neither fails nor completes, so
+          // without watching `done` (and bounding `flush`) every aborted
+          // request leaves a handler parked here for the rest of the run —
+          // which is what made web_fetch look like an engine leak.
+          var connected = true;
+          unawaited(
+            response.done.then(
+              (_) => connected = false,
+              onError: (Object _) => connected = false,
+            ),
+          );
+          for (var i = 0; i < 20 && connected; i++) {
             response.write('tick;');
-            await response.flush();
+            final flushed = await response
+                .flush()
+                .timeout(const Duration(milliseconds: 500))
+                .then((_) => true, onError: (Object _) => false);
+            if (!flushed) break;
             await Future<void>.delayed(const Duration(milliseconds: 25));
           }
         case 'echo':
@@ -1169,7 +1221,7 @@ Future<HttpServer> _startSoakServer() async {
       // Client aborted mid-response; the JS side asserts its own outcome.
     } finally {
       try {
-        await response.close();
+        await response.close().timeout(const Duration(seconds: 1));
       } catch (_) {}
     }
   });

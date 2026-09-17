@@ -46,6 +46,17 @@ extern "C" {
 
   DLLEXPORT void jsRunGC(JSRuntime *rt);
 
+  /* Ask the C allocator to return free pages to the OS. QuickJS heaps are made
+     of many small blocks, so churning engines leaves the process holding pages
+     that hold almost nothing. Returns 1 if memory was released, 0 if the
+     platform allocator has no equivalent. */
+  DLLEXPORT int32_t jsTrimNativeHeap(void);
+
+  /* C heap accounting, for telling a real leak apart from allocator residency:
+     out[0] arena bytes, out[1] in use, out[2] free inside the arena,
+     out[3] mmapped. Zero where the platform has no equivalent (n must be >= 4). */
+  DLLEXPORT void jsNativeHeapUsage(int64_t *out, int32_t n);
+
   /* Fills *out with JS_ComputeMemoryUsage fields (malloc_size, memory_used_size, …). */
   DLLEXPORT void jsComputeMemoryUsage(JSRuntime *rt, int64_t *out, int32_t n);
 
@@ -191,6 +202,20 @@ extern "C" {
   DLLEXPORT void jsFree(JSContext *ctx, void *ptab);
 
   DLLEXPORT uint8_t *CompileScript(JSContext *ctx, const char *script, const char *fileName, size_t *lengthPtr);
+
+  /* Like CompileScript, but `eval_flags` selects the compilation mode
+     (JS_EVAL_TYPE_MODULE for an ES module). JS_EVAL_FLAG_COMPILE_ONLY is
+     always added. For a module, `fileName` becomes the name later imports
+     resolve to, so it must match the normalized specifier. */
+  DLLEXPORT uint8_t *jsCompile(JSContext *ctx, const char *script, const char *fileName,
+                               int32_t eval_flags, size_t *lengthPtr);
+
+  /* Register module bytecode in `ctx` without running it, so that imports of
+     its name resolve from the context instead of calling the module loader.
+     `resolve` also links the module's dependencies (they must already be
+     registered). Returns 0, or -1 with a pending exception. */
+  DLLEXPORT int32_t jsReadModuleBytecode(JSContext *ctx, size_t length, uint8_t *buf,
+                                         int32_t resolve);
 
   DLLEXPORT JSValue *EvaluateBytecode(JSContext *ctx, size_t length, uint8_t *buf);
 

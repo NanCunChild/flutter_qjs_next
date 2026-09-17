@@ -170,6 +170,113 @@ So the problem is **not only** large TypedArray bridges. Mixed object/string/arr
 
 ---
 
+## Update 2026-09-17 — where the growth actually lives
+
+The earlier reading on this page (and in `doc/design/2026-09-16-web-apis-soak.md`)
+was that the climb "looks like glibc allocator fragmentation". **It is not.**
+`jsNativeHeapUsage` (glibc `mallinfo2`, exported as `readNativeHeapUsage()` and
+now sampled into `soak_metrics.jsonl` as `nativeHeap`) settles the question:
+
+| | start | after 150 s of `web_fetch` |
+|---|---|---|
+| process RSS | 151 MB | 691 MB |
+| C heap arena | 4 MB | **41 MB** |
+| C heap in use | 3 MB | **5 MB** |
+| `malloc_trim(0)` recovered | — | **24 MB** |
+
+The C heap is flat. Everything that grows is outside `malloc`, i.e. the **Dart
+heap**. `getAllocationProfile` over the same run shows the growth is generic
+async machinery plus body bytes — `_Closure`, `Context`, `_List`, `_Future`,
+`_DelayedData`, `_Uint8List` — all linear in ops, none of it QuickJS.
+
+### Which workload
+
+Slope over the second half of a 90–150 s run, pool 32 / workers 32,
+`resetOnRelease=true`:
+
+| Profile | MB/s | B/op |
+|---|---|---|
+| `tiny`, `all`, `web_url`, `web_encoding`, `web_blob`, `web_streams` | ≤ 0.05 | plateau |
+| `web_core` | 0.23 | 154 |
+| `web_crypto` | 0.19 | 254 |
+| `mixed_all` | 0.76 | 919 |
+| **`web_fetch`** | **3.04** | **6655** |
+
+`mixed_all` is ~16 % fetch ops, which accounts for almost all of its slope: the
+8 h remote run that hit `RSS growth exceeded: rss=16649916416 … factor=128.0`
+was a fetch problem, not an engine-lifecycle problem. Its own counters agree —
+QuickJS heap byte-for-byte constant (`mallocSize` 665 KB, `objCount` 840), bridge
+`allocCalls == freeCalls`, `dartRefs` 18, fds flat.
+
+### Which part of fetch
+
+One operation at a time (`SOAK_PROFILE=op:<opName>`, 90 s each):
+
+| Operation | MB/s | B/op |
+|---|---|---|
+| **`fetchAbort`** | **5.12** | **6654** |
+| `fetchStream` | 0.26 | 546 |
+| `fetchJson` | 0.18 | 269 |
+| `fetchGet` | 0.13 | 186 |
+| `fetchAbandoned` | 0.13 | 106 |
+| `fetchUpload` | 0.12 | 214 |
+| `fetchRedirect` | 0.04 | 117 |
+
+Everything except `fetchAbort` sits in the same band as a plateauing non-web
+profile. **Aborting an in-flight request is the whole leak.**
+
+Two more controls, both with no QuickJS in the process at all
+(`example/test/http_control_test.dart`, same client/server shapes, an
+`HttpClient` per 8 requests force-closed like an engine lease):
+
+| Control | ops | RSS |
+|---|---|---|
+| read short bodies to the end (`CONTROL_MODE=read`) | 278 k | flat ~205 MB |
+| stop reading a slow response, cancel the subscription (`CONTROL_MODE=cancel`) | 43 k | flat ~228 MB |
+| same, but paused between chunks like the fetch host (`CONTROL_MODE=cancelpaused`) | 13 k | flat ~223 MB |
+| **`HttpClientRequest.abort()` on a slow response (`CONTROL_MODE=abort`)** | **30 k** | **150 → 1206 MB** |
+
+The three non-abort shapes plateau; the abort shape grows linearly at roughly
+40 KB per request, with no QuickJS in the process. So the retention belongs to
+`dart:io`'s aborted-request path on this SDK (Flutter 3.44.1 / Dart 3.10), not
+to the fetch bridge and not to QuickJS. Cancelling the response body is the
+cheap way to stop reading; `abort()` is not — but `abort()` is also the only way
+to stop a request whose response has not arrived yet, so `AbortSignal` support
+cannot simply drop it.
+
+The harness had a second, independent bug in the same operation: the in-process
+`/slow` endpoint kept writing to a peer that had gone away. A write to an
+aborted socket neither fails nor completes, so the handler parked forever and
+every aborted request retained its response graph — 6682 live handlers after
+10 k requests. `_startSoakServer` now watches `response.done` and bounds
+`flush()`/`close()`, which keeps live handlers bounded.
+
+**Implication for callers:** `AbortController` on `fetch` costs process memory
+per abort that this package cannot reclaim. When a workload aborts at a high
+rate, prefer cancelling `response.body` (or letting the response finish) over
+`AbortController.abort()`, and budget RSS for it when neither is possible.
+
+### Re-running the attribution
+
+```bash
+cd example
+# one operation at a time (SOAK_PROFILE=op:<opName>)
+flutter test test/soak_stress_test.dart --timeout none \
+  --dart-define=SOAK_PROFILE=op:fetchStream --dart-define=SOAK_DURATION_SEC=150 \
+  --dart-define=SOAK_POOL_SIZE=32 --dart-define=SOAK_WORKERS=32
+
+# Dart heap by class: start the run paused, then attach
+flutter test test/soak_stress_test.dart --timeout none --start-paused ... &
+dart run tool/heap_profile.dart <printed VM service URI> 8
+dart run tool/heap_histogram.dart <printed VM service URI> 120
+```
+
+Read `nativeHeap.arena` / `nativeHeap.inUse` in `soak_metrics.jsonl` first: if
+they are flat while `rss` climbs, do not go looking in QuickJS or in the
+allocator.
+
+---
+
 ## Test instructions
 
 Use **Flutter’s test harness** (plugin native library). Do **not** use bare `dart run` for these FFI plugin tests.

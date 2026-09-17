@@ -10,6 +10,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter_qjs_next/flutter_qjs_logger.dart';
 import 'package:flutter_qjs_next/javascript_runtime.dart';
 import 'package:flutter_qjs_next/js_eval_result.dart';
+import 'package:flutter_qjs_next/js_module_bundle.dart';
 import 'package:flutter_qjs_next/web/web_apis.dart' show JsWebApis;
 
 import 'ffi.dart';
@@ -20,7 +21,10 @@ export 'ffi.dart'
         JSRef,
         JSTypedArrayType,
         JsTypedArrayTransfer,
-        readBridgeStats;
+        NativeHeapUsage,
+        readBridgeStats,
+        readNativeHeapUsage,
+        trimNativeHeap;
 
 part 'isolate.dart';
 part 'object.dart';
@@ -450,11 +454,34 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     return _toEvalResult(ctx, value);
   }
 
+  /// Register module [bytecode] in the current context without running it.
+  /// See [JavascriptRuntime.registerModuleBytecode].
+  @override
+  void registerModuleBytecode(Uint8List bytecode, {bool resolve = false}) {
+    _ensureEngine();
+    final ctx = _ctx!;
+    final pointer = calloc<Uint8>(bytecode.length);
+    pointer.asTypedList(bytecode.length).setAll(0, bytecode);
+    final int status;
+    try {
+      status = readModuleBytecodeFn(
+        ctx,
+        bytecode.length,
+        pointer,
+        resolve ? 1 : 0,
+      );
+    } finally {
+      calloc.free(pointer);
+    }
+    if (status != 0) throw _parseJSException(ctx);
+  }
+
   @override
   Uint8List compile(
     String script,
     String fileName, {
     bool stripSource = false,
+    bool asModule = false,
   }) {
     _ensureEngine();
     final ctx = _ctx!;
@@ -464,7 +491,13 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     final lengthPtr = calloc<IntPtr>();
     final stripInfo = jsGetStripInfo(rt);
     if (stripSource) jsSetStripInfo(rt, stripInfo | jsStripSource);
-    final value = compileFn(ctx, scriptPtr, fileNamePtr, lengthPtr);
+    final value = compileWithFlagsFn(
+      ctx,
+      scriptPtr,
+      fileNamePtr,
+      asModule ? JSEvalFlag.MODULE : JSEvalFlag.GLOBAL,
+      lengthPtr,
+    );
     if (stripSource) jsSetStripInfo(rt, stripInfo);
     try {
       if (value.address == 0) {
@@ -568,33 +601,41 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   @override
   void initChannelFunctions() {
     JavascriptRuntime.channelFunctionsRegistered[getEngineInstanceId()] = {};
-    final setToGlobalObject = evaluate(
-      "(key, val) => { this[key] = val; }",
-    ).rawResult;
-    (setToGlobalObject as JSInvokable).invoke([
-      'sendMessage',
-      (String channelName, dynamic message) {
-        final channelFunctions =
-            JavascriptRuntime.channelFunctionsRegistered[getEngineInstanceId()];
+    final setup = evaluate("(key, val) => { this[key] = val; }");
+    if (setup.isError || setup.rawResult is! JSInvokable) {
+      throw JSError(
+        'initChannelFunctions: bridge setup evaluate failed: '
+        '${setup.stringResult}',
+      );
+    }
+    final setToGlobalObject = setup.rawResult as JSInvokable;
+    try {
+      setToGlobalObject.invoke([
+        'sendMessage',
+        (String channelName, dynamic message) {
+          final channelFunctions = JavascriptRuntime
+              .channelFunctionsRegistered[getEngineInstanceId()];
 
-        if (channelFunctions == null ||
-            !channelFunctions.containsKey(channelName)) {
-          FlutterQjsLogger.warning('No channel $channelName registered');
-          return null;
-        }
-
-        dynamic payload = message;
-        if (message is String) {
-          try {
-            payload = jsonDecode(message);
-          } catch (_) {
-            payload = message;
+          if (channelFunctions == null ||
+              !channelFunctions.containsKey(channelName)) {
+            FlutterQjsLogger.warning('No channel $channelName registered');
+            return null;
           }
-        }
-        return channelFunctions[channelName]!.call(payload);
-      },
-    ]);
-    (setToGlobalObject as JSRef).free();
+
+          dynamic payload = message;
+          if (message is String) {
+            try {
+              payload = jsonDecode(message);
+            } catch (_) {
+              payload = message;
+            }
+          }
+          return channelFunctions[channelName]!.call(payload);
+        },
+      ]);
+    } finally {
+      setToGlobalObject.free();
+    }
   }
 
   @override

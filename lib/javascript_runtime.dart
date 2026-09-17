@@ -115,7 +115,30 @@ abstract class JavascriptRuntime {
 
   /// Compile [code] to bytecode. [stripSource] drops function source text:
   /// a smaller heap, but `Function.prototype.toString` no longer shows it.
-  Uint8List compile(String code, String fileName, {bool stripSource = false}) {
+  ///
+  /// With [asModule], [code] is compiled as an ES module and [fileName] becomes
+  /// the name its importers resolve to. QuickJS resolves the module's imports
+  /// while compiling it, so the engine's module handler must be able to reach
+  /// every dependency, and compiling registers the module in the engine's
+  /// current context — compile in a scratch engine rather than repeatedly in a
+  /// long-lived one. [JsModuleBundle] does both for a whole import graph.
+  Uint8List compile(
+    String code,
+    String fileName, {
+    bool stripSource = false,
+    bool asModule = false,
+  }) {
+    throw UnimplementedError();
+  }
+
+  /// Register module [bytecode] in the current context without running it, so
+  /// that `import` of its name resolves from the context instead of calling the
+  /// module loader. With [resolve], the module's own imports are linked now
+  /// (every dependency must already be registered).
+  ///
+  /// Registration belongs to one context: after [softReset] / [reinitialize]
+  /// the modules are gone and have to be registered again.
+  void registerModuleBytecode(Uint8List bytecode, {bool resolve = false}) {
     throw UnimplementedError();
   }
 

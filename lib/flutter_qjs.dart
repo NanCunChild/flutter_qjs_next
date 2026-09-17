@@ -9,6 +9,7 @@ export 'flutter_qjs_logger.dart';
 export 'javascript_runtime.dart';
 export 'js_engine_pool.dart';
 export 'js_eval_result.dart';
+export 'js_module_bundle.dart';
 export 'web/web_apis.dart'
     show
         JsFetchHandler,

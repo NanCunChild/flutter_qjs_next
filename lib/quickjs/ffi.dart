@@ -120,19 +120,55 @@ abstract base class JSPropertyEnum extends Opaque {}
 
 final DynamicLibrary _qjsLib = _openQuickJsLibrary();
 
+/// Exports that only exist in native builds matching this Dart code. Flutter
+/// tests load a prebuilt plugin and never rebuild it, so a stale library would
+/// otherwise only surface as a masked `JSError` deep inside value conversion.
+const List<String> _requiredNativeSymbols = [
+  'jsBeginCall',
+  'jsEndCall',
+  'jsNewWebNatives',
+  'jsSetStripInfo',
+  'jsGetStripInfo',
+  'jsCompile',
+  'jsReadModuleBytecode',
+  'jsTrimNativeHeap',
+  'jsNativeHeapUsage',
+];
+
+DynamicLibrary _checkNativeAbi(DynamicLibrary library, String origin) {
+  for (final symbol in _requiredNativeSymbols) {
+    try {
+      library.lookup<NativeFunction<Void Function()>>(symbol);
+    } on ArgumentError {
+      throw StateError(
+        'flutter_qjs_next native library is stale ($origin): missing '
+        '$symbol. Rebuild it (from example/: flutter build linux --debug) or '
+        'point FLUTTER_QJS_NEXT_LIBRARY at a matching build.',
+      );
+    }
+  }
+  return library;
+}
+
 DynamicLibrary _openQuickJsLibrary() {
   // Prefer FLUTTER_QJS_NEXT_LIBRARY; legacy FLUTTER_QJS_ES2023_LIBRARY still accepted.
   final explicitPath =
       Platform.environment['FLUTTER_QJS_NEXT_LIBRARY'] ??
       Platform.environment['FLUTTER_QJS_ES2023_LIBRARY'];
   if (explicitPath != null && explicitPath.isNotEmpty) {
-    return DynamicLibrary.open(explicitPath);
+    return _checkNativeAbi(DynamicLibrary.open(explicitPath), explicitPath);
   }
   if (Platform.isWindows) {
-    return DynamicLibrary.open('flutter_qjs_next_plugin.dll');
+    return _checkNativeAbi(
+      DynamicLibrary.open('flutter_qjs_next_plugin.dll'),
+      'flutter_qjs_next_plugin.dll',
+    );
   }
   if (Platform.isAndroid) {
-    return DynamicLibrary.open('libflutter_qjs_next.so');
+    return _checkNativeAbi(
+      DynamicLibrary.open('libflutter_qjs_next.so'),
+      'libflutter_qjs_next.so',
+    );
   }
   const isFlutterTest = bool.fromEnvironment('FLUTTER_TEST');
   if (Platform.isLinux &&
@@ -150,13 +186,22 @@ DynamicLibrary _openQuickJsLibrary() {
       '../example/build/linux/x64/debug/plugins/flutter_qjs_next/libflutter_qjs_next_plugin.so',
       '../example/build/linux/x64/release/plugins/flutter_qjs_next/libflutter_qjs_next_plugin.so',
     ];
+    StateError? staleError;
     for (final path in candidates) {
-      if (path.startsWith('lib') || File(path).existsSync()) {
-        try {
-          return DynamicLibrary.open(path);
-        } catch (_) {}
+      if (!path.startsWith('lib') && !File(path).existsSync()) continue;
+      final DynamicLibrary library;
+      try {
+        library = DynamicLibrary.open(path);
+      } catch (_) {
+        continue;
+      }
+      try {
+        return _checkNativeAbi(library, path);
+      } on StateError catch (error) {
+        staleError ??= error;
       }
     }
+    if (staleError != null) throw staleError;
     throw StateError(
       'Unable to load flutter_qjs_next native library for Flutter tests. '
       'Build the Linux example first or set FLUTTER_QJS_NEXT_LIBRARY to the '
@@ -275,6 +320,41 @@ late final _compile = _qjsLib
       >
     >('CompileScript');
 
+/// DLLEXPORT uint8_t *jsCompile(JSContext *, const char *script,
+///     const char *fileName, int32_t eval_flags, size_t *lengthPtr)
+late final compileWithFlagsFn = _qjsLib
+    .lookup<
+      NativeFunction<
+        Pointer<Uint8> Function(
+          Pointer<JSContext>,
+          Pointer<Char>,
+          Pointer<Char>,
+          Int32,
+          Pointer<IntPtr>,
+        )
+      >
+    >('jsCompile')
+    .asFunction<
+      Pointer<Uint8> Function(
+        Pointer<JSContext>,
+        Pointer<Char>,
+        Pointer<Char>,
+        int,
+        Pointer<IntPtr>,
+      )
+    >();
+
+/// DLLEXPORT int32_t jsReadModuleBytecode(JSContext *, size_t, uint8_t *, int32_t)
+late final readModuleBytecodeFn = _qjsLib
+    .lookup<
+      NativeFunction<
+        Int32 Function(Pointer<JSContext>, Size, Pointer<Uint8>, Int32)
+      >
+    >('jsReadModuleBytecode')
+    .asFunction<
+      int Function(Pointer<JSContext>, int, Pointer<Uint8>, int)
+    >();
+
 late final evaluateBytecodeFn = _evaluateBytecode
     .asFunction<
       Pointer<JSValue> Function(Pointer<JSContext>, int, Pointer<Uint8>)
@@ -343,6 +423,82 @@ final int Function(Pointer<JSRuntime>) jsIsJobPending = _qjsLib
 final void Function(Pointer<JSRuntime>) jsRunGC = _qjsLib
     .lookup<NativeFunction<Void Function(Pointer<JSRuntime>)>>('jsRunGC')
     .asFunction();
+
+final int Function() _jsTrimNativeHeap = _qjsLib
+    .lookup<NativeFunction<Int32 Function()>>('jsTrimNativeHeap')
+    .asFunction();
+
+/// Ask the C allocator to return free pages to the OS, and report whether it
+/// released anything. Unsupported allocators return `false`.
+///
+/// Churning QuickJS engines (`dispose`, [JavascriptRuntime.reinitialize]) frees
+/// thousands of small blocks whose pages the allocator keeps for reuse, so
+/// process RSS stays high while the live heap is tiny. This is the lever for
+/// giving those pages back; see `doc/wiki/guides/soak-rss-analysis.md`.
+bool trimNativeHeap() => _jsTrimNativeHeap() != 0;
+
+final void Function(Pointer<Int64>, int) _jsNativeHeapUsage = _qjsLib
+    .lookup<NativeFunction<Void Function(Pointer<Int64>, Int32)>>(
+      'jsNativeHeapUsage',
+    )
+    .asFunction();
+
+/// C heap accounting: what the allocator holds vs what is actually live.
+///
+/// A growing [arenaBytes] with a flat [inUseBytes] is allocator residency or
+/// fragmentation, not a leak. All fields are 0 where the platform allocator has
+/// no equivalent (currently: everything but glibc ≥ 2.33).
+class NativeHeapUsage {
+  const NativeHeapUsage({
+    required this.arenaBytes,
+    required this.inUseBytes,
+    required this.freeBytes,
+    required this.mmappedBytes,
+  });
+
+  /// Total bytes the allocator obtained from the OS for its main arena.
+  final int arenaBytes;
+
+  /// Bytes handed out and not yet freed.
+  final int inUseBytes;
+
+  /// Bytes free inside the arena — held by the process, unused by the program.
+  final int freeBytes;
+
+  /// Bytes in blocks the allocator mapped separately (returned to the OS on
+  /// free, so they do not accumulate).
+  final int mmappedBytes;
+
+  bool get isSupported => arenaBytes != 0 || mmappedBytes != 0;
+
+  Map<String, int> toJson() => <String, int>{
+    'arena': arenaBytes,
+    'inUse': inUseBytes,
+    'free': freeBytes,
+    'mmapped': mmappedBytes,
+  };
+
+  @override
+  String toString() =>
+      'NativeHeapUsage(arena=$arenaBytes, inUse=$inUseBytes, '
+      'free=$freeBytes, mmapped=$mmappedBytes)';
+}
+
+/// Snapshot of [NativeHeapUsage] for the whole process.
+NativeHeapUsage readNativeHeapUsage() {
+  final out = calloc<Int64>(4);
+  try {
+    _jsNativeHeapUsage(out, 4);
+    return NativeHeapUsage(
+      arenaBytes: out[0],
+      inUseBytes: out[1],
+      freeBytes: out[2],
+      mmappedBytes: out[3],
+    );
+  } finally {
+    calloc.free(out);
+  }
+}
 
 /// DLLEXPORT void jsComputeMemoryUsage(JSRuntime *rt, int64_t *out, int32_t n)
 final void Function(Pointer<JSRuntime>, Pointer<Int64>, int)
