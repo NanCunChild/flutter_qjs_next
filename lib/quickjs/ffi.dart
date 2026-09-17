@@ -275,6 +275,41 @@ late final _compile = _qjsLib
       >
     >('CompileScript');
 
+/// DLLEXPORT uint8_t *jsCompile(JSContext *, const char *script,
+///     const char *fileName, int32_t eval_flags, size_t *lengthPtr)
+late final compileWithFlagsFn = _qjsLib
+    .lookup<
+      NativeFunction<
+        Pointer<Uint8> Function(
+          Pointer<JSContext>,
+          Pointer<Char>,
+          Pointer<Char>,
+          Int32,
+          Pointer<IntPtr>,
+        )
+      >
+    >('jsCompile')
+    .asFunction<
+      Pointer<Uint8> Function(
+        Pointer<JSContext>,
+        Pointer<Char>,
+        Pointer<Char>,
+        int,
+        Pointer<IntPtr>,
+      )
+    >();
+
+/// DLLEXPORT int32_t jsReadModuleBytecode(JSContext *, size_t, uint8_t *, int32_t)
+late final readModuleBytecodeFn = _qjsLib
+    .lookup<
+      NativeFunction<
+        Int32 Function(Pointer<JSContext>, Size, Pointer<Uint8>, Int32)
+      >
+    >('jsReadModuleBytecode')
+    .asFunction<
+      int Function(Pointer<JSContext>, int, Pointer<Uint8>, int)
+    >();
+
 late final evaluateBytecodeFn = _evaluateBytecode
     .asFunction<
       Pointer<JSValue> Function(Pointer<JSContext>, int, Pointer<Uint8>)

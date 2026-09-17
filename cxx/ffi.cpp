@@ -777,10 +777,12 @@ extern "C"
     js_free(ctx, ptab);
   }
 
-  DLLEXPORT uint8_t *CompileScript(JSContext *ctx, const char *script, const char *fileName, size_t *lengthPtr) {
+  DLLEXPORT uint8_t *jsCompile(JSContext *ctx, const char *script, const char *fileName,
+                               int32_t eval_flags, size_t *lengthPtr) {
     JSRuntime *rt = JS_GetRuntime(ctx);
     js_begin_call(rt);
-    JSValue value = JS_Eval(ctx, script, strlen(script), fileName, JS_EVAL_FLAG_COMPILE_ONLY);
+    JSValue value = JS_Eval(ctx, script, strlen(script), fileName,
+                            eval_flags | JS_EVAL_FLAG_COMPILE_ONLY);
 
     if (JS_IsException(value)) {
       JS_FreeValue(ctx, value);
@@ -794,12 +796,50 @@ extern "C"
     return out;
   }
 
+  DLLEXPORT uint8_t *CompileScript(JSContext *ctx, const char *script, const char *fileName, size_t *lengthPtr) {
+    return jsCompile(ctx, script, fileName, JS_EVAL_TYPE_GLOBAL, lengthPtr);
+  }
+
+  DLLEXPORT int32_t jsReadModuleBytecode(JSContext *ctx, size_t length, uint8_t *buf,
+                                         int32_t resolve) {
+    JSRuntime *rt = JS_GetRuntime(ctx);
+    js_begin_call(rt);
+    /* Reading a module registers it in ctx->loaded_modules; the returned value
+       is an extra reference, so dropping it keeps the module registered. */
+    JSValue obj = JS_ReadObject(ctx, buf, length, JS_READ_OBJ_BYTECODE);
+    if (JS_IsException(obj)) {
+      js_end_call(rt);
+      return -1;
+    }
+    if (JS_VALUE_GET_TAG(obj) != JS_TAG_MODULE) {
+      JS_FreeValue(ctx, obj);
+      js_end_call(rt);
+      JS_ThrowTypeError(ctx, "bytecode is not a module");
+      return -1;
+    }
+    int32_t ret = 0;
+    if (resolve && JS_ResolveModule(ctx, obj) < 0)
+      ret = -1;
+    JS_FreeValue(ctx, obj);
+    js_end_call(rt);
+    return ret;
+  }
+
   DLLEXPORT JSValue *EvaluateBytecode(JSContext *ctx, size_t length, uint8_t *buf) {
     JSRuntime *rt = JS_GetRuntime(ctx);
     js_begin_call(rt);
     JSValue obj = JS_ReadObject(ctx, buf, length, JS_READ_OBJ_BYTECODE);
 
     if (JS_IsException(obj)) {
+      js_end_call(rt);
+      return NULL;
+    }
+
+    /* A module read back from bytecode still has to link its imports; with the
+       rest of the bundle already registered this resolves from the context and
+       never reaches the module loader. */
+    if (JS_VALUE_GET_TAG(obj) == JS_TAG_MODULE && JS_ResolveModule(ctx, obj) < 0) {
+      JS_FreeValue(ctx, obj);
       js_end_call(rt);
       return NULL;
     }

@@ -453,11 +453,34 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     return _toEvalResult(ctx, value);
   }
 
+  /// Register module [bytecode] in the current context without running it.
+  /// See [JavascriptRuntime.registerModuleBytecode].
+  @override
+  void registerModuleBytecode(Uint8List bytecode, {bool resolve = false}) {
+    _ensureEngine();
+    final ctx = _ctx!;
+    final pointer = calloc<Uint8>(bytecode.length);
+    pointer.asTypedList(bytecode.length).setAll(0, bytecode);
+    final int status;
+    try {
+      status = readModuleBytecodeFn(
+        ctx,
+        bytecode.length,
+        pointer,
+        resolve ? 1 : 0,
+      );
+    } finally {
+      calloc.free(pointer);
+    }
+    if (status != 0) throw _parseJSException(ctx);
+  }
+
   @override
   Uint8List compile(
     String script,
     String fileName, {
     bool stripSource = false,
+    bool asModule = false,
   }) {
     _ensureEngine();
     final ctx = _ctx!;
@@ -467,7 +490,13 @@ class QuickJsRuntime2 extends JavascriptRuntime {
     final lengthPtr = calloc<IntPtr>();
     final stripInfo = jsGetStripInfo(rt);
     if (stripSource) jsSetStripInfo(rt, stripInfo | jsStripSource);
-    final value = compileFn(ctx, scriptPtr, fileNamePtr, lengthPtr);
+    final value = compileWithFlagsFn(
+      ctx,
+      scriptPtr,
+      fileNamePtr,
+      asModule ? JSEvalFlag.MODULE : JSEvalFlag.GLOBAL,
+      lengthPtr,
+    );
     if (stripSource) jsSetStripInfo(rt, stripInfo);
     try {
       if (value.address == 0) {
