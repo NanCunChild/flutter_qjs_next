@@ -131,7 +131,15 @@ extern "C"
     data[1] = &argc;
     data[2] = argv;
     data[3] = func_data;
-    return *(JSValue *)opaque->channel(ctx, JSChannelType_METHON, data);
+    /* The host allocates the reply with `new JSValue` (jsNewString, jsThrow,
+       …) and hands over ownership; without this delete every call from JS into
+       Dart leaked the cell. A null reply means the Dart callback itself threw. */
+    JSValue *reply = (JSValue *)opaque->channel(ctx, JSChannelType_METHON, data);
+    if (reply == NULL)
+      return JS_ThrowInternalError(ctx, "host call failed");
+    JSValue ret = *reply;
+    delete reply;
+    return ret;
   }
 
   void js_promise_rejection_tracker(JSContext *ctx, JSValueConst promise,
