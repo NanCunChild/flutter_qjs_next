@@ -120,19 +120,55 @@ abstract base class JSPropertyEnum extends Opaque {}
 
 final DynamicLibrary _qjsLib = _openQuickJsLibrary();
 
+/// Exports that only exist in native builds matching this Dart code. Flutter
+/// tests load a prebuilt plugin and never rebuild it, so a stale library would
+/// otherwise only surface as a masked `JSError` deep inside value conversion.
+const List<String> _requiredNativeSymbols = [
+  'jsBeginCall',
+  'jsEndCall',
+  'jsNewWebNatives',
+  'jsSetStripInfo',
+  'jsGetStripInfo',
+  'jsCompile',
+  'jsReadModuleBytecode',
+  'jsTrimNativeHeap',
+  'jsNativeHeapUsage',
+];
+
+DynamicLibrary _checkNativeAbi(DynamicLibrary library, String origin) {
+  for (final symbol in _requiredNativeSymbols) {
+    try {
+      library.lookup<NativeFunction<Void Function()>>(symbol);
+    } on ArgumentError {
+      throw StateError(
+        'flutter_qjs_next native library is stale ($origin): missing '
+        '$symbol. Rebuild it (from example/: flutter build linux --debug) or '
+        'point FLUTTER_QJS_NEXT_LIBRARY at a matching build.',
+      );
+    }
+  }
+  return library;
+}
+
 DynamicLibrary _openQuickJsLibrary() {
   // Prefer FLUTTER_QJS_NEXT_LIBRARY; legacy FLUTTER_QJS_ES2023_LIBRARY still accepted.
   final explicitPath =
       Platform.environment['FLUTTER_QJS_NEXT_LIBRARY'] ??
       Platform.environment['FLUTTER_QJS_ES2023_LIBRARY'];
   if (explicitPath != null && explicitPath.isNotEmpty) {
-    return DynamicLibrary.open(explicitPath);
+    return _checkNativeAbi(DynamicLibrary.open(explicitPath), explicitPath);
   }
   if (Platform.isWindows) {
-    return DynamicLibrary.open('flutter_qjs_next_plugin.dll');
+    return _checkNativeAbi(
+      DynamicLibrary.open('flutter_qjs_next_plugin.dll'),
+      'flutter_qjs_next_plugin.dll',
+    );
   }
   if (Platform.isAndroid) {
-    return DynamicLibrary.open('libflutter_qjs_next.so');
+    return _checkNativeAbi(
+      DynamicLibrary.open('libflutter_qjs_next.so'),
+      'libflutter_qjs_next.so',
+    );
   }
   const isFlutterTest = bool.fromEnvironment('FLUTTER_TEST');
   if (Platform.isLinux &&
@@ -150,13 +186,22 @@ DynamicLibrary _openQuickJsLibrary() {
       '../example/build/linux/x64/debug/plugins/flutter_qjs_next/libflutter_qjs_next_plugin.so',
       '../example/build/linux/x64/release/plugins/flutter_qjs_next/libflutter_qjs_next_plugin.so',
     ];
+    StateError? staleError;
     for (final path in candidates) {
-      if (path.startsWith('lib') || File(path).existsSync()) {
-        try {
-          return DynamicLibrary.open(path);
-        } catch (_) {}
+      if (!path.startsWith('lib') && !File(path).existsSync()) continue;
+      final DynamicLibrary library;
+      try {
+        library = DynamicLibrary.open(path);
+      } catch (_) {
+        continue;
+      }
+      try {
+        return _checkNativeAbi(library, path);
+      } on StateError catch (error) {
+        staleError ??= error;
       }
     }
+    if (staleError != null) throw staleError;
     throw StateError(
       'Unable to load flutter_qjs_next native library for Flutter tests. '
       'Build the Linux example first or set FLUTTER_QJS_NEXT_LIBRARY to the '
