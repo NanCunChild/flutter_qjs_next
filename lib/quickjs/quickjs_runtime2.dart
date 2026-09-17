@@ -568,33 +568,41 @@ class QuickJsRuntime2 extends JavascriptRuntime {
   @override
   void initChannelFunctions() {
     JavascriptRuntime.channelFunctionsRegistered[getEngineInstanceId()] = {};
-    final setToGlobalObject = evaluate(
-      "(key, val) => { this[key] = val; }",
-    ).rawResult;
-    (setToGlobalObject as JSInvokable).invoke([
-      'sendMessage',
-      (String channelName, dynamic message) {
-        final channelFunctions =
-            JavascriptRuntime.channelFunctionsRegistered[getEngineInstanceId()];
+    final setup = evaluate("(key, val) => { this[key] = val; }");
+    if (setup.isError || setup.rawResult is! JSInvokable) {
+      throw JSError(
+        'initChannelFunctions: bridge setup evaluate failed: '
+        '${setup.stringResult}',
+      );
+    }
+    final setToGlobalObject = setup.rawResult as JSInvokable;
+    try {
+      setToGlobalObject.invoke([
+        'sendMessage',
+        (String channelName, dynamic message) {
+          final channelFunctions = JavascriptRuntime
+              .channelFunctionsRegistered[getEngineInstanceId()];
 
-        if (channelFunctions == null ||
-            !channelFunctions.containsKey(channelName)) {
-          FlutterQjsLogger.warning('No channel $channelName registered');
-          return null;
-        }
-
-        dynamic payload = message;
-        if (message is String) {
-          try {
-            payload = jsonDecode(message);
-          } catch (_) {
-            payload = message;
+          if (channelFunctions == null ||
+              !channelFunctions.containsKey(channelName)) {
+            FlutterQjsLogger.warning('No channel $channelName registered');
+            return null;
           }
-        }
-        return channelFunctions[channelName]!.call(payload);
-      },
-    ]);
-    (setToGlobalObject as JSRef).free();
+
+          dynamic payload = message;
+          if (message is String) {
+            try {
+              payload = jsonDecode(message);
+            } catch (_) {
+              payload = message;
+            }
+          }
+          return channelFunctions[channelName]!.call(payload);
+        },
+      ]);
+    } finally {
+      setToGlobalObject.free();
+    }
   }
 
   @override
