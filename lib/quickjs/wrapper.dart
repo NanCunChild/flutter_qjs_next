@@ -16,7 +16,10 @@ dynamic _parseJSException(Pointer<JSContext> ctx, [Pointer<JSValue>? perr]) {
     err = exception;
   }
   if (perr == null) jsFreeValue(ctx, e);
-  return err;
+  // A failing native call does not always leave an exception behind. Callers
+  // `throw` this, so returning null would surface as a TypeError with no clue
+  // about what actually failed.
+  return err ?? JSError('QuickJS reported a failure without an exception');
 }
 
 void _definePropertyValue(

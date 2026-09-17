@@ -110,7 +110,14 @@ extern "C"
   {
     char *str = (char *)((RuntimeOpaque *)opaque)->channel(ctx, JSChannelType_MODULE, (void *)module_name);
     if (str == 0)
+    {
+      /* The host reports "no such module" by returning null, which leaves no
+         pending exception; without this the failure surfaces as a null error
+         far from the import that caused it. */
+      if (!JS_HasException(ctx))
+        JS_ThrowReferenceError(ctx, "could not load module '%s'", module_name);
       return NULL;
+    }
     JSValue func_val = JS_Eval(ctx, str, strlen(str), module_name, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
     /* Dart allocates module source with malloc; free after copy into QuickJS */
     free(str);
