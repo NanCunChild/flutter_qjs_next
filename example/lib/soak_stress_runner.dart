@@ -498,6 +498,10 @@ Future<SoakStressResult> runSoakStress({
         'peakRss': peakRss,
         'baselineRss': baselineRss,
         'procMemory': _procMemory(),
+        // Splits process RSS into the C heap and everything else (the Dart
+        // heap). A flat arena with climbing RSS means the growth is Dart-side,
+        // not QuickJS and not allocator fragmentation.
+        'nativeHeap': readNativeHeapUsage().toJson(),
         'pool': <String, dynamic>{
           'size': pool.size,
           'idle': pool.idleCount,
@@ -517,7 +521,7 @@ Future<SoakStressResult> runSoakStress({
         'metrics: ops=$totalOps errors=$errors pool size=${pool.size} '
         'idle=${pool.idleCount} inUse=${pool.inUseCount} rss=$rss '
         'peakRss=$peakRss baselineRss=$baselineRss fds=$fds '
-        'web=${env.toJson()} '
+        'web=${env.toJson()} nativeHeap=${readNativeHeapUsage()} '
         'engines=${engines.length} bridge=${readBridgeStats()}',
       );
       // Resource ceilings: each one maps to a hypothesis in
