@@ -1,6 +1,6 @@
 part of '../web_apis.dart';
 
-/// L2 `fetch`. The network itself is performed by the Dart host; JS owns the
+/// `fetch`. The network itself is performed by the Dart host; JS owns the
 /// request/response objects and the back-pressured body stream.
 const String _jsFetch = r'''
 (function (host, internal, natives) {

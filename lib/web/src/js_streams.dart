@@ -1,7 +1,7 @@
 part of '../web_apis.dart';
 
-/// L1 streams: `ReadableStream`, `WritableStream`, `TransformStream`, the
-/// queuing strategies and the encoding streams.
+/// `ReadableStream`, `WritableStream`, `TransformStream`, the queuing
+/// strategies and the encoding streams.
 ///
 /// Deviation: byte streams (`type: 'bytes'`, BYOB readers) are not implemented
 /// and throw `TypeError`.
@@ -9,7 +9,11 @@ const String _jsStreams = r'''
 (function (host, internal, natives) {
   'use strict';
   const g = globalThis;
-  const { define, customInspect, cloneHooks, NOT_CLONED, DOMException, isAbortSignal } = internal;
+  const {
+    define, customInspect, cloneHooks, NOT_CLONED, DOMException, illegal,
+    isAbortSignal, createSignal,
+    TextEncoder, TextDecoder,
+  } = internal;
 
   function deferred() {
     let resolve;
@@ -498,7 +502,7 @@ const String _jsStreams = r'''
   class ReadableStreamDefaultController {
     #controller;
     constructor(key, controller) {
-      if (key !== internal.illegal) throw new TypeError('Illegal constructor');
+      if (key !== illegal) throw new TypeError('Illegal constructor');
       this.#controller = controller;
     }
     get desiredSize() { return controllerDesiredSize(this.#controller); }
@@ -509,7 +513,7 @@ const String _jsStreams = r'''
   Object.defineProperty(ReadableStreamDefaultController.prototype, Symbol.toStringTag,
     { value: 'ReadableStreamDefaultController', configurable: true });
   createReadableController = (controller) =>
-    new ReadableStreamDefaultController(internal.illegal, controller);
+    new ReadableStreamDefaultController(illegal, controller);
 
   class ReadableStreamDefaultReader {
     #reader;
@@ -538,7 +542,7 @@ const String _jsStreams = r'''
     #impl;
     constructor(underlyingSource = undefined, strategy = undefined) {
       // Internal construction from an existing stream record.
-      if (underlyingSource === internal.illegal) {
+      if (underlyingSource === illegal) {
         this.#impl = strategy;
         return;
       }
@@ -677,7 +681,7 @@ const String _jsStreams = r'''
     [customInspect]() { return 'ReadableStream { locked: ' + readableLocked(this.#impl) + ' }'; }
     static {
       getReadable = (value) => (typeof value === 'object' && value !== null && #impl in value ? value.#impl : null);
-      makeReadable = (impl) => new ReadableStream(internal.illegal, impl);
+      makeReadable = (impl) => new ReadableStream(illegal, impl);
     }
   }
   Object.defineProperty(ReadableStream.prototype, Symbol.toStringTag, { value: 'ReadableStream', configurable: true });
@@ -687,12 +691,12 @@ const String _jsStreams = r'''
   class WritableStreamDefaultController {
     #controller;
     constructor(key, controller) {
-      if (key !== internal.illegal) throw new TypeError('Illegal constructor');
+      if (key !== illegal) throw new TypeError('Illegal constructor');
       this.#controller = controller;
     }
     get signal() {
       if (this.#controller.abortSignal === undefined) {
-        this.#controller.abortSignal = internal.createSignal();
+        this.#controller.abortSignal = createSignal();
       }
       return this.#controller.abortSignal;
     }
@@ -703,7 +707,7 @@ const String _jsStreams = r'''
   Object.defineProperty(WritableStreamDefaultController.prototype, Symbol.toStringTag,
     { value: 'WritableStreamDefaultController', configurable: true });
   createWritableController = (controller) =>
-    new WritableStreamDefaultController(internal.illegal, controller);
+    new WritableStreamDefaultController(illegal, controller);
 
   class WritableStreamDefaultWriter {
     #writer;
@@ -747,7 +751,7 @@ const String _jsStreams = r'''
     #impl;
     constructor(underlyingSink = undefined, strategy = undefined) {
       // Internal construction from an existing stream record.
-      if (underlyingSink === internal.illegal) {
+      if (underlyingSink === illegal) {
         this.#impl = strategy;
         return;
       }
@@ -778,7 +782,7 @@ const String _jsStreams = r'''
     [customInspect]() { return 'WritableStream { locked: ' + writableLocked(this.#impl) + ' }'; }
     static {
       getWritable = (value) => (typeof value === 'object' && value !== null && #impl in value ? value.#impl : null);
-      makeWritable = (impl) => new WritableStream(internal.illegal, impl);
+      makeWritable = (impl) => new WritableStream(illegal, impl);
     }
   }
   Object.defineProperty(WritableStream.prototype, Symbol.toStringTag, { value: 'WritableStream', configurable: true });
@@ -856,7 +860,7 @@ const String _jsStreams = r'''
   class TransformStreamDefaultController {
     #state;
     constructor(key, state) {
-      if (key !== internal.illegal) throw new TypeError('Illegal constructor');
+      if (key !== illegal) throw new TypeError('Illegal constructor');
       this.#state = state;
     }
     get desiredSize() { return controllerDesiredSize(this.#state.readable.controller); }
@@ -886,7 +890,7 @@ const String _jsStreams = r'''
       const writableOptions = writableStrategy === undefined || writableStrategy === null ? {} : writableStrategy;
       const readableOptions = readableStrategy === undefined || readableStrategy === null ? {} : readableStrategy;
       const state = { readable: undefined, writable: undefined, controller: undefined, backpressure: deferred() };
-      state.controller = new TransformStreamDefaultController(internal.illegal, state);
+      state.controller = new TransformStreamDefaultController(illegal, state);
       state.backpressure.resolve(undefined);
 
       const transform = (chunk) => {
@@ -959,7 +963,7 @@ const String _jsStreams = r'''
 
   class TextEncoderStream {
     #transform;
-    #encoder = new internal.TextEncoder();
+    #encoder = new TextEncoder();
     constructor() {
       const encoder = this.#encoder;
       this.#transform = new TransformStream({
@@ -977,7 +981,7 @@ const String _jsStreams = r'''
     #transform;
     #decoder;
     constructor(label = 'utf-8', options = undefined) {
-      const decoder = new internal.TextDecoder(label, options);
+      const decoder = new TextDecoder(label, options);
       this.#decoder = decoder;
       this.#transform = new TransformStream({
         transform(chunk, controller) {

@@ -1,6 +1,6 @@
 part of '../web_apis.dart';
 
-/// L1 `Blob`, `File` and `FormData`.
+/// `Blob`, `File` and `FormData`.
 const String _jsBlob = r'''
 (function (host, internal, natives) {
   'use strict';

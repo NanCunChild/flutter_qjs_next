@@ -1,6 +1,6 @@
 part of '../web_apis.dart';
 
-/// L0 core primitives.
+/// Core primitives shared by every other module.
 ///
 /// Completion value: `(natives, host) => { fire, install }`, where
 /// `install(moduleFn, moduleHost)` runs `moduleFn(moduleHost, internal, natives)`
