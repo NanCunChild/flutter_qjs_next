@@ -6,6 +6,11 @@ part of '../web_apis.dart';
 /// `install(name, moduleFn, moduleHost)` runs
 /// `moduleFn(moduleHost, internal, natives)` and records [name] for `has`, so
 /// later modules share private helpers without touching `globalThis`.
+///
+/// Module conventions (checked by `web_apis_internal_names_test.dart`): a
+/// module reads `internal` once, in a leading `const { ... } = internal;`, and
+/// writes it only through `Object.assign(internal, { ... })`. Names from an
+/// optional dependency are used only behind `has('<module>')`.
 const String _jsCore = r'''
 (function (natives, host) {
   'use strict';

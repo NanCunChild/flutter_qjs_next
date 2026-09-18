@@ -8,6 +8,8 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
+
 import '../flutter_qjs_logger.dart';
 import '../javascript_runtime.dart';
 import '../quickjs/quickjs_runtime2.dart';
@@ -71,6 +73,10 @@ class JsWebModule {
   final String? hostConfig;
 
   final String _source;
+
+  /// The module's JS source, for tests that check its use of `internal`.
+  @visibleForTesting
+  String get source => _source;
 
   /// Timers, `queueMicrotask`, `reportError`, `console`, `performance`,
   /// `structuredClone`, `atob` / `btoa`, `DOMException`,
