@@ -50,7 +50,7 @@ When a runtime is constructed, `JavascriptRuntime.init()` installs:
 These are reinstalled after [`reinitialize()`](api/runtime.md) and `softReset()` (pool reset).
 Web APIs are selected per module and installed with their dependency closure:
 `JsWebApis()` installs `core` only, `JsWebApis(modules: {JsWebModule.url})` adds
-URL parsing, `JsWebApis.standard()` installs everything that is pure computation,
+URL parsing, `JsWebApis.standard()` installs every module except `fetch`,
 and `JsWebApis.none()` gives an engine with no Web APIs at all.
 
 ## Evaluating code

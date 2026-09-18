@@ -46,8 +46,9 @@ class JsFetchResponse {
 /// Performs a single HTTP exchange for JS `fetch`.
 typedef JsFetchHandler = Future<JsFetchResponse> Function(JsFetchRequest request);
 
-/// Network access for JS `fetch` (L2). Passing this to [JsWebApis] enables the
-/// global `fetch` and implies the L1 APIs it needs.
+/// Network access for JS `fetch`. Passing this to [JsWebApis] enables the
+/// global `fetch` and installs the modules it requires. This object, not the
+/// module set, is the network policy: see [allowUrl].
 class JsFetchOptions {
   const JsFetchOptions({
     this.allowUrl,

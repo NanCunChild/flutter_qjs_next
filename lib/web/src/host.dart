@@ -77,8 +77,8 @@ class WebApiHost {
         throw ArgumentError.value(
           module,
           'modules',
-          'JsWebModule.fetch grants the "${module.capability}" capability and '
-              'needs JsFetchOptions; pass JsWebApis(fetch: ...)',
+          'JsWebModule.fetch needs ${module.hostConfig}; '
+              'pass JsWebApis(fetch: ...)',
         );
       }
       final fetchHost = _FetchHost(this, options, config.userAgent);
@@ -97,7 +97,7 @@ class WebApiHost {
   ) {
     final source = _load(module);
     try {
-      return _retain(install.invoke([source, moduleHost]));
+      return _retain(install.invoke([module.name, source, moduleHost]));
     } finally {
       source.free();
     }

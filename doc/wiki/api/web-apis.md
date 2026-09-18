@@ -12,51 +12,61 @@ Web APIs are installed per module. You name the modules you want and the runtime
 installs their **dependency closure**, in dependency order. What a module needs
 from another module is the module's business, not yours.
 
-| Module | Requires | Globals |
-|---|---|---|
-| `core` | — | `setTimeout` / `clearTimeout` / `setInterval` / `clearInterval`, `queueMicrotask`, `reportError`, `console`, `performance`, `structuredClone`, `atob` / `btoa`, `DOMException`, `crypto.getRandomValues` / `crypto.randomUUID` |
-| `events` | `core` | `Event`, `CustomEvent`, `EventTarget`, `AbortController`, `AbortSignal` |
-| `encoding` | `core` | `TextEncoder`, `TextDecoder` |
-| `url` | `core` | `URL`, `URLSearchParams` |
-| `crypto` | `core` | `crypto.subtle`, `SubtleCrypto`, `CryptoKey` |
-| `navigator` | `core` | `Navigator`, `navigator` |
-| `streams` | `core`, `events`, `encoding` | `ReadableStream`, `WritableStream`, `TransformStream`, the queuing strategies, `TextEncoderStream`, `TextDecoderStream` |
-| `blob` | `core`, `streams` | `Blob`, `File`, `FormData` |
-| `http` | `core`, `url`, `events`, `streams`, `blob` | `Headers`, `Request`, `Response` |
-| `fetch` | `core`, `http`, `streams` | `fetch` — **needs a capability**, see below |
+Modules are a **functional** split, not a permission split: they let a context
+pay only for the APIs it uses. Leaving a module out is not a sandbox, and
+modules other than `fetch` touch the host too (`core` has timers, `console` and
+the system random source; `navigator` reports the configured user agent). What
+scripts may do outside the heap is set by host objects such as `JsFetchOptions`
+and by `memoryLimit` / `timeout`; see [Security](../guides/security.md).
+
+**Optional** dependencies are never installed on a module's behalf. When you
+install them anyway, they come first and the listed features appear.
+
+| Module | Requires | Optional | Globals |
+|---|---|---|---|
+| `core` | — | — | `setTimeout` / `clearTimeout` / `setInterval` / `clearInterval`, `queueMicrotask`, `reportError`, `console`, `performance`, `structuredClone`, `atob` / `btoa`, `DOMException`, `crypto.getRandomValues` / `crypto.randomUUID` |
+| `events` | `core` | — | `Event`, `CustomEvent`, `EventTarget`, `AbortController`, `AbortSignal` |
+| `encoding` | `core` | — | `TextEncoder`, `TextDecoder` |
+| `url` | `core` | — | `URL`, `URLSearchParams` |
+| `crypto` | `core` | — | `crypto.subtle`, `SubtleCrypto`, `CryptoKey` |
+| `navigator` | `core` | — | `Navigator`, `navigator` |
+| `streams` | `core`, `events` | `encoding` → `TextEncoderStream`, `TextDecoderStream` | `ReadableStream`, `WritableStream`, `TransformStream`, the queuing strategies |
+| `blob` | `core` | `streams` → `Blob.prototype.stream()` | `Blob`, `File`, `FormData` |
+| `http` | `core`, `url`, `events`, `streams` | `blob` → `blob()` / `formData()` on `Request` / `Response`, `Blob` and `FormData` bodies | `Headers`, `Request`, `Response` |
+| `fetch` | `core`, `http`, `events`, `streams` | — | `fetch` — **needs `JsFetchOptions`**, see below |
 
 ```dart
 // Presets.
 const JsWebApis.none();       // nothing at all: plain ECMAScript
 const JsWebApis();            // core only (the default)
-const JsWebApis.standard();   // every pure-computation module
+const JsWebApis.standard();   // every module except fetch
 JsWebApis.standard(fetch: JsFetchOptions(...));
 
 // Or name what you need; dependencies come along.
 const JsWebApis(modules: {JsWebModule.url});   // core + url, 224 KiB
-const JsWebApis(modules: {JsWebModule.http});  // pulls url, events, encoding,
-                                               // streams and blob with it
+const JsWebApis(modules: {JsWebModule.http});  // pulls url, events and streams;
+                                               // add blob for blob()/formData()
 ```
 
 `getJavascriptRuntime(webApis: ...)` and `JsEnginePoolConfig(webApis: ...)` take
 the same object. `JsWebApis.resolvedModules` returns the ordered closure and
 `installs(module)` answers whether a module ends up in it.
 
-### Capabilities
+### `fetch` needs its host configuration
 
-`fetch` is the only module that reaches outside the JS context, so it is the
-only one that cannot be switched on by itself: it is installed when — and only
-when — you pass the policy object that grants it.
+`fetch` cannot be switched on by name alone: it is installed when — and only
+when — you pass `JsFetchOptions`, which carries the network policy
+(`allowUrl`, `maxResponseBytes`, `handler`, …).
 
 ```dart
 JsWebApis(modules: {JsWebModule.fetch})              // ArgumentError
-JsWebApis(fetch: JsFetchOptions(...))                // fetch + its closure
+JsWebApis(fetch: JsFetchOptions(...))                // fetch + its closure, no blob
 JsWebApis.standard(fetch: JsFetchOptions(...))       // everything
 ```
 
-Every other module is pure computation over values already in the heap. Without
-`JsFetchOptions` the engine has no network at all. See
-[Security](../guides/security.md).
+`JsWebApis(fetch: ...)` alone does not install `blob`, so `response.blob()` and
+`response.formData()` are absent; add `JsWebModule.blob` or use `standard`.
+Without `JsFetchOptions` the engine has no network at all.
 
 ## Cost per module
 

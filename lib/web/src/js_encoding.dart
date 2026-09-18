@@ -1,6 +1,6 @@
 part of '../web_apis.dart';
 
-/// L1 encoding: `TextEncoder` and `TextDecoder` (UTF-8 only), backed by the
+/// `TextEncoder` and `TextDecoder` (UTF-8 only), backed by the
 /// native UTF-8 helpers.
 const String _jsEncoding = r'''
 (function (host, internal, natives) {

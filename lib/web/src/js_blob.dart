@@ -1,13 +1,15 @@
 part of '../web_apis.dart';
 
-/// L1 `Blob`, `File` and `FormData`.
+/// `Blob`, `File` and `FormData`. `Blob.prototype.stream` exists only when
+/// `streams` is installed.
 const String _jsBlob = r'''
 (function (host, internal, natives) {
   'use strict';
   const g = globalThis;
   const {
-    define, customInspect, cloneHooks, NOT_CLONED, DOMException, illegal,
-    bufferSourceBytes, createReadableStream, controllerEnqueue, controllerClose, makeReadable,
+    define, customInspect, cloneHooks, NOT_CLONED, DOMException, illegal, has,
+    bufferSourceBytes,
+    createReadableStream, controllerEnqueue, controllerClose, makeReadable,
   } = internal;
 
   function normalizeType(type) {
@@ -115,6 +117,7 @@ const String _jsBlob = r'''
     }
   }
   Object.defineProperty(Blob.prototype, Symbol.toStringTag, { value: 'Blob', configurable: true });
+  if (!has('streams')) delete Blob.prototype.stream;
 
   let createFile;
   class File extends Blob {

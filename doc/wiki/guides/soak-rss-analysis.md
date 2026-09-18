@@ -29,6 +29,12 @@ Open charts: `soak_profiles/report/index.html`, `20260722T114650Z/report/index.h
 
 ## Executive summary
 
+> **Superseded in part (2026-09-19).** The non-fetch climb below was mostly a
+> real Dart-side leak: `jsCall` posted a wake-up message to an event-loop port
+> nobody listened to. Fixed in `9634345`; see
+> [Update 2026-09-19](#update-2026-09-19--the-non-fetch-climb-was-the-event-loop-port).
+> Read the table as the pre-fix state.
+
 | Question | Answer |
 |----------|--------|
 | Is the old `JSValue*` / defineProperty box leak back? | **No** — bridge `allocCalls == freeCalls`; QJS heap flat or **down** |
@@ -275,6 +281,56 @@ Read `nativeHeap.arena` / `nativeHeap.inUse` in `soak_metrics.jsonl` first: if
 they are flat while `rss` climbs, do not go looking in QuickJS or in the
 allocator.
 
+## Update 2026-09-19 — the non-fetch climb was the event-loop port
+
+`profile=all` (no Web APIs, so no fetch) still grew linearly at ~28 B/op on
+`75f5289`: 172 → 947 MB in 1 h, with the QuickJS heap, C heap, bridge, fds and
+`dartRefs` all flat.
+
+**Cause.** `jsCall` posted `#call` to the runtime's `ReceivePort` on every call,
+without the `eventLoopActive` check `jsEval` already had. Only `dispatch()`
+listens to that port, and pooled engines never run it. An unlistened
+`ReceivePort` buffers each message as a `_DelayedData` (32 B) in its
+`_PendingEvents` queue. The port is created once per engine and closed only in
+`dispose()` (resets do not recreate it), so the queue grows for the life of the
+engine, which for a pool is the life of the process. `JSInvokable.invoke`,
+`evaluateJson` (it calls `JSON.stringify` through `jsCall`) and `callFunction`
+all go through `jsCall`; the `all` mix averages ~0.7 calls per op.
+
+**A/B** (same tree, only the guard toggled; `all`, `web=none`, pool 32 / workers
+32, heap snapshot at 120 s):
+
+| | guard removed (= `75f5289`) | guard (`9634345`) |
+|---|---|---|
+| `_DelayedData` on the Dart heap | **417 543, 13.4 MB** | none |
+| `_PendingEvents` | 36 (≈ one per engine) | 5 |
+| RSS slope, 20–115 s | 36.5 B/op | 11.4 B/op (warm-up, see below) |
+
+417 543 messages over ~600 k ops × 32 B ≈ 22 B/op, which matches the 25 B/op gap.
+
+**1 h confirmation** (`9634345`, same config, `SOAK_MAX_RSS_GROWTH=0`):
+
+| | `75f5289` | `9634345` |
+|---|---|---|
+| ops / errors | 25.9 M / 0 | 18.9 M / 0 |
+| RSS at 300 s → 3500 s | 263 → 870 MB | 207 → 209 MB |
+| slope 300–1800 s | 655 MB/h, 26.1 B/op | 2.2 MB/h, 0.13 B/op |
+| slope 1800–3500 s | 707 MB/h, 29.4 B/op | 3.2 MB/h, 0.17 B/op |
+| end RSS / peak | 947 / 947 MB | 205 / 220 MB |
+
+After ~5 min of warm-up RSS stays in a 203–211 MB band for the rest of the hour.
+
+**What this means for the 2026-07 matrix (not re-run).** Its pattern fits the
+same cause: `tiny` (evaluate only, which goes through the guarded `jsEval`) and
+`js_to_dart` plateaued, while `dart_to_js` and `no_typed_array`, which call JS
+functions, climbed 1.1–1.4 GiB/h. The "fragmentation / pages not returned"
+reading there is most likely wrong for those profiles; re-run them on
+`9634345` or later before relying on those numbers.
+
+Regression test: `example/test/event_loop_port_test.dart` makes 1000 calls
+with no `dispatch()` running and asserts nothing is waiting on `port` (it
+sees 1001 messages with the guard removed).
+
 ---
 
 ## Test instructions
@@ -394,3 +450,5 @@ flutter test test/typed_array_test.dart
 | 2026-07-22 | `20260722T080602Z` | 1 h dart_to_js A/B; sawtooth + rising floor |
 | 2026-07-22 | **`soak_profiles/`** | Full 1 h tiny / no_typed_array / dart_to_js; **no_typed_array linear without TA** |
 | 2026-07-22 | **`20260722T114650Z/`** | Full 1 h js_to_dart; **reset_off plateaus** |
+| 2026-09-17 | `profile=all`, `web_fetch`, `op:<name>` | C heap flat; fetch growth is `dart:io` `abort()` (see Update 2026-09-17) |
+| 2026-09-19 | `profile=all` 1 h, `75f5289` vs `9634345` + 150 s A/B with heap snapshot | Non-fetch climb was `jsCall` queueing on the unlistened event-loop port; fixed, plateaus at ~207 MB |

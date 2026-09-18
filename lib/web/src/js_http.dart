@@ -1,15 +1,17 @@
 part of '../web_apis.dart';
 
-/// L1 HTTP types: `Headers`, `Request`, `Response` and the body mixin.
-/// `fetch` itself lives in the L2 module.
+/// HTTP types: `Headers`, `Request`, `Response` and the body mixin. `fetch`
+/// itself lives in the `fetch` module. `blob()` and `formData()` exist only
+/// when `blob` is installed.
 const String _jsHttp = r'''
 (function (host, internal, natives) {
   'use strict';
   const g = globalThis;
   const {
-    define, customInspect, cloneHooks, NOT_CLONED, DOMException, illegal,
-    bufferSourceBytes, isBlob, getBlobBytes, createBlob, createFile, isFormData, formDataEntries,
-    URLSearchParams, searchParamsPairs, serializeFormUrlencoded, parseURL, serializeURL,
+    define, customInspect, cloneHooks, NOT_CLONED, DOMException, illegal, has,
+    bufferSourceBytes, isBlob, isFormData,
+    FormData, getBlobBytes, createBlob, createFile, formDataEntries,
+    URLSearchParams, searchParamsPairs, serializeFormUrlencoded, parseFormUrlencoded, parseURL, serializeURL,
     isAbortSignal, createSignal, signalAbort,
     createReadableStream, controllerEnqueue, controllerClose, controllerError,
     makeReadable, getReadable, acquireReader, readerRead, readerRelease, readableCancel,
@@ -275,7 +277,7 @@ const String _jsHttp = r'''
   }
 
   function parseMultipart(bytes, boundary) {
-    const formData = new g.FormData();
+    const formData = new FormData();
     const entries = formDataEntries(formData);
     const marker = natives.utf8Encode('--' + boundary);
     const indexOf = (needle, from) => {
@@ -368,9 +370,9 @@ const String _jsHttp = r'''
           return parseMultipart(bytes, match[2]);
         }
         if (type !== null && type.toLowerCase().startsWith('application/x-www-form-urlencoded')) {
-          const formData = new g.FormData();
+          const formData = new FormData();
           const entries = formDataEntries(formData);
-          for (const pair of internal.parseFormUrlencoded(natives.utf8Decode(bytes, false))) {
+          for (const pair of parseFormUrlencoded(natives.utf8Decode(bytes, false))) {
             entries.push([pair[0], pair[1]]);
           }
           return formData;
@@ -642,6 +644,12 @@ const String _jsHttp = r'''
     }
   }
   Object.defineProperty(Response.prototype, Symbol.toStringTag, { value: 'Response', configurable: true });
+  if (!has('blob')) {
+    delete Request.prototype.blob;
+    delete Request.prototype.formData;
+    delete Response.prototype.blob;
+    delete Response.prototype.formData;
+  }
 
   cloneHooks.push((value) => {
     if (responseState(value) !== null || requestState(value) !== null ||

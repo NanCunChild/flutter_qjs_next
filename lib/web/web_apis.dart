@@ -8,6 +8,8 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
+
 import '../flutter_qjs_logger.dart';
 import '../javascript_runtime.dart';
 import '../quickjs/quickjs_runtime2.dart';
@@ -28,21 +30,31 @@ part 'src/sha.dart';
 
 /// One independently installable unit of the Web platform API.
 ///
+/// Modules are a **functional** split: they exist so a context only pays, in
+/// heap and install time, for the APIs it uses. They are **not** a permission
+/// or security boundary. Leaving a module out does not sandbox a script, and
+/// several modules reach the host (`core` has timers, `console` and the system
+/// random source; `navigator` reports the configured user agent). What a
+/// script may do outside the heap is decided by the host objects you pass in,
+/// such as [JsFetchOptions.allowUrl], and by the runtime's `memoryLimit` and
+/// `timeout`. See `doc/wiki/guides/security.md`.
+///
 /// Modules declare what they need in [requires]; [JsWebApis] installs the
 /// dependency closure of whatever you ask for, in dependency order. Depending
 /// on another module is an implementation detail of the module, not something
 /// callers have to model.
 ///
-/// A module whose [capability] is non-null reaches outside the JS context and
-/// can only be installed together with the host policy object that grants it
-/// (today: [fetch], which needs [JsFetchOptions]). Every other module is pure
-/// computation over values already in the heap.
+/// A module can also list [optional] modules: they are never pulled in, but
+/// when they are installed anyway they come first, and the module enables the
+/// features that need them (for example `TextEncoderStream` in [streams] needs
+/// [encoding]).
 class JsWebModule {
   const JsWebModule._(
     this.name,
     this.requires,
     this._source, {
-    this.capability,
+    this.optional = const [],
+    this.hostConfig,
   });
 
   /// Stable identifier, also the bytecode cache key and the script name that
@@ -52,11 +64,19 @@ class JsWebModule {
   /// Modules that must be installed before this one.
   final List<JsWebModule> requires;
 
-  /// Host resource this module exposes to scripts, or `null` if it is pure
-  /// computation.
-  final String? capability;
+  /// Modules this one uses when present. Not installed on its behalf.
+  final List<JsWebModule> optional;
+
+  /// Name of the host configuration object this module cannot be installed
+  /// without, or `null` if it needs none. Today only [fetch] has one
+  /// ([JsFetchOptions]).
+  final String? hostConfig;
 
   final String _source;
+
+  /// The module's JS source, for tests that check its use of `internal`.
+  @visibleForTesting
+  String get source => _source;
 
   /// Timers, `queueMicrotask`, `reportError`, `console`, `performance`,
   /// `structuredClone`, `atob` / `btoa`, `DOMException`,
@@ -80,36 +100,43 @@ class JsWebModule {
   /// `Navigator` and the `navigator` global, including `navigator.userAgent`.
   static const navigator = JsWebModule._('navigator', [core], _jsNavigator);
 
-  /// `ReadableStream` / `WritableStream` / `TransformStream`, the queuing
-  /// strategies, `TextEncoderStream` / `TextDecoderStream`.
-  static const streams = JsWebModule._('streams', [
-    core,
-    events,
-    encoding,
-  ], _jsStreams);
-
-  /// `Blob`, `File`, `FormData`.
-  static const blob = JsWebModule._('blob', [core, streams], _jsBlob);
-
-  /// `Headers`, `Request`, `Response` and the body mixin.
-  static const http = JsWebModule._('http', [
-    core,
-    url,
-    events,
-    streams,
-    blob,
-  ], _jsHttp);
-
-  /// The global `fetch`. Needs [JsFetchOptions]: it is the only module that
-  /// opens sockets.
-  static const fetch = JsWebModule._(
-    'fetch',
-    [core, http, streams],
-    _jsFetch,
-    capability: 'network',
+  /// `ReadableStream` / `WritableStream` / `TransformStream` and the queuing
+  /// strategies. `TextEncoderStream` / `TextDecoderStream` need [encoding].
+  static const streams = JsWebModule._(
+    'streams',
+    [core, events],
+    _jsStreams,
+    optional: [encoding],
   );
 
-  /// Every module that is pure computation, i.e. all of them except [fetch].
+  /// `Blob`, `File`, `FormData`. `Blob.prototype.stream` needs [streams].
+  static const blob = JsWebModule._(
+    'blob',
+    [core],
+    _jsBlob,
+    optional: [streams],
+  );
+
+  /// `Headers`, `Request`, `Response` and the body mixin. `blob()` and
+  /// `formData()`, and `Blob` / `FormData` request bodies, need [blob].
+  static const http = JsWebModule._(
+    'http',
+    [core, url, events, streams],
+    _jsHttp,
+    optional: [blob],
+  );
+
+  /// The global `fetch`. Needs [JsFetchOptions], which carries the network
+  /// policy; see [hostConfig].
+  static const fetch = JsWebModule._(
+    'fetch',
+    [core, http, events, streams],
+    _jsFetch,
+    hostConfig: 'JsFetchOptions',
+  );
+
+  /// Every module that needs no host configuration, i.e. all of them except
+  /// [fetch].
   static const standard = {
     core,
     events,
@@ -155,8 +182,8 @@ class JsWebApis {
   /// module compiler runs in.
   const JsWebApis.none() : this(modules: const {});
 
-  /// Installs every pure-computation module ([JsWebModule.standard]), plus
-  /// `fetch` when [fetch] is given.
+  /// Installs every module that needs no host configuration
+  /// ([JsWebModule.standard]), plus `fetch` when [fetch] is given.
   const JsWebApis.standard({
     JsFetchOptions? fetch,
     String userAgent = _defaultUserAgent,
@@ -178,17 +205,31 @@ class JsWebApis {
 
   /// The dependency closure of [modules] (plus [JsWebModule.fetch] when
   /// [fetch] is set), ordered so that every module comes after everything it
-  /// requires.
+  /// requires and after every installed module it lists as optional.
   List<JsWebModule> get resolvedModules {
     final requested = fetch == null
         ? modules
         : <JsWebModule>{...modules, JsWebModule.fetch};
+
+    // Only hard requirements decide what gets installed.
+    final closure = <String>{};
+    void collect(JsWebModule module) {
+      if (!closure.add(module.name)) return;
+      module.requires.forEach(collect);
+    }
+
+    requested.forEach(collect);
+
+    // Optional edges only affect order, and only between installed modules.
     final order = <JsWebModule>[];
     final seen = <String>{};
     void visit(JsWebModule module) {
       if (!seen.add(module.name)) return;
       for (final dependency in module.requires) {
         visit(dependency);
+      }
+      for (final dependency in module.optional) {
+        if (closure.contains(dependency.name)) visit(dependency);
       }
       order.add(module);
     }

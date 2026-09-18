@@ -1,13 +1,13 @@
 part of '../web_apis.dart';
 
-/// L1 `URL` and `URLSearchParams`, following the WHATWG URL parser.
+/// `URL` and `URLSearchParams`, following the WHATWG URL parser.
 /// Deviation: IDNA is approximated by NFC + lowercase + Punycode, without the
 /// full UTS #46 mapping tables.
 const String _jsUrl = r'''
 (function (host, internal, natives) {
   'use strict';
   const g = globalThis;
-  const { define, customInspect, cloneHooks, NOT_CLONED, DOMException } = internal;
+  const { define, customInspect, cloneHooks, NOT_CLONED, DOMException, illegal } = internal;
 
   const SPECIAL_PORTS = { __proto__: null, ftp: 21, file: null, http: 80, https: 443, ws: 80, wss: 443 };
   const isSpecial = (scheme) => scheme in SPECIAL_PORTS;
@@ -934,7 +934,7 @@ const String _jsUrl = r'''
 
     constructor(url, base = undefined) {
       // Internal construction from an existing URL record.
-      if (url === internal.illegal) {
+      if (url === illegal) {
         this.#record = base;
         this.#params = createSearchParams(this, base.query);
         return;
@@ -1041,7 +1041,7 @@ const String _jsUrl = r'''
     [customInspect]() { return 'URL { href: ' + JSON.stringify(this.href) + ' }'; }
     static {
       urlRecord = (value) => (typeof value === 'object' && value !== null && #record in value ? value.#record : null);
-      createURL = (record) => new URL(internal.illegal, record);
+      createURL = (record) => new URL(illegal, record);
     }
   }
   Object.defineProperty(URL.prototype, Symbol.toStringTag, { value: 'URL', configurable: true });

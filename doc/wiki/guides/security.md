@@ -36,14 +36,18 @@ final js = getJavascriptRuntime(
 
 - **Do not** register bridges that expose privileged host operations under names scripts can guess.  
 - Validate and authorize every `onMessage` payload.  
+- **Web API modules are a functional split, not a permission model.** Choosing modules controls
+  which APIs exist and what they cost; it does not sandbox anything. Host access is governed by the
+  objects you pass in (`JsFetchOptions`, bridges, `onMessage` handlers) and by `memoryLimit` /
+  `timeout`.
 - **Network is off unless you ask for it.** `fetch` exists only when the runtime is built with
-  `webApis: JsWebApis(fetch: JsFetchOptions(...))` — `fetch` is the only module that carries a
-  capability, and it cannot be installed without that policy object. When you enable it, set `allowUrl` (checked for
+  `webApis: JsWebApis(fetch: JsFetchOptions(...))`; it cannot be installed without that
+  configuration object. When you enable it, set `allowUrl` (checked for
   the first URL **and every redirect hop**), keep `maxResponseBytes` finite, and consider a custom
   `handler` that routes through your own HTTP stack. See [Web APIs](../api/web-apis.md).
-- Every other Web API module is pure computation over values already in the heap: timers, `console`,
-  encoding, `URL`, streams, `Blob` and `crypto.subtle` reach nothing outside the context.
-  `JsWebApis.none()` removes even those.
+- The other modules open no sockets or files, but some do reach the host: `core` schedules Dart
+  timers, writes `console` output to the logger and reads the system random source; `navigator`
+  reports the configured user agent. `JsWebApis.none()` installs none of them.
 - Module loading (`moduleHandler`) returns source you supply; treat requested module names as untrusted input.
 
 ## What limits do *not* provide

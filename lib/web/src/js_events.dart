@@ -1,6 +1,6 @@
 part of '../web_apis.dart';
 
-/// L1 events: `Event`, `CustomEvent`, `EventTarget`, `AbortController`,
+/// `Event`, `CustomEvent`, `EventTarget`, `AbortController`,
 /// `AbortSignal`.
 const String _jsEvents = r'''
 (function (host, internal, natives) {
@@ -126,7 +126,7 @@ const String _jsEvents = r'''
         capture = Boolean(options.capture);
         once = Boolean(options.once);
         signal = options.signal;
-        if (signal !== undefined && signal !== null && !internal.isAbortSignal(signal)) {
+        if (signal !== undefined && signal !== null && !isAbortSignal(signal)) {
           throw new TypeError("Failed to execute 'addEventListener' on 'EventTarget': member signal is not of type AbortSignal.");
         }
       }
