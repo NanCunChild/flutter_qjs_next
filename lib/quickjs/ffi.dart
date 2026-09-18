@@ -1445,7 +1445,13 @@ Pointer<JSValue> jsCall(
   final jsRet = _jsCall(ctx, funcObj, _thisObj, argv.length, jsArgs);
   jsFreeValue(ctx, func1);
   malloc.free(jsArgs);
-  runtimeOpaques[jsGetRuntime(ctx)]?._port.sendPort.send(#call);
+  // Only wake a running [dispatch] loop. Without the guard the message queues
+  // on a ReceivePort nobody listens to and the engine's port buffer grows for
+  // the life of the runtime (same reason [jsEval] checks this flag).
+  final opaque = runtimeOpaques[jsGetRuntime(ctx)];
+  if (opaque?.eventLoopActive ?? false) {
+    opaque!._port.sendPort.send(#call);
+  }
   return jsRet;
 }
 
