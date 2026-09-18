@@ -1,4 +1,4 @@
-## Unreleased
+## 1.5.0
 
 * **Breaking (Web APIs):** optional module dependencies. A module's `optional` modules are never installed on its behalf; when they are installed anyway they come first and enable extra features. `streams` no longer pulls in `encoding` (`TextEncoderStream` / `TextDecoderStream` appear only with `encoding`), `blob` no longer pulls in `streams` (`Blob.prototype.stream` only with `streams`), and `http` no longer pulls in `blob` (`blob()` / `formData()` and Blob/FormData bodies only with `blob`). So `JsWebApis(modules: {JsWebModule.http})` no longer defines `Blob`, and `JsWebApis(fetch: ...)` alone has no `response.blob()`; add `JsWebModule.blob` or use `JsWebApis.standard(...)`, which is unchanged. `fetch` now declares its direct dependency on `events`.
 * **Breaking (Web APIs):** `JsWebModule.capability` is renamed `hostConfig` (value `'JsFetchOptions'`). Modules are documented as a functional split, not a permission model: leaving a module out does not sandbox a script; host access is governed by `JsFetchOptions`, bridges, `memoryLimit` and `timeout`.
