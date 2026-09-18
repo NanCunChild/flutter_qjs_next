@@ -28,6 +28,15 @@ part 'src/sha.dart';
 
 /// One independently installable unit of the Web platform API.
 ///
+/// Modules are a **functional** split: they exist so a context only pays, in
+/// heap and install time, for the APIs it uses. They are **not** a permission
+/// or security boundary. Leaving a module out does not sandbox a script, and
+/// several modules reach the host (`core` has timers, `console` and the system
+/// random source; `navigator` reports the configured user agent). What a
+/// script may do outside the heap is decided by the host objects you pass in,
+/// such as [JsFetchOptions.allowUrl], and by the runtime's `memoryLimit` and
+/// `timeout`. See `doc/wiki/guides/security.md`.
+///
 /// Modules declare what they need in [requires]; [JsWebApis] installs the
 /// dependency closure of whatever you ask for, in dependency order. Depending
 /// on another module is an implementation detail of the module, not something
@@ -37,18 +46,13 @@ part 'src/sha.dart';
 /// when they are installed anyway they come first, and the module enables the
 /// features that need them (for example `TextEncoderStream` in [streams] needs
 /// [encoding]).
-///
-/// A module whose [capability] is non-null reaches outside the JS context and
-/// can only be installed together with the host policy object that grants it
-/// (today: [fetch], which needs [JsFetchOptions]). Every other module is pure
-/// computation over values already in the heap.
 class JsWebModule {
   const JsWebModule._(
     this.name,
     this.requires,
     this._source, {
     this.optional = const [],
-    this.capability,
+    this.hostConfig,
   });
 
   /// Stable identifier, also the bytecode cache key and the script name that
@@ -61,9 +65,10 @@ class JsWebModule {
   /// Modules this one uses when present. Not installed on its behalf.
   final List<JsWebModule> optional;
 
-  /// Host resource this module exposes to scripts, or `null` if it is pure
-  /// computation.
-  final String? capability;
+  /// Name of the host configuration object this module cannot be installed
+  /// without, or `null` if it needs none. Today only [fetch] has one
+  /// ([JsFetchOptions]).
+  final String? hostConfig;
 
   final String _source;
 
@@ -115,16 +120,17 @@ class JsWebModule {
     optional: [blob],
   );
 
-  /// The global `fetch`. Needs [JsFetchOptions]: it is the only module that
-  /// opens sockets.
+  /// The global `fetch`. Needs [JsFetchOptions], which carries the network
+  /// policy; see [hostConfig].
   static const fetch = JsWebModule._(
     'fetch',
     [core, http, events, streams],
     _jsFetch,
-    capability: 'network',
+    hostConfig: 'JsFetchOptions',
   );
 
-  /// Every module that is pure computation, i.e. all of them except [fetch].
+  /// Every module that needs no host configuration, i.e. all of them except
+  /// [fetch].
   static const standard = {
     core,
     events,
@@ -170,8 +176,8 @@ class JsWebApis {
   /// module compiler runs in.
   const JsWebApis.none() : this(modules: const {});
 
-  /// Installs every pure-computation module ([JsWebModule.standard]), plus
-  /// `fetch` when [fetch] is given.
+  /// Installs every module that needs no host configuration
+  /// ([JsWebModule.standard]), plus `fetch` when [fetch] is given.
   const JsWebApis.standard({
     JsFetchOptions? fetch,
     String userAgent = _defaultUserAgent,

@@ -255,7 +255,7 @@ void main() {
     });
   });
 
-  test('a capability module cannot be installed without its policy', () {
+  test('fetch cannot be installed without its host configuration', () {
     expect(
       () => QuickJsRuntime2(
         webApis: const JsWebApis(modules: {JsWebModule.fetch}),
@@ -264,7 +264,7 @@ void main() {
         isA<ArgumentError>().having(
           (e) => e.message,
           'message',
-          allOf(contains('network'), contains('JsFetchOptions')),
+          contains('JsFetchOptions'),
         ),
       ),
     );
