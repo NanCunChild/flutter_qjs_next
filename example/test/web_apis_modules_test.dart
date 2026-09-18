@@ -20,21 +20,19 @@ void main() {
         'core',
         'url',
       ]);
-      expect(resolve(const JsWebApis(modules: {JsWebModule.blob})), [
+      expect(resolve(const JsWebApis(modules: {JsWebModule.streams})), [
         'core',
         'events',
-        'encoding',
         'streams',
-        'blob',
       ]);
     });
 
-    test('every module comes after everything it requires', () {
+    test('every module comes after everything it requires or uses', () {
       final order = JsWebApis.standard(
         fetch: const JsFetchOptions(),
       ).resolvedModules;
       for (var i = 0; i < order.length; i++) {
-        for (final dependency in order[i].requires) {
+        for (final dependency in [...order[i].requires, ...order[i].optional]) {
           expect(
             order.indexWhere((m) => m.name == dependency.name),
             lessThan(i),
@@ -53,10 +51,41 @@ void main() {
       expect(order.toSet(), hasLength(order.length));
     });
 
+    test('an optional dependency is not pulled in', () {
+      expect(resolve(const JsWebApis(modules: {JsWebModule.blob})), [
+        'core',
+        'blob',
+      ]);
+      expect(
+        resolve(const JsWebApis(modules: {JsWebModule.http})),
+        isNot(anyOf(contains('blob'), contains('encoding'))),
+      );
+    });
+
+    test('an optional dependency that is installed comes first', () {
+      // Requested in the "wrong" order on purpose.
+      expect(
+        resolve(
+            const JsWebApis(modules: {JsWebModule.blob, JsWebModule.streams})),
+        ['core', 'events', 'streams', 'blob'],
+      );
+      expect(
+        resolve(
+          const JsWebApis(modules: {JsWebModule.streams, JsWebModule.encoding}),
+        ),
+        ['core', 'events', 'encoding', 'streams'],
+      );
+      final order = resolve(
+        const JsWebApis(modules: {JsWebModule.http, JsWebModule.blob}),
+      );
+      expect(order.indexOf('blob'), lessThan(order.indexOf('http')));
+    });
+
     test('fetch implies its dependencies but not unrelated modules', () {
       final withFetch = resolve(JsWebApis(fetch: const JsFetchOptions()));
       expect(withFetch, contains('http'));
       expect(withFetch, isNot(contains('crypto')));
+      expect(withFetch, isNot(contains('blob')));
       expect(
         resolve(JsWebApis.standard(fetch: const JsFetchOptions())),
         contains('crypto'),
@@ -83,14 +112,14 @@ void main() {
       );
     });
 
-    test('blob transitively installs streams and encoding, not url', () {
+    test('blob alone installs nothing else', () {
       expect(
         probe(
           const JsWebApis(modules: {JsWebModule.blob}),
           '[typeof Blob, typeof ReadableStream, typeof TextEncoder, '
           'typeof URL, typeof Headers]',
         ),
-        ['function', 'function', 'function', 'undefined', 'undefined'],
+        ['function', 'undefined', 'undefined', 'undefined', 'undefined'],
       );
     });
 
@@ -135,6 +164,93 @@ void main() {
           '[typeof navigator.userAgent, typeof crypto.subtle]',
         ),
         ['string', 'undefined'],
+      );
+    });
+  });
+
+  group('optional dependencies', () {
+    test('streams: encoding streams need encoding', () {
+      const probeCode = '[typeof ReadableStream, typeof TextEncoderStream, '
+          'typeof TextDecoderStream]';
+      expect(
+        probe(const JsWebApis(modules: {JsWebModule.streams}), probeCode),
+        ['function', 'undefined', 'undefined'],
+      );
+      expect(
+        probe(
+          const JsWebApis(
+            modules: {JsWebModule.streams, JsWebModule.encoding},
+          ),
+          probeCode,
+        ),
+        ['function', 'function', 'function'],
+      );
+    });
+
+    test('blob: Blob.prototype.stream needs streams', () {
+      expect(
+        probe(
+          const JsWebApis(modules: {JsWebModule.blob}),
+          "['stream' in Blob.prototype, new Blob(['ab']).size]",
+        ),
+        [false, 2],
+      );
+      expect(
+        probe(
+          const JsWebApis(modules: {JsWebModule.blob, JsWebModule.streams}),
+          "new Blob(['ab']).stream() instanceof ReadableStream",
+        ),
+        true,
+      );
+    });
+
+    test('http: blob() and formData() need blob', () {
+      const probeCode =
+          "['blob' in Response.prototype, 'formData' in Request.prototype, "
+          "typeof new Response('x').text]";
+      expect(
+        probe(const JsWebApis(modules: {JsWebModule.http}), probeCode),
+        [false, false, 'function'],
+      );
+      expect(
+        probe(
+          const JsWebApis(modules: {JsWebModule.http, JsWebModule.blob}),
+          probeCode,
+        ),
+        [true, true, 'function'],
+      );
+    });
+
+    test('http without blob still takes the other body types', () async {
+      final js = QuickJsRuntime2(
+        timeout: 5000,
+        webApis: const JsWebApis(modules: {JsWebModule.http}),
+      );
+      addTearDown(js.dispose);
+      final started = js.evaluate('''
+        Promise.all([
+          new Response('text').text(),
+          new Response(new Uint8Array([104, 105])).text(),
+          new Request('https://example.com', {
+            method: 'POST', body: new URLSearchParams('a=1&b=2'),
+          }).text(),
+        ]).then((v) => JSON.stringify(v))
+      ''');
+      if (started.isError) fail(started.stringResult);
+      final settled = await js.handlePromise(
+        started,
+        timeout: const Duration(seconds: 5),
+      );
+      expect(settled.rawResult, '["text","hi","a=1&b=2"]');
+    });
+
+    test('fetch alone has fetch but not blob()', () {
+      expect(
+        probe(
+          JsWebApis(fetch: const JsFetchOptions()),
+          "[typeof fetch, 'blob' in Response.prototype, typeof Blob]",
+        ),
+        ['function', false, 'undefined'],
       );
     });
   });

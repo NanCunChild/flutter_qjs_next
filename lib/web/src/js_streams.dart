@@ -1,7 +1,7 @@
 part of '../web_apis.dart';
 
 /// `ReadableStream`, `WritableStream`, `TransformStream`, the queuing
-/// strategies and the encoding streams.
+/// strategies and, when `encoding` is installed, the encoding streams.
 ///
 /// Deviation: byte streams (`type: 'bytes'`, BYOB readers) are not implemented
 /// and throw `TypeError`.
@@ -10,7 +10,7 @@ const String _jsStreams = r'''
   'use strict';
   const g = globalThis;
   const {
-    define, customInspect, cloneHooks, NOT_CLONED, DOMException, illegal,
+    define, customInspect, cloneHooks, NOT_CLONED, DOMException, illegal, has,
     isAbortSignal, createSignal,
     TextEncoder, TextDecoder,
   } = internal;
@@ -1024,7 +1024,9 @@ const String _jsStreams = r'''
   define(g, 'TransformStreamDefaultController', TransformStreamDefaultController);
   define(g, 'CountQueuingStrategy', CountQueuingStrategy);
   define(g, 'ByteLengthQueuingStrategy', ByteLengthQueuingStrategy);
-  define(g, 'TextEncoderStream', TextEncoderStream);
-  define(g, 'TextDecoderStream', TextDecoderStream);
+  if (has('encoding')) {
+    define(g, 'TextEncoderStream', TextEncoderStream);
+    define(g, 'TextDecoderStream', TextDecoderStream);
+  }
 })
 ''';

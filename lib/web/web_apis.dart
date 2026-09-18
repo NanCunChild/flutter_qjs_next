@@ -33,6 +33,11 @@ part 'src/sha.dart';
 /// on another module is an implementation detail of the module, not something
 /// callers have to model.
 ///
+/// A module can also list [optional] modules: they are never pulled in, but
+/// when they are installed anyway they come first, and the module enables the
+/// features that need them (for example `TextEncoderStream` in [streams] needs
+/// [encoding]).
+///
 /// A module whose [capability] is non-null reaches outside the JS context and
 /// can only be installed together with the host policy object that grants it
 /// (today: [fetch], which needs [JsFetchOptions]). Every other module is pure
@@ -42,6 +47,7 @@ class JsWebModule {
     this.name,
     this.requires,
     this._source, {
+    this.optional = const [],
     this.capability,
   });
 
@@ -51,6 +57,9 @@ class JsWebModule {
 
   /// Modules that must be installed before this one.
   final List<JsWebModule> requires;
+
+  /// Modules this one uses when present. Not installed on its behalf.
+  final List<JsWebModule> optional;
 
   /// Host resource this module exposes to scripts, or `null` if it is pure
   /// computation.
@@ -80,31 +89,37 @@ class JsWebModule {
   /// `Navigator` and the `navigator` global, including `navigator.userAgent`.
   static const navigator = JsWebModule._('navigator', [core], _jsNavigator);
 
-  /// `ReadableStream` / `WritableStream` / `TransformStream`, the queuing
-  /// strategies, `TextEncoderStream` / `TextDecoderStream`.
-  static const streams = JsWebModule._('streams', [
-    core,
-    events,
-    encoding,
-  ], _jsStreams);
+  /// `ReadableStream` / `WritableStream` / `TransformStream` and the queuing
+  /// strategies. `TextEncoderStream` / `TextDecoderStream` need [encoding].
+  static const streams = JsWebModule._(
+    'streams',
+    [core, events],
+    _jsStreams,
+    optional: [encoding],
+  );
 
-  /// `Blob`, `File`, `FormData`.
-  static const blob = JsWebModule._('blob', [core, streams], _jsBlob);
+  /// `Blob`, `File`, `FormData`. `Blob.prototype.stream` needs [streams].
+  static const blob = JsWebModule._(
+    'blob',
+    [core],
+    _jsBlob,
+    optional: [streams],
+  );
 
-  /// `Headers`, `Request`, `Response` and the body mixin.
-  static const http = JsWebModule._('http', [
-    core,
-    url,
-    events,
-    streams,
-    blob,
-  ], _jsHttp);
+  /// `Headers`, `Request`, `Response` and the body mixin. `blob()` and
+  /// `formData()`, and `Blob` / `FormData` request bodies, need [blob].
+  static const http = JsWebModule._(
+    'http',
+    [core, url, events, streams],
+    _jsHttp,
+    optional: [blob],
+  );
 
   /// The global `fetch`. Needs [JsFetchOptions]: it is the only module that
   /// opens sockets.
   static const fetch = JsWebModule._(
     'fetch',
-    [core, http, streams],
+    [core, http, events, streams],
     _jsFetch,
     capability: 'network',
   );
@@ -178,17 +193,31 @@ class JsWebApis {
 
   /// The dependency closure of [modules] (plus [JsWebModule.fetch] when
   /// [fetch] is set), ordered so that every module comes after everything it
-  /// requires.
+  /// requires and after every installed module it lists as optional.
   List<JsWebModule> get resolvedModules {
     final requested = fetch == null
         ? modules
         : <JsWebModule>{...modules, JsWebModule.fetch};
+
+    // Only hard requirements decide what gets installed.
+    final closure = <String>{};
+    void collect(JsWebModule module) {
+      if (!closure.add(module.name)) return;
+      module.requires.forEach(collect);
+    }
+
+    requested.forEach(collect);
+
+    // Optional edges only affect order, and only between installed modules.
     final order = <JsWebModule>[];
     final seen = <String>{};
     void visit(JsWebModule module) {
       if (!seen.add(module.name)) return;
       for (final dependency in module.requires) {
         visit(dependency);
+      }
+      for (final dependency in module.optional) {
+        if (closure.contains(dependency.name)) visit(dependency);
       }
       order.add(module);
     }

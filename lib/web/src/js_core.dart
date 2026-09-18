@@ -3,8 +3,9 @@ part of '../web_apis.dart';
 /// Core primitives shared by every other module.
 ///
 /// Completion value: `(natives, host) => { fire, install }`, where
-/// `install(moduleFn, moduleHost)` runs `moduleFn(moduleHost, internal, natives)`
-/// so later modules share private helpers without touching `globalThis`.
+/// `install(name, moduleFn, moduleHost)` runs
+/// `moduleFn(moduleHost, internal, natives)` and records [name] for `has`, so
+/// later modules share private helpers without touching `globalThis`.
 const String _jsCore = r'''
 (function (natives, host) {
   'use strict';
@@ -801,15 +802,29 @@ const String _jsCore = r'''
   define(g, 'Crypto', Crypto);
   define(g, 'crypto', new Crypto(illegal));
 
+  // Modules installed so far, for code that uses an optional dependency.
+  const installed = new Set(['core']);
+  const has = (name) => installed.has(name);
+
+  // Brand checks for types owned by other modules. Without the owning module no
+  // such object can exist, so `false` is the right answer; `events` and `blob`
+  // replace these when they install.
+  const isAbortSignal = (value) => false;
+  const isBlob = (value) => false;
+  const isFormData = (value) => false;
+
   Object.assign(internal, {
     illegal, define, brand, getter, isArrayBuffer, typedArrayTag, bufferSourceBytes,
     DOMException, reportError, inspect, customInspect, cloneHooks, NOT_CLONED, Crypto, clock,
+    has, isAbortSignal, isBlob, isFormData,
   });
 
   return {
     fire,
-    install(moduleFn, moduleHost) {
-      return moduleFn(moduleHost, internal, natives);
+    install(name, moduleFn, moduleHost) {
+      const exports = moduleFn(moduleHost, internal, natives);
+      installed.add(name);
+      return exports;
     },
   };
 })

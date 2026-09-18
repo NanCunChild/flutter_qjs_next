@@ -1,13 +1,14 @@
 part of '../web_apis.dart';
 
 /// HTTP types: `Headers`, `Request`, `Response` and the body mixin. `fetch`
-/// itself lives in the `fetch` module.
+/// itself lives in the `fetch` module. `blob()` and `formData()` exist only
+/// when `blob` is installed.
 const String _jsHttp = r'''
 (function (host, internal, natives) {
   'use strict';
   const g = globalThis;
   const {
-    define, customInspect, cloneHooks, NOT_CLONED, DOMException, illegal,
+    define, customInspect, cloneHooks, NOT_CLONED, DOMException, illegal, has,
     bufferSourceBytes, isBlob, isFormData,
     FormData, getBlobBytes, createBlob, createFile, formDataEntries,
     URLSearchParams, searchParamsPairs, serializeFormUrlencoded, parseFormUrlencoded, parseURL, serializeURL,
@@ -643,6 +644,12 @@ const String _jsHttp = r'''
     }
   }
   Object.defineProperty(Response.prototype, Symbol.toStringTag, { value: 'Response', configurable: true });
+  if (!has('blob')) {
+    delete Request.prototype.blob;
+    delete Request.prototype.formData;
+    delete Response.prototype.blob;
+    delete Response.prototype.formData;
+  }
 
   cloneHooks.push((value) => {
     if (responseState(value) !== null || requestState(value) !== null ||

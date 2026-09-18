@@ -97,7 +97,7 @@ class WebApiHost {
   ) {
     final source = _load(module);
     try {
-      return _retain(install.invoke([source, moduleHost]));
+      return _retain(install.invoke([module.name, source, moduleHost]));
     } finally {
       source.free();
     }
