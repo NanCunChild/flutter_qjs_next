@@ -17,6 +17,8 @@ flutter pub get
 | `test/leak_and_stress_test.dart` | Jobs, pool, dispose, stress |
 | `test/benchmark_test.dart` | Micro-benchmarks |
 | `test/soak_stress_test.dart` | Short soak (~30 s smoke) |
+| `test/event_loop_port_test.dart` | Calls without `dispatch()` leave nothing queued on the event-loop port |
+| `test/web_apis_*_test.dart` | Web API modules, dependency closure, `internal` name checks, Node.js-verified behaviour |
 
 ```bash
 flutter test test/typed_array_test.dart
@@ -60,9 +62,10 @@ Extra knobs: `SOAK_WEB` (none/core/standard/fetch), `SOAK_COOLDOWN_SEC`,
 `SOAK_FETCH_STUB=1` (replace the network with an in-process stub),
 `SOAK_MAX_FD_GROWTH`, `SOAK_MAX_DART_REFS`, `SOAK_MAX_ENGINE_HEAP_MB`.
 
-Under sustained load RSS only grows (the Dart heap never returns pages), so judge
-memory by the `retained` / `retainedPerOp` / `retainedPerReset` line printed after
-the cooldown, not by the curve during the run.
+RSS rises during the first minutes (warm-up) and the Dart heap rarely returns
+pages, so judge memory by the slope after warm-up, or by the `retained` /
+`retainedPerOp` / `retainedPerReset` line printed after the cooldown, not by the
+absolute curve during the run.
 
 ### A/B and full_test matrix
 
@@ -106,7 +109,7 @@ Each case report includes:
 
 ### Interpreting RSS vs leaks
 
-Long-haul results (tiny plateau vs `dart_to_js` rising floor, bridge/QJS checks):
+Long-haul results (the 2026-07 matrix, the event-loop port leak fixed in 1.5.0, and the re-runs on 1.5.0):
 **[Soak RSS analysis](guides/soak-rss-analysis.md)**.
 
 ## In-app tools

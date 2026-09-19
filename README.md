@@ -88,8 +88,14 @@ final js = getJavascriptRuntime(
 ```
 
 Or name individual modules — `JsWebApis(modules: {JsWebModule.url})` installs URL
-parsing and nothing else. See **[Web APIs](doc/wiki/api/web-apis.md)** for the
-module list, per-module costs and deviations.
+parsing and nothing else. Some features need a second module that is never
+pulled in for you: `response.blob()` / `formData()` need `JsWebModule.blob`,
+`TextEncoderStream` needs `JsWebModule.encoding`. Modules are a functional
+split, not a sandbox; network access is governed by `JsFetchOptions`.
+
+Walkthrough: **[Recipe: choosing Web APIs](doc/wiki/recipes/choosing-web-apis.md)**.
+Reference (module table, per-module costs, deviations):
+**[Web APIs](doc/wiki/api/web-apis.md)**.
 
 ### Dart ↔ JS bridge
 
@@ -262,6 +268,11 @@ Raw logs (full suite output + aggregated means):
 Numbers are single-host microbenchmarks (Linux `flutter_tester`); treat them as
 relative, not absolute product SLOs.
 
+1.5.0 removed a message posted on every call into JS: `invoke` is 2.2× faster in
+this suite and ~4× over millions of calls, where 1.4 also held the backlog in
+memory. See [Performance](doc/wiki/guides/performance.md#call-cost-since-150)
+and `benchmark_results/87a7363/`.
+
 ### Soak / stress (long-haul)
 
 Separate from micro-benchmarks: high-concurrency burn-in, RSS/metrics, fail-fast
@@ -293,7 +304,7 @@ recent ops, sample `getMemoryUsage`). Native core dump is optional/external
 
 - Scripts run with full engine capability; do not eval untrusted code without your own sandbox policy.
 - Prefer **`timeout`** (wall-clock interrupt) and the default **`memoryLimit`** (64 MiB) for untrusted scripts.
-- No Web platform; no shipping XHR implementation in this package.
+- No Flutter Web target (native FFI only) and no XHR; `fetch` is opt-in through `JsFetchOptions`.
 - Dispose runtimes you create (`dispose()`) to free native resources.
 - Module sources from `moduleHandler` are copied into QuickJS then **`free`’d in native** (no Dart microtask free race).
 - `JSValue*` returned across the FFI boundary is heap-allocated; callers must free via the package APIs (`jsFreeValue` / Dart wrappers) — double-free of the same handle after dispose is undefined.

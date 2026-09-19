@@ -36,7 +36,7 @@
 |---------|-----|
 | OOM / allocate failures | Lower JS/payload size; raise per-runtime `memoryLimit` carefully; run `runGC`; use fewer engines |
 | Slow large objects | Use `evaluateJson` or TypedArray |
-| Growing RSS over time | `memoryLimit` does not cap RSS; check dispose/free, pool max, bridge payloads and native/Dart allocations; use leak tests |
+| Growing RSS over time | Before 1.5.0, calls into JS on long-lived engines leaked at least 32 B each (upgrade). Otherwise: `memoryLimit` does not cap RSS; check dispose/free, pool max, bridge payloads and native/Dart allocations; `readNativeHeapUsage()` tells C heap from Dart heap; use leak tests |
 
 ## Modules
 

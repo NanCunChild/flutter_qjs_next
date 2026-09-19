@@ -55,6 +55,7 @@ On push to `main`/`master` (paths under `doc/wiki/**`), CI runs `scripts/sync-wi
 - [evaluateJson](recipes/evaluate-json.md)
 - [Multi-tenant pool](recipes/multi-tenant-pool.md)
 - [AJV validation](recipes/ajv-validation.md)
+- [Choosing Web APIs](recipes/choosing-web-apis.md)
 
 ### Other
 

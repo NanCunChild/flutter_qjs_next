@@ -1,4 +1,4 @@
-# Soak RSS analysis (2026-07)
+# Soak RSS analysis (2026-07, updated 2026-09-19)
 
 Long-haul stress results for process RSS vs QuickJS heap / bridge counters.
 This page records **what we measured**, **how to interpret it**, and **how to re-run**.
@@ -33,7 +33,8 @@ Open charts: `soak_profiles/report/index.html`, `20260722T114650Z/report/index.h
 > real Dart-side leak: `jsCall` posted a wake-up message to an event-loop port
 > nobody listened to. Fixed in `9634345`; see
 > [Update 2026-09-19](#update-2026-09-19--the-non-fetch-climb-was-the-event-loop-port).
-> Read the table as the pre-fix state.
+> Read the table as the pre-fix state; the profiles were re-run on 1.5.0 in
+> [Re-run 2026-09-19](#re-run-2026-09-19-150).
 
 | Question | Answer |
 |----------|--------|
@@ -320,16 +321,46 @@ all go through `jsCall`; the `all` mix averages ~0.7 calls per op.
 
 After ~5 min of warm-up RSS stays in a 203–211 MB band for the rest of the hour.
 
-**What this means for the 2026-07 matrix (not re-run).** Its pattern fits the
-same cause: `tiny` (evaluate only, which goes through the guarded `jsEval`) and
+**What this means for the 2026-07 matrix.** Its pattern fits the same cause:
+`tiny` (evaluate only, which goes through the guarded `jsEval`) and
 `js_to_dart` plateaued, while `dart_to_js` and `no_typed_array`, which call JS
 functions, climbed 1.1–1.4 GiB/h. The "fragmentation / pages not returned"
-reading there is most likely wrong for those profiles; re-run them on
-`9634345` or later before relying on those numbers.
+reading there was wrong for those profiles; the re-runs below no longer climb.
 
 Regression test: `example/test/event_loop_port_test.dart` makes 1000 calls
 with no `dispatch()` running and asserts nothing is waiting on `port` (it
 sees 1001 messages with the guard removed).
+
+### Re-run 2026-09-19 (1.5.0)
+
+Same harness (pool 32 / workers 32, `web=none`, 10 min each, run back to back
+under a user systemd unit on one Linux x64 host, debug build). `75f5289` and
+`87a7363` (1.5.0) load the same native library; only the Dart code differs.
+Slopes are least-squares fits of RSS after the first 300 s.
+
+| Profile | reset | tree | ops/s | RSS at 300 s → end | slope | errors |
+|---|---|---|---|---|---|---|
+| `all` | on | `75f5289` | 5127 | 244 → 307 MB | 573 MB/h, **31 B/op** | 0 |
+| `all` | on | 1.5.0 | 5348 | 208 → 222 MB | 37 MB/h, 1.9 B/op | 0 |
+| `no_typed_array` | off | 1.5.0 | 6733 | 206 → 212 MB | 99 MB/h, 4.1 B/op | 0 |
+| `no_typed_array` | on | 1.5.0 | 5451 | 204 → 208 MB | 51 MB/h, 2.6 B/op | 0 |
+| `dart_to_js` | off | 1.5.0 | 13069 | 220 → 212 MB | 18 MB/h, 0.4 B/op | 0 |
+| `tiny` | on | 1.5.0 | 21423 | 197 → 200 MB | 44 MB/h, 0.6 B/op | 0 |
+
+- `no_typed_array` and `dart_to_js` climbed 1.1–1.4 GiB/h in 2026-07
+  (≈ 190–230 MB per 10 min). On 1.5.0 they end within 10 MB of their 300 s
+  value. The remaining slopes are warm-up over a 10 min window; the 1 h `all`
+  run above settled at 2–3 MB/h after ~5 min. 10 min cannot rule out a slow
+  drift; run 1 h before relying on a flat line for a specific profile.
+- `resetOnRelease` (hard reset) no longer raises RSS (`tiny` +3 MB,
+  `no_typed_array` 208 vs 212 MB without it), but it still costs throughput:
+  −19 % on `no_typed_array`. The 2026-07 `tiny` + reset growth (+269 MiB/h)
+  predates 1.2.2, which stopped allocating a class id per context on every
+  rebuild; that is the likely cause, not re-verified here.
+- The C heap arena stays at 14–27 MB in every run.
+
+The "Executive summary" and "Results matrix" sections above describe the
+pre-1.5.0 state; read them as history.
 
 ---
 
@@ -452,3 +483,4 @@ flutter test test/typed_array_test.dart
 | 2026-07-22 | **`20260722T114650Z/`** | Full 1 h js_to_dart; **reset_off plateaus** |
 | 2026-09-17 | `profile=all`, `web_fetch`, `op:<name>` | C heap flat; fetch growth is `dart:io` `abort()` (see Update 2026-09-17) |
 | 2026-09-19 | `profile=all` 1 h, `75f5289` vs `9634345` + 150 s A/B with heap snapshot | Non-fetch climb was `jsCall` queueing on the unlistened event-loop port; fixed, plateaus at ~207 MB |
+| 2026-09-19 | 10 min each on 1.5.0: `all` (A/B vs `75f5289`), `no_typed_array` ±reset, `dart_to_js`, `tiny` + reset | 2026-07 climbs gone; hard reset costs throughput, not RSS (see Re-run 2026-09-19) |

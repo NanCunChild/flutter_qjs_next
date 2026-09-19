@@ -18,6 +18,11 @@ import 'package:flutter_qjs_next/flutter_qjs.dart';
 | `JsEnginePool` / `JsEnginePoolConfig` | Bounded multi-engine pool |
 | `FlutterQjsLogger` | Logging for native/bridge diagnostics and JS `console` |
 | `HandlePromises` extension | `enableHandlePromises`, `handlePromise` |
+| `JsWebApis` / `JsWebModule` / `JsFetchOptions` | Which Web APIs a context gets, and `fetch`'s network policy ([Web APIs](web-apis.md)) |
+| `JsModuleBundle` | An ES module graph compiled once, loaded without the module loader ([Bytecode](bytecode.md#module-bundles)) |
+| `IsolateQjs` | QuickJS on a worker isolate (async API; `bundle:` / `moduleSources:` for imports) |
+| `readNativeHeapUsage()` / `trimNativeHeap()` | Process-wide C heap accounting and page release ([Memory & lifecycle](../guides/memory-and-lifecycle.md#native-c-heap)) |
+| `readBridgeStats()` | Native bridge allocation / copy counters |
 
 ## `JsEvalResult`
 
@@ -65,3 +70,4 @@ qjs.dispatch();
 5. [Bytecode](bytecode.md)  
 6. [Engine pool](engine-pool.md)  
 7. [Logging](logging.md)  
+8. [Web APIs](web-apis.md)  

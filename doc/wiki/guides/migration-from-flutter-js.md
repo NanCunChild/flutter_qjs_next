@@ -35,16 +35,24 @@ Still work in the common case:
 | Default QuickJS heap | **64 MiB per runtime** unless you set `memoryLimit` |
 | Promise jobs | `autoExecutePendingJobs: true` by default |
 | Promise helper | Lightweight `handlePromise` (no 20 ms query poll registry) |
-| Multi-engine | Prefer `JsEnginePool` + `reinitialize` |
+| Multi-engine | `JsEnginePool`; for tenants `resetMode: EngineResetMode.soft` |
 | Logging | `FlutterQjsLogger` (not only `print`) |
 
-## Fetch in the example app
+## Fetch
 
-`example/lib/main.dart` may call `fetch(...)` in a demo button. That relies on you providing a polyfill (e.g. assets) or will fail in a clean runtime. Do not assume network exists.
+flutter_js shipped an XHR-based `fetch`. Here `fetch` is native to the package
+but off unless you pass a policy; the demo button in `example/lib/main.dart`
+uses `JsWebApis.standard(fetch: JsFetchOptions(allowUrl: ...))`, which
+allows only the host it reads. `response.blob()` / `formData()` also need
+`JsWebModule.blob` (included in `standard`). See
+[Choosing Web APIs](../recipes/choosing-web-apis.md).
 
 ## Native library env (advanced)
 
-If you load a custom dynamic library path for tooling, see package FFI loader / `FLUTTER_QJS_NEXT_LIBRARY` if documented in code comments for your platform.
+Set `FLUTTER_QJS_NEXT_LIBRARY` to the path of a native library build to load it
+instead of the one bundled with the app, e.g. in tooling or when running tests
+against a specific build. A library older than the Dart code fails at load with
+the missing symbol and how to rebuild.
 
 ## Checklist
 

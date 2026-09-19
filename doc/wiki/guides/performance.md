@@ -9,7 +9,7 @@ Creating a QuickJS engine is far more expensive than `evaluate` on a warm runtim
 - Long-lived feature → **one** `JavascriptRuntime`  
 - Parallel short scripts → **`JsEnginePool`** with a modest `maxSize`  
 - Avoid `getJavascriptRuntime()` per request in a hot loop  
-- Multi-tenant: prefer **`resetMode: soft`**. Do **not** use `hard` / `resetOnRelease: true` as a generic “memory fix” — hard reinitialize under churn often **increases process RSS** while QJS heap stays flat. See [Soak RSS analysis](soak-rss-analysis.md).
+- Multi-tenant: prefer **`resetMode: soft`**. Do **not** use `hard` / `resetOnRelease: true` as a generic “memory fix” — it rebuilds the engine on every release (~19 % less throughput in the `no_typed_array` soak) and process RSS ends no lower. See [Soak RSS analysis](soak-rss-analysis.md).
 
 ## Choose the right evaluate path
 
@@ -31,6 +31,29 @@ add.free();
 ```
 
 Creating a new function value every call allocates and needs free discipline.
+
+### Call cost since 1.5.0
+
+Calls into JS became much cheaper in 1.5.0. Before it, `JSInvokable.invoke`,
+`evaluateJson` and `callFunction` posted a message to the engine's event-loop
+port on every call, and nothing read it unless `dispatch()` was running. The
+cost grew with the backlog. One engine, no `dispatch()`, millions of calls
+(`benchmark_results/87a7363/`):
+
+| Call | 1.4 (`75f5289`) | 1.5.0 | |
+|---|---:|---:|---:|
+| `invoke` `(a,b)=>a+b` | 2.09 µs | 0.50 µs | 4.2× |
+| `invoke` identity, short string | 4.12 µs | 0.71 µs | 5.8× |
+| `invoke` identity, 1 KiB `Uint8List` | 10.3 µs | 2.6 µs | 4.0× |
+| `evaluateJson('[1,2,3]')` | 13.8 µs | 8.1 µs | 1.7× |
+| `evaluate('1+1')` (no port message either way) | 5.5 µs | 3.6 µs | 1.5× |
+| process RSS after the run | 2.7 GiB | 173 MiB | |
+
+`evaluate` never posted the message; it got slower on 1.4 only because the
+backlog from the earlier cases had grown the Dart heap. In the standard suite
+(`benchmark_test.dart`, a few hundred calls per case, so little backlog) the
+same fix shows as 2.2× on `invoke host`, 1.7× on string identity and 1.2–1.7×
+on the small TypedArray calls; large copies and `evaluate` are unchanged.
 
 ## Jobs
 

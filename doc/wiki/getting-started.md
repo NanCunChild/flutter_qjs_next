@@ -56,6 +56,8 @@ That export gives you:
 - `JavascriptRuntime` / `QuickJsRuntime2`
 - `JsEvalResult`, `JsEnginePool`, `FlutterQjsLogger`
 - Promise helpers (`handlePromise`, …)
+- `JsWebApis` / `JsWebModule` / `JsFetchOptions` (Web APIs, see [Choosing Web APIs](recipes/choosing-web-apis.md))
+- `JsModuleBundle`, `IsolateQjs`
 
 ---
 

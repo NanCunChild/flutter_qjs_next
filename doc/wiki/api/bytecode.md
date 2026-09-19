@@ -66,6 +66,35 @@ await qjs.evaluateBundleEntry();
   sources are known but not precompiled: the worker resolves them itself (no
   round trip) but still parses on every load.
 
+### Registering single modules
+
+`JsModuleBundle.install` is built on `registerModuleBytecode`, which you can
+call yourself when you manage module bytecode directly — for example one
+library module that many entry scripts import:
+
+```dart
+// Compile in a scratch engine: compiling also registers the module there.
+final scratch = QuickJsRuntime2(webApis: const JsWebApis.none());
+final lib = scratch.compile('export const answer = 42;', 'lib.js', asModule: true);
+scratch.dispose();
+
+final js = QuickJsRuntime2();
+js.registerModuleBytecode(lib); // registered, not run
+final r = js.evaluate(
+  "import {answer} from 'lib.js'; globalThis.out = answer;",
+  name: 'main.js',
+  evalFlags: JSEvalFlag.MODULE,
+);
+await js.handlePromise(r);  // module evaluation is a promise
+js.evaluate('out').rawResult; // 42
+```
+
+- Register dependencies before the modules that import them. `resolve: true`
+  links the module's imports immediately, so a missing dependency fails here
+  instead of at the first `import`.
+- A registration belongs to the current context: after `softReset()` /
+  `reinitialize()` register again.
+
 ## When to use
 
 - Load/compile once at startup; evaluate many times  

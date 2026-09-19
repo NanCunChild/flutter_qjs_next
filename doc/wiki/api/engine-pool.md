@@ -19,7 +19,7 @@ class JsEnginePoolConfig {
 | Mode | On `release` | When |
 |------|--------------|------|
 | `none` (default) | No wipe | Trusted / same-tenant warm reuse |
-| `soft` | `softReset()` — clear globals, channels, timers; keep native heap | Multi-tenant with better RSS under churn |
+| `soft` | `softReset()` — clear globals, channels, timers; keep native heap | Multi-tenant (cheaper than `hard`) |
 | `hard` | `reinitialize()` — full native rebuild | Strongest isolation |
 
 On reset failure the engine is destroyed.
@@ -77,7 +77,7 @@ If you skip `getJavascriptRuntime`, call `enableHandlePromises()` yourself when 
 ## Guidance
 
 - Prefer the pool for **multi-tenant** or high-churn script execution.  
-- Multi-tenant: prefer **`resetMode: EngineResetMode.soft`**. Use `hard` / `resetOnRelease: true` only when soft isolation is not enough — hard reinitialize under churn often **increases process RSS**.  
+- Multi-tenant: prefer **`resetMode: EngineResetMode.soft`**. Use `hard` / `resetOnRelease: true` only when soft isolation is not enough — it rebuilds the engine on every release, which costs throughput and does not lower process RSS.  
 - Still dispose the **pool** at shutdown.  
 - Do not treat the pool as a free pass for multi‑MiB `evaluate` on the UI isolate.
 

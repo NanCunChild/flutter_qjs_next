@@ -28,6 +28,35 @@ separately; a QuickJS heap limit alone cannot enforce a process RSS ceiling.
 Soak evidence (RSS climb vs flat QJS / balanced bridge): see
 [Soak RSS analysis](soak-rss-analysis.md).
 
+### Native (C) heap
+
+`getMemoryUsage()` covers one engine's QuickJS heap. For the whole process's C
+allocator — every engine, the bridge buffers, the allocator's free lists — use
+`readNativeHeapUsage()`:
+
+```dart
+final heap = readNativeHeapUsage();
+if (heap.isSupported) {
+  print('arena ${heap.arenaBytes >> 20} MiB, in use ${heap.inUseBytes >> 20} MiB, '
+      'free ${heap.freeBytes >> 20} MiB');
+}
+if (trimNativeHeap()) {
+  // the allocator returned free pages to the OS
+}
+```
+
+- A growing `arenaBytes` with flat `inUseBytes` is pages the allocator keeps
+  for reuse, not a leak. A growing `inUseBytes` is live C memory.
+- If RSS grows while `arenaBytes` stays flat, the growth is outside the C heap
+  (usually the Dart heap); look there instead.
+- `trimNativeHeap()` asks the allocator to return free pages to the OS.
+  Call it after churning many engines (`dispose()`, hard resets), not per
+  operation. It uses `malloc_trim` (glibc), `mallopt(M_PURGE)` (Android) or
+  `malloc_zone_pressure_relief` (Apple), and returns `false` when nothing was
+  released or on other platforms (Windows).
+- Only glibc ≥ 2.33 (Linux) reports usage numbers; elsewhere every field is 0
+  and `isSupported` is `false`.
+
 ## Runtime lifecycle
 
 ```text
@@ -48,8 +77,9 @@ create → evaluate… → (optional close / reinitialize) → dispose
 3. Holding **`JSInvokable`** without **`free()`**  
 4. Registering many unique channel names without dispose/reinitialize  
 5. `resetMode: none` (the default) with dirty globals between tenants  
-6. Using **`hard` / `resetOnRelease: true` hoping to “free memory”** under multi-tenant load — often **worsens process RSS**; prefer **`soft`** first  
+6. Using **`hard` / `resetOnRelease: true` hoping to “free memory”** under multi-tenant load — it does not lower process RSS and costs throughput; prefer **`soft`** first  
 7. Watching only QJS `getMemoryUsage()` while **process RSS** climbs (Dart + Flutter + FFI + OS heaps are outside `memoryLimit`)
+8. Staying on a version before **1.5.0** with long-lived engines that call into JS: every `JSInvokable.invoke` / `evaluateJson` queued a message on the engine's event-loop port, at least 32 B per call that was never released (more while a synchronous loop keeps the isolate busy)
 
 ## Pool
 

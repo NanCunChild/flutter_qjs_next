@@ -21,7 +21,7 @@ See also: [Performance](performance.md) · [Memory & lifecycle](memory-and-lifec
 **Anti-patterns (avoid in hot paths)**
 
 1. `getJavascriptRuntime()` **per request** / per frame  
-2. Pool **`hard` / `resetOnRelease: true` as a “memory fix”** (often **worse** process RSS under churn)  
+2. Pool **`hard` / `resetOnRelease: true` as a “memory fix”** (it rebuilds the engine on every release: ~19 % less throughput, no lower RSS)  
 3. Large objects via `evaluate` instead of `evaluateJson`  
 4. Binary as nested JS number arrays  
 5. Creating a new function value every call without caching `JSInvokable`  
@@ -59,11 +59,11 @@ final tenantPool = JsEnginePool(
 );
 ```
 
-| `resetMode` | Isolation | RSS under churn | When |
-|-------------|-----------|-----------------|------|
-| `none` (default) | No | Best | Same tenant / trusted reuse |
-| `soft` | Clears globals / channels / timers | Good | Multi-tenant default |
-| `hard` | Full native rebuild | Often **worse** | Only when soft is not enough |
+| `resetMode` | Isolation | Cost per release | When |
+|-------------|-----------|------------------|------|
+| `none` (default) | No | None | Same tenant / trusted reuse |
+| `soft` | Clears globals / channels / timers | New context | Multi-tenant default |
+| `hard` | Full native rebuild | New runtime + context; ~19 % less throughput in the soak, RSS no lower | Only when soft is not enough |
 
 Re-register bridges **inside** each `withEngine` lease when using soft/hard.
 
@@ -113,7 +113,8 @@ try {
 
 - [ ] Treat **`memoryLimit` as per-engine QuickJS heap**, not process RSS.  
 - [ ] Monitor **process RSS** (and crash/OOM rate) in production; pair with `getMemoryUsage()` for JS heap.  
-- [ ] Do **not** use hard reinitialize as the primary RSS control — see [Soak RSS analysis](soak-rss-analysis.md).  
+- [ ] Do **not** use hard reinitialize as the primary RSS control: it does not lower RSS — see [Soak RSS analysis](soak-rss-analysis.md).  
+- [ ] On versions before **1.5.0**, pooled engines that call into JS (`JSInvokable.invoke`, `evaluateJson`) grow RSS by at least 32 B per call for the life of the process; upgrade.  
 - [ ] Free **`JSInvokable`**, dispose owned engines / pool, avoid unbounded channel name growth.  
 - [ ] Optional idle **`runGC()`** after large one-shot jobs (does not reclaim all process RSS).
 
@@ -216,7 +217,7 @@ flutter test test/leak_and_stress_test.dart
 
 | Symptom | Check |
 |---------|--------|
-| RSS climbs under load | Pool reset mode? Per-request engines? Large Dart→JS copies? |
+| RSS climbs under load | Version before 1.5.0 (event-loop port leak)? Per-request engines? Large Dart→JS copies? Aborted `fetch` requests (`dart:io`)? |
 | UI jank | Sync evaluate on UI isolate? Script size? |
 | Cross-tenant state | `resetMode` still `none`? Bridges re-registered? |
 | Pool `TimeoutException` | `maxSize`, work duration, `acquire` timeout |
@@ -226,4 +227,4 @@ flutter test test/leak_and_stress_test.dart
 
 ## What this checklist does **not** fix
 
-Library-side allocation fragmentation, true zero-copy buffers, and pool-wide RSS budgets are **library work** (see performance / soak docs). This page is **integration posture** — the highest ROI before code changes in the binding layer.
+True zero-copy buffers and pool-wide RSS budgets are **library work** (see performance / soak docs). This page is **integration posture** — the highest ROI before code changes in the binding layer.

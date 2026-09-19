@@ -4,7 +4,9 @@
 context. It is **not** a WinterTC-conformant runtime: QuickJS has no
 `WebAssembly`, which the Minimum Common API requires.
 
-Design notes: `doc/design/2026-09-13-web-apis.md`.
+Design notes: `doc/design/2026-09-13-web-apis.md`. Task-oriented walkthrough
+(which modules to pick, `fetch` with a policy, upgrading from 1.4):
+[Recipe: choosing Web APIs](../recipes/choosing-web-apis.md).
 
 ## Modules
 
@@ -64,6 +66,9 @@ JsWebApis(fetch: JsFetchOptions(...))                // fetch + its closure, no 
 JsWebApis.standard(fetch: JsFetchOptions(...))       // everything
 ```
 
+`JsWebModule.fetch.hostConfig` names the object (`'JsFetchOptions'`); it is
+`null` for every other module.
+
 `JsWebApis(fetch: ...)` alone does not install `blob`, so `response.blob()` and
 `response.formData()` are absent; add `JsWebModule.blob` or use `standard`.
 Without `JsFetchOptions` the engine has no network at all.
@@ -78,7 +83,7 @@ including the install.
 | Modules installed | own | heap | create |
 |---|---|---|---|
 | *(`JsWebApis.none()`)* | — | 77 KiB | 0.22 ms |
-| `core` | 82 KiB | 160 KiB | 0.90 ms |
+| `core` | 84 KiB | 161 KiB | 0.90 ms |
 | `+ navigator` | 3 KiB | 163 KiB | 0.84 ms |
 | `+ encoding` | 7 KiB | 167 KiB | 0.89 ms |
 | `+ crypto` | 22 KiB | 181 KiB | 0.95 ms |
@@ -89,6 +94,21 @@ including the install.
 | `+ …, url, http` | 51 KiB | 425 KiB | 2.10 ms |
 | `JsWebApis.standard()` | — | 451 KiB | 2.28 ms |
 | `JsWebApis.standard(fetch: …)` | 8 KiB | 459 KiB | 2.35 ms |
+
+Selecting a module installs only its required closure; optional modules are
+not counted:
+
+| Selected | Installed | heap | create |
+|---|---|---|---|
+| `{blob}` | `core`, `blob` | 183 KiB | 0.98 ms |
+| `{streams}` | `core`, `events`, `streams` | 279 KiB | 1.50 ms |
+| `{http}` | `core`, `url`, `events`, `streams`, `http` | 397 KiB | 1.90 ms |
+| `fetch:` only | the `http` closure + `fetch` | 405 KiB | 1.95 ms |
+
+Before 1.5 these optional modules were hard dependencies: `{streams}` also
+installed `encoding` (286 KiB), `{blob}` also installed `events`, `encoding` and
+`streams` (310 KiB, 1.60 ms), and `{http}` / `fetch:` also installed `blob` and
+`encoding` (425 / 433 KiB, 2.2 ms).
 
 A context needs roughly **320 KiB** of `memoryLimit` to install `core` and about
 **1 MiB** for the full `standard()` set; below that, construction fails with
