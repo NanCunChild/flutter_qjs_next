@@ -230,7 +230,7 @@ class IsolateFunction extends JSInvokable implements _IsolateEncodable {
     return _invokeHandler!.sendPort;
   }
 
-  Future<dynamic> _send(msg) async {
+  Future<dynamic> _send(dynamic msg) async {
     final port = _port;
     if (port == null) return _handle(msg);
     final evaluatePort = ReceivePort();
@@ -248,7 +248,7 @@ class IsolateFunction extends JSInvokable implements _IsolateEncodable {
     _invokable = null;
   }
 
-  Future<dynamic> _handle(msg) async {
+  Future<dynamic> _handle(dynamic msg) async {
     switch (msg) {
       case #dup:
         _refCount++;

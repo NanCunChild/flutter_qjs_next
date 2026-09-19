@@ -38,9 +38,12 @@ class FlutterJsHomeScreen extends StatefulWidget {
 class _FlutterJsHomeScreenState extends State<FlutterJsHomeScreen> {
   String _jsResult = '';
 
-  // Web APIs: L1 standard library plus fetch (see JsWebApis / JsFetchOptions).
+  // Every Web API module plus fetch, limited to the host the demo reads
+  // (see JsWebApis / JsFetchOptions).
   final JavascriptRuntime javascriptRuntime = getJavascriptRuntime(
-    webApis: const JsWebApis.standard(fetch: JsFetchOptions()),
+    webApis: const JsWebApis.standard(
+      fetch: JsFetchOptions(allowUrl: _demoHostOnly),
+    ),
   );
 
   String? _quickjsVersion;
@@ -225,3 +228,5 @@ class _FlutterJsHomeScreenState extends State<FlutterJsHomeScreen> {
     );
   }
 }
+
+bool _demoHostOnly(Uri url) => url.host == 'raw.githubusercontent.com';

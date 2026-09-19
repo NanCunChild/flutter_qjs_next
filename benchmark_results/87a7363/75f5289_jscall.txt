@@ -1,0 +1,15 @@
+run1	CALL	invoke (a,b)=>a+b	2113 ns/op	min 1571	rss 1531 MiB
+run1	CALL	invoke identity string	4107 ns/op	min 3780	rss 2218 MiB
+run1	CALL	invoke Uint8List 1 KiB	10357 ns/op	min 10129	rss 2500 MiB
+run1	CALL	evaluateJson [1,2,3]	13787 ns/op	min 13628	rss 2781 MiB
+run1	CALL	evaluate 1+1 (control)	5533 ns/op	min 5446	rss 2785 MiB
+run2	CALL	invoke (a,b)=>a+b	2070 ns/op	min 1543	rss 1531 MiB
+run2	CALL	invoke identity string	4118 ns/op	min 3802	rss 2220 MiB
+run2	CALL	invoke Uint8List 1 KiB	10404 ns/op	min 10175	rss 2497 MiB
+run2	CALL	evaluateJson [1,2,3]	13880 ns/op	min 13756	rss 2778 MiB
+run2	CALL	evaluate 1+1 (control)	5491 ns/op	min 5396	rss 2784 MiB
+run3	CALL	invoke (a,b)=>a+b	2076 ns/op	min 1523	rss 1532 MiB
+run3	CALL	invoke identity string	4144 ns/op	min 3738	rss 2220 MiB
+run3	CALL	invoke Uint8List 1 KiB	10263 ns/op	min 10094	rss 2499 MiB
+run3	CALL	evaluateJson [1,2,3]	13833 ns/op	min 13722	rss 2778 MiB
+run3	CALL	evaluate 1+1 (control)	5513 ns/op	min 5432	rss 2784 MiB

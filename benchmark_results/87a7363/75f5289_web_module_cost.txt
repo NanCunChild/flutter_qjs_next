@@ -1,0 +1,16 @@
+run1	COST	none	77 KiB	0.26 ms	
+run1	COST	core	159 KiB	0.90 ms	core
+run1	COST	streams	286 KiB	1.57 ms	core,events,encoding,streams
+run1	COST	blob	310 KiB	1.60 ms	core,events,encoding,streams,blob
+run1	COST	http	425 KiB	2.21 ms	core,url,events,encoding,streams,blob,http
+run1	COST	fetch	433 KiB	2.28 ms	core,url,events,encoding,streams,blob,http,fetch
+run1	COST	standard	451 KiB	2.32 ms	core,events,encoding,url,crypto,navigator,streams,blob,http
+run1	COST	standard+fetch	458 KiB	2.39 ms	core,events,encoding,url,crypto,navigator,streams,blob,http,fetch
+run2	COST	none	77 KiB	0.27 ms	
+run2	COST	core	159 KiB	0.90 ms	core
+run2	COST	streams	286 KiB	1.51 ms	core,events,encoding,streams
+run2	COST	blob	310 KiB	1.61 ms	core,events,encoding,streams,blob
+run2	COST	http	425 KiB	2.19 ms	core,url,events,encoding,streams,blob,http
+run2	COST	fetch	433 KiB	2.28 ms	core,url,events,encoding,streams,blob,http,fetch
+run2	COST	standard	451 KiB	2.36 ms	core,events,encoding,url,crypto,navigator,streams,blob,http
+run2	COST	standard+fetch	458 KiB	2.42 ms	core,events,encoding,url,crypto,navigator,streams,blob,http,fetch

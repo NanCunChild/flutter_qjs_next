@@ -1,0 +1,7 @@
+case                         ops   ops/s  rss@warm  rss end   peak    MB/h   B/op  C arena errors
+all_new                  3208768    5348      208M     222M   223M    37.1   1.92    17.2M      0
+all_old                  3076504    5127      244M     307M   310M   572.6  31.06    18.5M      0
+dart_to_js_off           7841456   13069      220M     212M   229M    18.4   0.39    26.5M      0
+no_typed_array_off       4039776    6733      206M     212M   212M    98.9   4.08    15.3M      0
+no_typed_array_on        3270720    5451      204M     208M   208M    50.8   2.59    13.6M      0
+tiny_on                 12853568   21423      197M     200M   200M    44.2   0.57    15.8M      0

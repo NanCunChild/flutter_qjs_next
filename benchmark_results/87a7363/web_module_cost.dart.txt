@@ -1,0 +1,52 @@
+// Scratch benchmark (not committed): heap and construction time per Web API
+// module set. Same file runs on the baseline and on HEAD.
+import 'dart:convert';
+
+import 'package:flutter_qjs_next/flutter_qjs.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('web module cost', () {
+    final options = JsFetchOptions(
+      handler: (request) async => JsFetchResponse(
+        status: 200,
+        headers: const [],
+        body: Stream.value(utf8.encode('')),
+      ),
+    );
+    final configs = <String, JsWebApis>{
+      'none': const JsWebApis.none(),
+      'core': const JsWebApis(),
+      'streams': const JsWebApis(modules: {JsWebModule.streams}),
+      'blob': const JsWebApis(modules: {JsWebModule.blob}),
+      'http': const JsWebApis(modules: {JsWebModule.http}),
+      'fetch': JsWebApis(fetch: options),
+      'standard': const JsWebApis.standard(),
+      'standard+fetch': JsWebApis.standard(fetch: options),
+    };
+    const reps = 200;
+    for (final e in configs.entries) {
+      // Warm up: module bytecode is compiled once per process.
+      for (var i = 0; i < 5; i++) {
+        QuickJsRuntime2(webApis: e.value).dispose();
+      }
+      final times = <int>[];
+      var heap = 0;
+      for (var i = 0; i < reps; i++) {
+        final sw = Stopwatch()..start();
+        final js = QuickJsRuntime2(webApis: e.value);
+        js.evaluate('0'); // force init
+        sw.stop();
+        times.add(sw.elapsedMicroseconds);
+        heap = js.getMemoryUsage()!.memoryUsedSize;
+        js.dispose();
+      }
+      times.sort();
+      final median = times[reps ~/ 2] / 1000;
+      final names = e.value.resolvedModules.map((m) => m.name).join(',');
+      // ignore: avoid_print
+      print('COST\t${e.key}\t${(heap / 1024).toStringAsFixed(0)} KiB'
+          '\t${median.toStringAsFixed(2)} ms\t$names');
+    }
+  }, timeout: const Timeout(Duration(minutes: 20)));
+}

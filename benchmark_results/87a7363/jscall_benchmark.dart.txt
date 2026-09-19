@@ -1,0 +1,45 @@
+// Scratch benchmark (not committed): per-call cost of the paths that go
+// through jsCall, with enough calls that the per-call port message shows.
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter_qjs_next/flutter_qjs.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('jsCall paths', () {
+    final js = QuickJsRuntime2(webApis: const JsWebApis.none());
+    final add = js.evaluate('(a,b)=>a+b').rawResult as JSInvokable;
+    final id = js.evaluate('(x)=>x').rawResult as JSInvokable;
+    final bytes = Uint8List(1024);
+    final cases = <String, (int, void Function())>{
+      'invoke (a,b)=>a+b': (1000000, () => add.invoke([1, 2])),
+      'invoke identity string': (500000, () => id.invoke(['hello-flutter-qjs'])),
+      'invoke Uint8List 1 KiB': (200000, () => id.invoke([bytes])),
+      'evaluateJson [1,2,3]': (200000, () => js.evaluateJson('[1,2,3]')),
+      'evaluate 1+1 (control)': (500000, () => js.evaluate('1+1')),
+    };
+    for (final MapEntry(key: name, value: (n, body)) in cases.entries) {
+      for (var i = 0; i < n ~/ 10; i++) {
+        body();
+      }
+      final samples = <double>[];
+      for (var r = 0; r < 5; r++) {
+        final sw = Stopwatch()..start();
+        for (var i = 0; i < n; i++) {
+          body();
+        }
+        sw.stop();
+        samples.add(sw.elapsedMicroseconds * 1000 / n);
+      }
+      samples.sort();
+      // ignore: avoid_print
+      print('CALL\t$name\t${samples[2].toStringAsFixed(0)} ns/op'
+          '\tmin ${samples[0].toStringAsFixed(0)}'
+          '\trss ${(ProcessInfo.currentRss >> 20)} MiB');
+    }
+    add.free();
+    id.free();
+    js.dispose();
+  }, timeout: const Timeout(Duration(minutes: 30)));
+}
