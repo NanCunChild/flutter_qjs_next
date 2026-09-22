@@ -46,11 +46,11 @@
 
 ## 三、结构性问题
 
-- **S1 原生源码的多份副本。** `ffi.cpp` / `ffi.h` / `quickjs/` / `quickjs.cmake` 在 `cxx/`、`cxx-windows/`、iOS SPM、macOS SPM 下各有一份，逐字节一致，平台差异全部写在 `#if` 与各平台构建文件里。`scripts/check-native-ffi-sync.sh` 只比对 `ffi.*`，且没有接入 CI（CI 只有 publish）。
+- **S1 原生源码的多份副本。** `ffi.cpp` / `ffi.h` / `quickjs/` / `quickjs.cmake` 原本在 `cxx/`、`cxx-windows/`、iOS SPM、macOS SPM 下各有一份，逐字节一致，平台差异全部写在 `#if` 与各平台构建文件里。原有的 `scripts/check-native-ffi-sync.sh` 只比对 `ffi.*`，且没有接入 CI。
 
   决定：以 `cxx/` 为唯一源码。平台差异继续用 `#if` 和构建参数表达，不允许副本内容分叉。分三步：
 
-  - [ ] **S1-1 CI 检测。** 在 CI 中检查原生副本一致性，并运行 analyze、测试和各平台构建。
-  - [ ] **S1-2 删除 `cxx-windows/`。** Windows 与 Linux 一样直接使用 `cxx/quickjs.cmake`。
-  - [ ] **S1-3 Apple 改为转发源文件。** 需要先在 Mac 上验证 SwiftPM 能否编译包目录外的源文件。
-- **S2 CocoaPods 路径（未解决）。** podspec 被 `.pubignore` 排除；`prepare_command` 不会对 `:path` 引入的 pod 执行，`cxx/` 不会被生成；`pubspec.yaml` 允许 Flutter 3.0，而 SPM 路径需要 3.44+；podspec 版本号仍为 `0.0.1`。以上均未在 Mac 上复现。待决定：放弃 CocoaPods 并提高 Flutter 下限，或者修复 podspec，让它直接使用 SPM 源码目录。
+  - [x] **S1-1 CI 检测。** 新增 `.github/workflows/ci.yml`：原生副本一致性、`flutter analyze`、Linux 构建与全部测试、Windows 构建、iOS/macOS SPM 构建。检查脚本改名为 `scripts/check-native-sync.sh`，范围扩大到整个 `quickjs/` 目录（含多出或缺失的文件），以及 `Package.swift` 中的 `CONFIG_VERSION` 与 `VERSION.txt` 是否一致；新增 `scripts/sync-native.sh`，从 `cxx/` 重新生成 Apple 副本。
+  - [x] **S1-2 删除 `cxx-windows/`。** `windows/CMakeLists.txt` 改为与 Linux 一样 include `../cxx/quickjs.cmake`（两份 cmake 原本逐字节一致，MSVC 分支已在其中）。`cxx-windows/prebuild.sh` 没有任何调用方，一并删除。Windows 构建尚未在本地验证，由 CI 的 `windows` job 验证。
+  - [ ] **S1-3 Apple 改为转发源文件。** 用几行 `#include "../../…/cxx/…"` 的转发文件替换 SPM 目录里的副本。SwiftPM 只编译包目录内的源文件，需要先在 Mac 上（或借 CI 的 `apple-spm` job）验证；验证不通过则保留由 `sync-native.sh` 生成的副本。
+- **S2 CocoaPods 路径（未解决）。** 详见 `doc/wiki/guides/platforms.md` 的「CocoaPods: known issue」：podspec 被 `.pubignore` 排除；`prepare_command` 不会对 `:path` 引入的 pod 执行，`cxx/` 不会被生成；`pubspec.yaml` 允许 Flutter 3.0，而 SPM 路径需要 3.44+；podspec 版本号仍为 `0.0.1`。以上均未在 Mac 上复现，CI 的 `apple-cocoapods` job（不阻塞）会记录实际结果。待决定：放弃 CocoaPods 并提高 Flutter 下限，或者修复 podspec，让它直接使用 SPM 源码目录。

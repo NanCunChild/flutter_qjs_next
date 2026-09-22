@@ -298,7 +298,7 @@ recent ops, sample `getMemoryUsage`). Native core dump is optional/external
 
 - `lib/quickjs/*` — Dart FFI bindings and marshalling  
 - `cxx/ffi.cpp` — stable C ABI around QuickJS (`JSValue*` on the heap)  
-- `cxx/quickjs/` — embedded engine (same tree used on Windows via `cxx-windows/`)
+- `cxx/quickjs/` — embedded engine (the single copy all CMake platforms build; the iOS/macOS SPM trees are generated from it by `scripts/sync-native.sh`)
 
 ## Limitations / security
 

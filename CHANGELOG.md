@@ -2,6 +2,8 @@
 
 * **Fix:** strings built by concatenation (a right operand longer than 512 characters makes QuickJS return a rope, `JS_TAG_STRING_ROPE`) no longer arrive in Dart as `null` — as an `evaluate` result, inside objects and arrays, or as a host function argument. `evaluateJson` accepts a rope result as well.
 * **Fix (behavior):** JS → Dart object conversion keeps enumerable string keys only, like `Object.keys`. Symbol keys used to become Dart `null` keys and overwrite each other; they are now skipped.
+* **Build:** Windows builds QuickJS and the FFI bridge from `cxx/`, like Android and Linux; the byte-identical `cxx-windows/` copy is gone. `cxx/` is the only place to edit native code: `scripts/sync-native.sh` regenerates the iOS/macOS Swift Package Manager trees from it, and CI (`scripts/check-native-sync.sh`) fails when they differ.
+* **Known issue:** the CocoaPods build path for iOS/macOS is expected to fail (podspecs are not published, and `prepare_command` does not run for Flutter's `:path` pods). Use Swift Package Manager (Flutter 3.44+). Details: `doc/wiki/guides/platforms.md`.
 * **Removed:** the unused `lib/quickjs/qjs_typedefs.dart` (tag values from an older QuickJS, e.g. `JS_TAG_FLOAT64 = 7`) and `lib/quickjs/utf8_null_terminated.dart`, which only it imported.
 
 ## 1.5.0
