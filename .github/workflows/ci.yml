@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Apple SPM trees match cxx/
+        run: sh scripts/check-native-sync.sh
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Install Linux desktop toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+      - run: flutter pub get
+      - run: flutter analyze
+      # The tests load the plugin library from the example's Linux build.
+      - name: Build example
+        working-directory: example
+        run: flutter build linux --debug
+      - name: Test
+        working-directory: example
+        run: flutter test
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Build example
+        working-directory: example
+        run: flutter build windows --debug
+
+  apple-spm:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter config --enable-swift-package-manager
+      - name: Build example (macOS)
+        working-directory: example
+        run: flutter build macos --debug
+      - name: Build example (iOS simulator)
+        working-directory: example
+        run: flutter build ios --simulator --debug
+
+  # Known issue, see doc/wiki/guides/platforms.md "CocoaPods". Reports whether
+  # the CocoaPods path builds without failing the workflow.
+  apple-cocoapods:
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter config --no-enable-swift-package-manager
+      - name: Build example (macOS)
+        working-directory: example
+        run: flutter build macos --debug
