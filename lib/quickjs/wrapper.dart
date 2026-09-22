@@ -311,6 +311,9 @@ dynamic _jsToDart(
       final bigIntStr = jsToCString(ctx, val);
       return BigInt.parse(bigIntStr);
     case JSTag.STRING:
+    // Concatenation with a right operand over 512 chars yields a rope;
+    // JS_ToCString flattens it.
+    case JSTag.STRING_ROPE:
       return jsToCString(ctx, val);
     case JSTag.EXCEPTION:
       throw _parseJSException(ctx);
@@ -402,7 +405,10 @@ dynamic _jsToDart(
       } else {
         final ptab = malloc<Pointer<JSPropertyEnum>>();
         final plen = malloc<Uint32>();
-        if (jsGetOwnPropertyNames(ctx, ptab, plen, val, -1) != 0) {
+        // String keys only, like Object.keys: symbol keys have no Dart
+        // counterpart and would all collapse onto a single null key.
+        const flags = JSGPN.STRING_MASK | JSGPN.ENUM_ONLY;
+        if (jsGetOwnPropertyNames(ctx, ptab, plen, val, flags) != 0) {
           malloc.free(plen);
           malloc.free(ptab);
           throw _parseJSException(ctx);

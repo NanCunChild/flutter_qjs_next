@@ -425,7 +425,8 @@ class QuickJsRuntime2 extends JavascriptRuntime {
       jsFreeValue(ctx, jsonVal);
       throw _parseJSException(ctx);
     }
-    if (jsValueGetTag(jsonVal) != JSTag.STRING) {
+    final jsonTag = jsValueGetTag(jsonVal);
+    if (jsonTag != JSTag.STRING && jsonTag != JSTag.STRING_ROPE) {
       jsFreeValue(ctx, jsonVal);
       return null;
     }

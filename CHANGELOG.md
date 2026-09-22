@@ -1,3 +1,9 @@
+## Unreleased
+
+* **Fix:** strings built by concatenation (a right operand longer than 512 characters makes QuickJS return a rope, `JS_TAG_STRING_ROPE`) no longer arrive in Dart as `null` — as an `evaluate` result, inside objects and arrays, or as a host function argument. `evaluateJson` accepts a rope result as well.
+* **Fix (behavior):** JS → Dart object conversion keeps enumerable string keys only, like `Object.keys`. Symbol keys used to become Dart `null` keys and overwrite each other; they are now skipped.
+* **Removed:** the unused `lib/quickjs/qjs_typedefs.dart` (tag values from an older QuickJS, e.g. `JS_TAG_FLOAT64 = 7`) and `lib/quickjs/utf8_null_terminated.dart`, which only it imported.
+
 ## 1.5.0
 
 * **Breaking (Web APIs):** optional module dependencies. A module's `optional` modules are never installed on its behalf; when they are installed anyway they come first and enable extra features. `streams` no longer pulls in `encoding` (`TextEncoderStream` / `TextDecoderStream` appear only with `encoding`), `blob` no longer pulls in `streams` (`Blob.prototype.stream` only with `streams`), and `http` no longer pulls in `blob` (`blob()` / `formData()` and Blob/FormData bodies only with `blob`). So `JsWebApis(modules: {JsWebModule.http})` no longer defines `Blob`, and `JsWebApis(fetch: ...)` alone has no `response.blob()`; add `JsWebModule.blob` or use `JsWebApis.standard(...)`, which is unchanged. `fetch` now declares its direct dependency on `events`.

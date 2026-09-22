@@ -89,12 +89,20 @@ class JSProp {
   static const C_W_E = (CONFIGURABLE | WRITABLE | ENUMERABLE);
 }
 
+/// Flags for [jsGetOwnPropertyNames] (`JS_GPN_*`).
+class JSGPN {
+  static const STRING_MASK = (1 << 0);
+  static const SYMBOL_MASK = (1 << 1);
+  static const PRIVATE_MASK = (1 << 2);
+  static const ENUM_ONLY = (1 << 4);
+}
+
 class JSTag {
   static const FIRST = -9; /* first negative tag */
   static const BIG_INT = -9;
   static const SYMBOL = -8;
   static const STRING = -7;
-  static const STRING_ROPE = -6; /* used internally */
+  static const STRING_ROPE = -6; /* string concatenation result */
   static const MODULE = -3; /* used internally */
   static const FUNCTION_BYTECODE = -2; /* used internally */
   static const OBJECT = -1;
@@ -351,9 +359,7 @@ late final readModuleBytecodeFn = _qjsLib
         Int32 Function(Pointer<JSContext>, Size, Pointer<Uint8>, Int32)
       >
     >('jsReadModuleBytecode')
-    .asFunction<
-      int Function(Pointer<JSContext>, int, Pointer<Uint8>, int)
-    >();
+    .asFunction<int Function(Pointer<JSContext>, int, Pointer<Uint8>, int)>();
 
 late final evaluateBytecodeFn = _evaluateBytecode
     .asFunction<
