@@ -51,7 +51,8 @@ if (trimNativeHeap()) {
   (usually the Dart heap); look there instead.
 - `trimNativeHeap()` asks the allocator to return free pages to the OS.
   Call it after churning many engines (`dispose()`, hard resets), not per
-  operation. It uses `malloc_trim` (glibc), `mallopt(M_PURGE)` (Android) or
+  operation. It uses `malloc_trim` (glibc), `mallopt(M_PURGE)` (Android,
+  resolved at runtime; a no-op before Android 9) or
   `malloc_zone_pressure_relief` (Apple), and returns `false` when nothing was
   released or on other platforms (Windows).
 - Only glibc ≥ 2.33 (Linux) reports usage numbers; elsewhere every field is 0

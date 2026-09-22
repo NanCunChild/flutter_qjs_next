@@ -17,6 +17,9 @@
 #if defined(__GLIBC__) || defined(__ANDROID__)
 #include <malloc.h>
 #endif
+#if defined(__ANDROID__)
+#include <dlfcn.h>
+#endif
 #if defined(__APPLE__)
 #include <malloc/malloc.h>
 #endif
@@ -261,7 +264,13 @@ extern "C"
 #if defined(__GLIBC__)
     return malloc_trim(0) ? 1 : 0;
 #elif defined(__ANDROID__)
-    return mallopt(M_PURGE, 0) ? 1 : 0;
+    // mallopt() is only available since API 26 (M_PURGE since API 28), while this
+    // library supports minSdk 21. Resolve it at runtime so that builds targeting
+    // older API levels link everywhere, old devices simply report "no trim",
+    // and API 28+ devices still get the purge.
+    typedef int (*MalloptFn)(int, int);
+    static MalloptFn mallopt_fn = (MalloptFn)dlsym(RTLD_DEFAULT, "mallopt");
+    return (mallopt_fn != nullptr && mallopt_fn(M_PURGE, 0)) ? 1 : 0;
 #elif defined(__APPLE__)
     malloc_zone_pressure_relief(NULL, 0);
     return 1;
