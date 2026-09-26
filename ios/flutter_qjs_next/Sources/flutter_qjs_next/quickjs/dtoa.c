@@ -28,7 +28,9 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
+#if !defined(_MSC_VER) /* unused here, and MSVC has no <sys/time.h> */
 #include <sys/time.h>
+#endif
 #include <math.h>
 #include <setjmp.h>
 

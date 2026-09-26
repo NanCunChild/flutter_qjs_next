@@ -12,6 +12,27 @@
 
 Native code: C/C++ FFI bridge under `cxx/`, embedded QuickJS under `cxx/quickjs/`. `cxx/` is the only place to edit native code. Android, Linux and Windows build it directly through `cxx/quickjs.cmake`; platform differences live in `#if` blocks in `ffi.cpp` and in each platform's build file, never in a separate copy of the sources.
 
+## Windows: the MSVC compatibility layer
+
+Upstream QuickJS is written for GCC and Clang, and Flutter builds Windows plugins with MSVC. Everything that bridges the two lives in **`cxx/quickjs/msvc-compat.h`**, which `cutils.h` includes and which expands to nothing off MSVC: the GCC builtins (`__builtin_expect`, `__builtin_clz*`, `__builtin_ctz*`, `__builtin_frame_address`), `__attribute__` as a no-op, `gettimeofday` / `clock_gettime`, the `pthread_mutex_t` / `pthread_cond_t` subset that `Atomics.wait` and `JS_NewClassID` use (SRW locks and condition variables), and `alloca`, which quickjs.c calls but only declares on Linux and the BSDs.
+
+The upstream files themselves carry only small marked changes. `grep -n '_MSC_VER\|JS_VALUE_UNCONST\|JS_VALUE_CONST\|JS_FLOAT64_INF' cxx/quickjs/*.c cxx/quickjs/*.h` lists all of them:
+
+| Where | Why |
+|-------|-----|
+| `quickjs.c`, `dtoa.c` | `<sys/time.h>` and `<pthread.h>` do not exist on MSVC; `msvc-compat.h` supplies what they provide |
+| `quickjs.c` `DIRECT_DISPATCH` | MSVC has no computed goto, so the interpreter uses the `switch` dispatch |
+| `quickjs.c` `JS_FLOAT64_INF` | MSVC rejects the constant `1.0 / 0.0` as a division by zero |
+| `quickjs.h` `JS_VALUE_UNCONST` / `JS_VALUE_CONST` | MSVC's C compiler rejects a cast between two struct types even when they are the same type |
+| `cutils.h` `#pragma pack` | `__attribute__((packed))` is gone with `__attribute__`; these three structs read unaligned integers out of byte buffers |
+| `quickjs.c` `JSClosureVar.closure_type` | **Not a style fix.** MSVC gives an enum bitfield a *signed* underlying type, so this 3-bit field read `JS_CLOSURE_GLOBAL` (5) back as `-3`, no case of the switch in `js_closure2()` matched, and the first global variable reference in any script took the process down. The other enum bitfields in the file are 8 bits wide, so they still hold every value their enums define. |
+
+Build flags (`cxx/quickjs.cmake`, `windows/CMakeLists.txt`): the QuickJS C library needs `/std:c11 /experimental:c11atomics` for `<stdatomic.h>` behind `Atomics.*`, and the plugin needs C++20, because `quickjs.h` builds JSValues with compound literals that MSVC's C++ front end only accepts from C++20 on.
+
+A QuickJS upgrade overwrites these files. Re-apply the marked changes and check that `flutter build windows --debug` still runs a script, not only that it links — a Windows build that compiles can still fail on the first line of JavaScript, which is how this went unnoticed before (see `doc/review/2026-09-22-code-review.md`, S3).
+
+Windows threads get a 1 MiB stack, against 8 MiB on Linux and Apple, so [`kDefaultJsStackSize`](../../../lib/javascript_runtime.dart) is 256 KiB there: QuickJS has to reach *its* limit while real stack is left, or a deeply nested value takes the process down instead of raising `InternalError: stack overflow`. Converting a value to Dart recurses once per level in `_jsToDart`, and that recursion has no such guard — around 20 000 levels exhausts the stack of a Windows test isolate.
+
 ## Apple (iOS / macOS) source layout
 
 | Path | Role |

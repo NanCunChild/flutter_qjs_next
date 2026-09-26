@@ -22,7 +22,7 @@ export 'web/web_apis.dart'
 /// Creates a [JavascriptRuntime] backed by QuickJS.
 ///
 /// **Limits** (also via [extraArgs] keys `stackSize`, `timeout`, `memoryLimit`):
-/// - [stackSize]: JS stack bytes (default 1 MiB)
+/// - [stackSize]: JS stack bytes (default [kDefaultJsStackSize])
 /// - [timeout]: interrupt after this many ms of wall-clock JS work
 ///   (`null` / `0` = off). Prefer a positive value for untrusted scripts.
 /// - [memoryLimit]: heap limit bytes (default [kDefaultJsMemoryLimit];
@@ -39,7 +39,7 @@ JavascriptRuntime getJavascriptRuntime({
   bool forceJavascriptCoreOnAndroid = false,
   bool xhr = true,
   Map<String, dynamic>? extraArgs = const {},
-  int stackSize = 1024 * 1024,
+  int? stackSize,
   int? timeout,
   int? memoryLimit = kDefaultJsMemoryLimit,
   JsWebApis webApis = const JsWebApis(),
