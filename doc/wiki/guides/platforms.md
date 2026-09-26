@@ -62,17 +62,20 @@ QuickJS version string lives in `VERSION.txt` (not `VERSION`): macOS/iOS APFS is
 
 ## CocoaPods: known issue
 
-**Status: unresolved.** Treat Swift Package Manager (Flutter 3.44+) as the only supported Apple build path for now. The CocoaPods path is expected to fail, for the reasons below. None of them have been reproduced on a Mac yet. The non-blocking `apple-cocoapods` job in CI builds the example with SPM disabled and records the result. It builds from the repository, where the podspecs exist, so it covers point 2 but not point 1.
+**Status (2026-09-26): repository builds pass; the published package still has no podspec.** Treat Swift Package Manager (Flutter 3.44+) as the supported Apple build path. The non-blocking `apple-cocoapods` job in CI builds the example from the repository with SPM disabled and records the result.
+
+On macOS 14.8.9 (Xcode 16.2, Flutter 3.47.5, CocoaPods 1.17.0, x86_64), `flutter config --no-enable-swift-package-manager` followed by `flutter build macos --debug` built the example successfully (`✓ Built …/flutter_qjs_example.app`), including after deleting `example/macos/Pods` and `Podfile.lock`. `pod install` ran the podspec's `prepare_command` (`sh ../cxx/prebuild.sh`): `macos/cxx/` appeared with `quickjs.c` starting with `CONFIG_VERSION "2026-06-04"` / `DUMP_LEAKS` and no `VERSION.txt`, and Xcode compiled those sources. The earlier claim that `prepare_command` does not run for Flutter's `:path` pods did not reproduce on CocoaPods 1.17.0 (`PodSourcePreparer#run_prepare_command` has no such branch). Two practical notes: `pod` has to be on `PATH` (a non-login SSH shell on this Mac needed `/opt/local/bin`), and Flutter 3.47 performs one-time project upgrades on the first build (analysis excludes, macOS deployment target 12.0 in `Podfile` and `project.pbxproj`), which the verification left uncommitted.
+
+Still open for a pub.dev release:
 
 1. **The podspecs are not published.** `.pubignore` excludes `ios/flutter_qjs_next.podspec` and `macos/flutter_qjs_next.podspec`. An app that uses the package from pub.dev with SPM disabled has no podspec for this plugin.
-2. **The native sources would not be generated.** The podspecs compile `cxx/**`, which `prepare_command` (`sh ../cxx/prebuild.sh`) creates by copying the repository's `cxx/`. CocoaPods does not run `prepare_command` for pods installed with `:path`, and Flutter installs every plugin pod that way. Nothing creates `ios/cxx` or `macos/cxx`.
-3. **The version constraint does not match.** `pubspec.yaml` allows `flutter: ">=3.0.0"`, but the SPM path needs Flutter 3.44+. Below 3.44, Apple builds fall back to CocoaPods, which is affected by 1 and 2.
-4. The podspecs still declare version `0.0.1`.
+2. **The version constraint does not match.** `pubspec.yaml` allows `flutter: ">=3.0.0"`, but the SPM path needs Flutter 3.44+. Below 3.44, Apple builds fall back to CocoaPods, which needs a published podspec.
+3. The podspecs still declare version `0.0.1`.
 
 Options, to be decided:
 
 - **Drop CocoaPods.** Remove the podspecs, `Classes/` and `cxx/prebuild.sh`. Raise the Flutter constraint to 3.44 and say that Apple builds need SPM.
-- **Repair CocoaPods.** Publish the podspecs and point `source_files` at the SPM `Sources/` tree instead of running `prepare_command`. Once the planned forwarding sources exist, both paths share them.
+- **Repair CocoaPods.** Publish the podspecs and keep `prepare_command`, or point `source_files` at the SPM `Sources/` tree once the planned forwarding sources exist, so both paths share them.
 
 ## Not supported
 
