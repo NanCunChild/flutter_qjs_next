@@ -119,7 +119,7 @@ void _runJsIsolate(Map spawnMessage) async {
   final bundleBytes = spawnMessage[#bundle] as Uint8List?;
   final hasRemoteHandler = spawnMessage[#hasModuleHandler] == true;
   final qjs = QuickJsRuntime2(
-    stackSize: spawnMessage[#stackSize] ?? 1024 * 1024,
+    stackSize: spawnMessage[#stackSize],
     timeout: spawnMessage[#timeout],
     memoryLimit: spawnMessage[#memoryLimit],
     hostPromiseRejectionHandler: (reason) {

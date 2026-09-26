@@ -29,6 +29,10 @@
 #include <string.h>
 #include <inttypes.h>
 
+/* Local addition: supplies the GCC builtins and attributes MSVC lacks.
+   Expands to nothing everywhere else. */
+#include "msvc-compat.h"
+
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)     __builtin_expect(!!(x), 0)
 #define force_inline inline __attribute__((always_inline))
@@ -57,8 +61,9 @@
 #define minimum_length(n)  n
 #endif
 
-/* Apple Objective-C modules already define BOOL (often as _Bool). */
-#if !defined(__OBJC__)
+/* Apple Objective-C modules already define BOOL (often as _Bool), and
+   windows.h already defines it as int. */
+#if !defined(__OBJC__) && !defined(_MSC_VER)
 typedef int BOOL;
 #endif
 
@@ -152,6 +157,11 @@ static inline int ctz64(uint64_t a)
     return __builtin_ctzll(a);
 }
 
+#ifdef _MSC_VER
+/* msvc-compat.h defines __attribute__ away, and these three are read through
+   pointers into unaligned byte buffers. */
+#pragma pack(push, 1)
+#endif
 struct __attribute__((packed)) packed_u64 {
     uint64_t v;
 };
@@ -163,6 +173,9 @@ struct __attribute__((packed)) packed_u32 {
 struct __attribute__((packed)) packed_u16 {
     uint16_t v;
 };
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
 
 static inline uint64_t get_u64(const uint8_t *tab)
 {

@@ -17,7 +17,7 @@ enum EngineResetMode {
 
 /// Configuration for engines created by [JsEnginePool].
 class JsEnginePoolConfig {
-  final int stackSize;
+  final int? stackSize;
   final int? timeout;
   final int? memoryLimit;
 
@@ -32,7 +32,7 @@ class JsEnginePoolConfig {
   bool get resetOnRelease => resetMode == EngineResetMode.hard;
 
   const JsEnginePoolConfig({
-    this.stackSize = 1024 * 1024,
+    this.stackSize,
     this.timeout,
     this.memoryLimit = kDefaultJsMemoryLimit,
     this.webApis = const JsWebApis(),

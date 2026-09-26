@@ -9,5 +9,3 @@ example/android/.gradle/
 example/linux/flutter/ephemeral/
 *.iml
 android/src/main/java/soko/
-ios/flutter_qjs_next.podspec
-macos/flutter_qjs_next.podspec

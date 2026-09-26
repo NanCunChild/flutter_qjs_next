@@ -101,6 +101,9 @@ typedef struct JSRefCountHeader {
 } JSRefCountHeader;
 
 #define JS_FLOAT64_NAN NAN
+/* Local addition: upstream writes the constant 1.0 / 0.0 inline, which MSVC
+   rejects as a division by zero. */
+#define JS_FLOAT64_INF INFINITY
 
 #ifdef CONFIG_CHECK_JSVALUE
 /* JSValue consistency : it is not possible to run the code in this
@@ -280,6 +283,19 @@ static inline JSValue __JS_NewShortBigInt(JSContext *ctx, int64_t d)
 }
 
 #endif /* !JS_NAN_BOXING */
+
+/* Local addition: a cast between JSValue and JSValueConst, written as a
+   prefix so it keeps the original precedence. MSVC's C compiler rejects a
+   cast between two struct types even when they are the same type, and
+   outside CONFIG_CHECK_JSVALUE these two are the same type, so the cast only
+   drops a const marker that is not there. */
+#if defined(_MSC_VER) && !defined(CONFIG_CHECK_JSVALUE)
+#define JS_VALUE_UNCONST
+#define JS_VALUE_CONST
+#else
+#define JS_VALUE_UNCONST (JSValue)
+#define JS_VALUE_CONST (JSValueConst)
+#endif
 
 #define JS_VALUE_IS_BOTH_INT(v1, v2) ((JS_VALUE_GET_TAG(v1) | JS_VALUE_GET_TAG(v2)) == 0)
 #define JS_VALUE_IS_BOTH_FLOAT(v1, v2) (JS_TAG_IS_FLOAT64(JS_VALUE_GET_TAG(v1)) && JS_TAG_IS_FLOAT64(JS_VALUE_GET_TAG(v2)))
@@ -710,7 +726,7 @@ static inline JSValue JS_DupValue(JSContext *ctx, JSValueConst v)
         JSRefCountHeader *p = __js_rc(JS_VALUE_GET_PTR(v));
         p->ref_count++;
     }
-    return (JSValue)v;
+    return JS_VALUE_UNCONST v;
 }
 
 static inline JSValue JS_DupValueRT(JSRuntime *rt, JSValueConst v)
@@ -719,7 +735,7 @@ static inline JSValue JS_DupValueRT(JSRuntime *rt, JSValueConst v)
         JSRefCountHeader *p = __js_rc(JS_VALUE_GET_PTR(v));
         p->ref_count++;
     }
-    return (JSValue)v;
+    return JS_VALUE_UNCONST v;
 }
 
 JS_BOOL JS_StrictEq(JSContext *ctx, JSValueConst op1, JSValueConst op2);

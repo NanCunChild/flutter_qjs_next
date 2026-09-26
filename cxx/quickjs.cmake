@@ -21,4 +21,10 @@ target_compile_options(quickjs PRIVATE "$<$<CONFIG:Debug>:-DDUMP_LEAKS>")
 if(MSVC)
     # https://github.com/ekibun/flutter_qjs/issues/7
     target_compile_options(quickjs PRIVATE "/Oi-")
+    # Atomics.* is built on <stdatomic.h>, which MSVC only provides in C11
+    # mode, behind /experimental:c11atomics as of Visual Studio 17.14.
+    target_compile_options(quickjs PRIVATE "/std:c11" "/experimental:c11atomics")
+    # QuickJS is written for GCC/Clang; the remaining conversion warnings are
+    # upstream's, and there are thousands of them.
+    target_compile_options(quickjs PRIVATE "/wd4244" "/wd4267" "/wd4018")
 endif()

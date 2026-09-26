@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -11,6 +12,18 @@ export 'quickjs/ffi.dart' show JsMemoryUsage;
 
 /// Default QuickJS heap limit for all runtime construction paths.
 const int kDefaultJsMemoryLimit = 64 * 1024 * 1024;
+
+/// Default QuickJS C-stack limit for all runtime construction paths.
+///
+/// It has to stay well below the OS thread stack, or the thread runs out of
+/// stack before QuickJS reaches its own limit and can raise `InternalError:
+/// stack overflow`. Windows threads get 1 MiB by default, where a 1 MiB limit
+/// never triggers and a deeply nested value (`JSON.stringify` on 20 000 levels,
+/// for instance) takes the process down; Linux and Apple threads start at
+/// 8 MiB.
+final int kDefaultJsStackSize = Platform.isWindows
+    ? 256 * 1024
+    : 1024 * 1024;
 
 /// Resolves the public memory-limit contract: zero is unlimited, while null
 /// and negative values fall back to the safe default.
