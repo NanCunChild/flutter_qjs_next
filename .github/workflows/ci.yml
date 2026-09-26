@@ -18,6 +18,8 @@ jobs:
       - uses: actions/checkout@v5
       - name: Apple SPM trees match cxx/
         run: sh scripts/check-native-sync.sh
+      - name: Podspec versions match pubspec.yaml
+        run: sh scripts/check-package-metadata.sh
 
   linux:
     runs-on: ubuntu-latest

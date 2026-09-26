@@ -38,7 +38,7 @@ Windows threads get a 1 MiB stack, against 8 MiB on Linux and Apple, so [`kDefau
 | Path | Role |
 |------|------|
 | `cxx/` | **Source of truth** for `ffi.*` + `quickjs/` |
-| `cxx/prebuild.sh` | CocoaPods `prepare_command`: copies `cxx/` → `ios/cxx` or `macos/cxx` (flattened headers). See [CocoaPods](#cocoapods-known-issue) |
+| `cxx/prebuild.sh` | CocoaPods `prepare_command`: copies `cxx/` → `ios/cxx` or `macos/cxx` (flattened headers). See [CocoaPods](#cocoapods-secondary-path) |
 | `ios/Classes`, `macos/Classes` | CocoaPods plugin entry (ObjC only) |
 | `ios/flutter_qjs_next/`, `macos/flutter_qjs_next/` | Swift Package Manager trees (`Package.swift` + `Sources/…`) |
 | `ios/.../Sources/.../{ffi.*,quickjs/}`, `macos/...` | SPM copies generated from `cxx/`: do not edit them by hand |
@@ -60,22 +60,13 @@ On Apple, QuickJS `cutils.h` must not redefine `BOOL` under Objective-C (`#if !d
 
 QuickJS version string lives in `VERSION.txt` (not `VERSION`): macOS/iOS APFS is often **case-insensitive**, so a file named `VERSION` is treated as the C++ standard header `<version>` and breaks libc++ (`ptrdiff_t` cascade).
 
-## CocoaPods: known issue
+## CocoaPods (secondary path)
 
-**Status (2026-09-26): repository builds pass; the published package still has no podspec.** Treat Swift Package Manager (Flutter 3.44+) as the supported Apple build path. The non-blocking `apple-cocoapods` job in CI builds the example from the repository with SPM disabled and records the result.
+**Status (2026-09-26): supported, best effort.** Swift Package Manager (Flutter 3.44+) is the primary Apple build path, and `pubspec.yaml` requires Flutter 3.44.0 to match it. CocoaPods stays usable for consumers who disable SPM: both podspecs ship with the package and their `s.version` tracks `pubspec.yaml` (checked by `scripts/check-package-metadata.sh`).
 
-On macOS 14.8.9 (Xcode 16.2, Flutter 3.47.5, CocoaPods 1.17.0, x86_64), `flutter config --no-enable-swift-package-manager` followed by `flutter build macos --debug` built the example successfully (`✓ Built …/flutter_qjs_example.app`), including after deleting `example/macos/Pods` and `Podfile.lock`. `pod install` ran the podspec's `prepare_command` (`sh ../cxx/prebuild.sh`): `macos/cxx/` appeared with `quickjs.c` starting with `CONFIG_VERSION "2026-06-04"` / `DUMP_LEAKS` and no `VERSION.txt`, and Xcode compiled those sources. The earlier claim that `prepare_command` does not run for Flutter's `:path` pods did not reproduce on CocoaPods 1.17.0 (`PodSourcePreparer#run_prepare_command` has no such branch). Two practical notes: `pod` has to be on `PATH` (a non-login SSH shell on this Mac needed `/opt/local/bin`), and Flutter 3.47 performs one-time project upgrades on the first build (analysis excludes, macOS deployment target 12.0 in `Podfile` and `project.pbxproj`), which the verification left uncommitted.
+The build was verified on macOS 14.8.9 (Xcode 16.2, Flutter 3.47.5, CocoaPods 1.17.0, x86_64): with `flutter config --no-enable-swift-package-manager`, `flutter build macos --debug` built the example successfully (`✓ Built …/flutter_qjs_example.app`), including after deleting `example/macos/Pods` and `Podfile.lock`. `pod install` ran the podspec's `prepare_command` (`sh ../cxx/prebuild.sh`): `macos/cxx/` appeared with `quickjs.c` starting with `CONFIG_VERSION "2026-06-04"` / `DUMP_LEAKS` and no `VERSION.txt`, and Xcode compiled those sources. The earlier claim that `prepare_command` does not run for Flutter's `:path` pods did not reproduce on CocoaPods 1.17.0 (`PodSourcePreparer#run_prepare_command` has no such branch).
 
-Still open for a pub.dev release:
-
-1. **The podspecs are not published.** `.pubignore` excludes `ios/flutter_qjs_next.podspec` and `macos/flutter_qjs_next.podspec`. An app that uses the package from pub.dev with SPM disabled has no podspec for this plugin.
-2. **The version constraint does not match.** `pubspec.yaml` allows `flutter: ">=3.0.0"`, but the SPM path needs Flutter 3.44+. Below 3.44, Apple builds fall back to CocoaPods, which needs a published podspec.
-3. The podspecs still declare version `0.0.1`.
-
-Options, to be decided:
-
-- **Drop CocoaPods.** Remove the podspecs, `Classes/` and `cxx/prebuild.sh`. Raise the Flutter constraint to 3.44 and say that Apple builds need SPM.
-- **Repair CocoaPods.** Publish the podspecs and keep `prepare_command`, or point `source_files` at the SPM `Sources/` tree once the planned forwarding sources exist, so both paths share them.
+Two practical notes: `pod` has to be on `PATH` (a non-login SSH shell on this Mac needed `/opt/local/bin`), and Flutter 3.47 performs one-time project upgrades on the first build (analysis excludes, macOS deployment target 12.0 in `Podfile` and `project.pbxproj`), which the verification left uncommitted. The non-blocking `apple-cocoapods` CI job keeps recording CocoaPods results. Not done: pointing `source_files` at the SPM `Sources/` tree — the podspecs keep `prepare_command` until the planned forwarding sources exist (S1-3).
 
 ## Not supported
 
@@ -84,9 +75,9 @@ Options, to be decided:
 
 ## Tooling requirements
 
-- Dart `^3.10.0`, Flutter `>=3.0.0`  
+- Dart `^3.10.0`, Flutter `>=3.44.0`  
 - Platform SDKs as required by Flutter for your target  
-- iOS/macOS: Xcode + Swift Package Manager (Flutter 3.44+); see [CocoaPods](#cocoapods-known-issue)
+- iOS/macOS: Xcode; Swift Package Manager (Flutter 3.44+) is the primary path, [CocoaPods](#cocoapods-secondary-path) is supported as a secondary one
 
 ## Build notes
 

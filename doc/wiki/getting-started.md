@@ -5,7 +5,7 @@ Integrate **flutter_qjs_next** into a Flutter app, run a one-liner evaluate, the
 **Requirements**
 
 - Dart SDK `^3.10.0`
-- Flutter `>=3.0.0`
+- Flutter `>=3.44.0` (the Swift Package Manager path for iOS/macOS sets the floor; CocoaPods also works, see [platforms](guides/platforms.md#cocoapods-secondary-path))
 - A **native** target: Android, iOS, macOS, Linux, or Windows (not Web)
 
 ---
