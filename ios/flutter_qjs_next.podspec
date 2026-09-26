@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_qjs_next'
-  s.version          = '1.5.1'
+  s.version          = '1.5.2'
   s.summary          = 'A quickjs engine for flutter.'
   s.description      = <<-DESC
 This plugin is a simple js engine for flutter using the `quickjs` project. Plugin currently supports all the platforms except web!

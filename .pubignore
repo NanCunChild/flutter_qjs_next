@@ -1,5 +1,6 @@
 .dart_tool/
 .pub/
+pubspec.lock
 build/
 android/.cxx/
 example/build/

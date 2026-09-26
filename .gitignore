@@ -15,5 +15,3 @@ macos/cxx
 
 soak_profiles/
 soak_ab_logs/
-
-pubspec.lock
