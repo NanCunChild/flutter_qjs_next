@@ -1,4 +1,4 @@
-## Unreleased
+## 1.5.2
 
 * **Breaking:** the minimum Flutter version is now `3.44.0` (was `3.0.0`), matching the Swift Package Manager path, which is the primary iOS/macOS build. CocoaPods remains supported as a secondary path: both podspecs ship with the package, their `s.version` tracks `pubspec.yaml` (`scripts/check-package-metadata.sh` checks it in CI), and CocoaPods 1.17.0 was verified to build the example and to run the podspecs' `prepare_command`.
 * **Fix:** strings built by concatenation (a right operand longer than 512 characters makes QuickJS return a rope, `JS_TAG_STRING_ROPE`) no longer arrive in Dart as `null` — as an `evaluate` result, inside objects and arrays, or as a host function argument. `evaluateJson` accepts a rope result as well.
